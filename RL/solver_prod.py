@@ -673,7 +673,35 @@ def PlantDirector( beta, return_Q_rhs_ins=False):
     ################################################################
 
 class GreenHouse(Director):
+    def __init__(self):
+        super().__init__(t0=0.0, time_unit="", Vars={}, Modules={})
+        beta_list = [0.99, 0.95] # Only 2 plants are simulated, assuming this is approximately one m**2 -> radiación de dos plantas (distinto)
+        self.PlantList = []
+        for p, beta in enumerate(beta_list):
+            ### Make and instance of a Plant
+            Dir = PlantDirector(beta=beta)
+            ### Merge all ***global*** vars from plant
+            self.MergeVars( [ Dir ], call=__name__)
+            ### Add the corresponding time unit, most be the same in both
+            self.AddTimeUnit(Dir.symb_time_unit)
+            #Model.CheckSymbTimeUnits, all repeated instances of the Plant Director-Module 
+            ### Add Plant directly, Dir.sch has been already defined
+            self.AddDirectorAsModule( "Plant%d" % p, Dir)
+            self.PlantList +=["Plant%d" % p]
+
+        self.sch = self.PlantList.copy()
+        ## Add global variables
+        self.AddVarLocal( typ='State', varid='H', prn=r'$H_k$',\
+           desc="Accumulated weight of all harvested fruits.", units= g, val=0) # peso total de los pepinos
+        self.AddVarLocal( typ='State', varid='NF', prn=r'$N_k$',\
+           desc="Accumulated  number of fruits harvested", units= n_f, val=0)
+        self.AddVarLocal( typ='State', varid='h', prn=r'$h_k$',\
+           desc="Weight of all harvested fruits.", units= g, val=0)
+        self.AddVarLocal( typ='State', varid='n', prn=r'$n_k$',\
+           desc="Total  number of fruits harvested", units= n_f, val=0)
+
     def Scheduler( self, t1, sch):
+        
         """Advance the modules to time t1. sch is a list of modules id's to run
            its Advance method to time t1.
            
@@ -691,39 +719,35 @@ class GreenHouse(Director):
         t_n_f = 0 # número de frutos cosechados acumulado 
         t_w_k = 0.0 # peso frutos cosechados por día
         t_n_k = 0 # numéro de frutos cosechados por día
-        for _, plant in enumerate(Model.PlantList):
+        for _, plant in enumerate(self.PlantList):
             #t_w_current += Model.Modules[plant].Modules['Plant'].V('Q')
-            t_w_hist += Model.Modules[plant].Modules['Plant'].V('Q_h')
-            t_n_f += Model.Modules[plant].Modules['Plant'].n_fruits_h 
-            t_w_k += Model.Modules[plant].Modules['Plant'].V('h_k')
-            t_n_k += Model.Modules[plant].Modules['Plant'].V('n_k')
+            t_w_hist += self.Modules[plant].Modules['Plant'].V('Q_h')
+            t_n_f += self.Modules[plant].Modules['Plant'].n_fruits_h 
+            t_w_k += self.Modules[plant].Modules['Plant'].V('h_k')
+            t_n_k += self.Modules[plant].Modules['Plant'].V('n_k')
         self.V_Set( 'H', t_w_hist)
         self.V_Set( 'NF', t_n_f)
         self.V_Set( 'h', t_w_k)
         self.V_Set( 'n', t_n_k)
 
     def reset(self):
-        '''
         self.Vars['H'].val = 0
         self.Vars['NF'].val = 0
         self.Vars['h'].val = 0
-        self.Vars['n'].val = 0'''
-        Model.AddVarLocal( typ='State', varid='H', prn=r'$H_k$',\
-           desc="Accumulated weight of all harvested fruits.", units= g, val=0) # peso total de los pepinos
-        Model.AddVarLocal( typ='State', varid='NF', prn=r'$N_k$',\
-           desc="Accumulated  number of fruits harvested", units= n_f, val=0)
-        Model.AddVarLocal( typ='State', varid='h', prn=r'$h_k$',\
-           desc="Weight of all harvested fruits.", units= g, val=0)
-        Model.AddVarLocal( typ='State', varid='n', prn=r'$n_k$',\
-           desc="Total  number of fruits harvested", units= n_f, val=0)
+        self.Vars['n'].val = 0
         for _, plant in enumerate(Model.PlantList):
-            Model.Modules[plant].Modules['Plant'].veget = [0.0 , 0.0] ## characteristics for vegetative part: Weight and growth potential 
-            Model.Modules[plant].Modules['Plant'].fruits = [] # No fruits
-            Model.Modules[plant].Modules['Plant'].n_fruits = 0 ## Current number of fruits
-            Model.Modules[plant].Modules['Plant'].n_fruits_h = 0 ## total number of fruits harvested
-            Model.Modules[plant].Modules['Plant'].new_fruit = 0  ## Cummulative number of fruits
-            Model.Modules[plant].Modules['Plant'].StateRHSs['Q'].__init__()
-            Model.Modules[plant].Modules['Plant'].StateRHSs['Ci'].__init__()
+            self.Modules[plant].Modules['Plant'].veget = [0.0 , 0.0] ## characteristics for vegetative part: Weight and growth potential 
+            self.Modules[plant].Modules['Plant'].fruits = [] # No fruits
+            self.Modules[plant].Modules['Plant'].n_fruits = 0 ## Current number of fruits
+            self.Modules[plant].Modules['Plant'].n_fruits_h = 0 ## total number of fruits harvested
+            self.Modules[plant].Modules['Plant'].new_fruit = 0  ## Cummulative number of fruits
+            self.Modules[plant].Modules['Plant'].StateRHSs['Q'].mod.D.Vars['A'].val = 0
+            self.Modules[plant].Modules['Plant'].StateRHSs['Q'].mod.D.Vars['Q'].val = 0
+            self.Modules[plant].Modules['Plant'].StateRHSs['Q'].mod.D.Vars['n_k'].val = 0
+            self.Modules[plant].Modules['Plant'].StateRHSs['Q'].mod.D.Vars['h_k'].val = 0
+            self.Modules[plant].Modules['Plant'].StateRHSs['Q'].mod.D.Vars['Q_h'].val = 0
+            self.Modules[plant].Modules['Plant'].StateRHSs['Q'].mod.D.Vars['Y_sum'].val = 0
+            #self.Modules[plant].Modules['Plant'].StateRHSs['Ci'].__init__()
 
 
     def update_state(self, C1, T, PAR):
@@ -737,27 +761,8 @@ class GreenHouse(Director):
 #################################################################
 ############ Módulo principal del invernadero #################
 #################################################################
-Model = GreenHouse( t0=0.0, time_unit="", Vars={}, Modules={} )
-### Create n_plants with beta coefficients:
-beta_list = [0.99, 0.95] # Only 2 plants are simulated, assuming this is approximately one m**2 -> radiación de dos plantas (distinto)
-Model.PlantList = []
-for p, beta in enumerate(beta_list):
-    ### Make and instance of a Plant
-    Dir = PlantDirector(beta=beta)
-    
-    ### Merge all ***global*** vars from plant
-    Model.MergeVars( [ Dir ], call=__name__)
+Model = GreenHouse()
 
-    ### Add the corresponding time unit, most be the same in both
-    Model.AddTimeUnit(Dir.symb_time_unit)
-    #Model.CheckSymbTimeUnits, all repeated instances of the Plant Director-Module 
-
-    ### Add Plant directly, Dir.sch has been already defined
-    Model.AddDirectorAsModule( "Plant%d" % p, Dir)
-
-    Model.PlantList +=["Plant%d" % p]
-
-Model.sch = Model.PlantList.copy()
 ## Read data 
 #U = np.ones(10)
 #DirClimate = 
@@ -765,16 +770,6 @@ Model.sch = Model.PlantList.copy()
 #Model.AddModule( 'Climate', ReadModule( "Read_Data.xls", t_conv_shift=0.0, t_conv=1/(60*24)  ) )   # t_conv=1/(60*24) es para pasar el tiempo de minutos (como queda después de la lectura de la base) a días 
 #Model.sch += ['Climate']
 ## Add global variables
-'''
-Model.AddVarLocal( typ='State', varid='H', prn=r'$H_k$',\
-           desc="Accumulated weight of all harvested fruits.", units= g, val=0) # peso total de los pepinos
-Model.AddVarLocal( typ='State', varid='NF', prn=r'$N_k$',\
-           desc="Accumulated  number of fruits harvested", units= n_f, val=0)
-Model.AddVarLocal( typ='State', varid='h', prn=r'$h_k$',\
-           desc="Weight of all harvested fruits.", units= g, val=0)
-Model.AddVarLocal( typ='State', varid='n', prn=r'$n_k$',\
-           desc="Total  number of fruits harvested", units= n_f, val=0)
-'''
 ### Run:
 #Model.Run( Dt=1, n=nmrec, sch= Model.sch)
 
