@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 LOW_OBS = np.array([0, 0, 0, 0, 0, 0, 0, 0]) # vars de estado de modelo clima + vars de estado de modelo prod 
 HIGH_OBS = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-TIME_MAX = 90
+TIME_MAX = 30
 STEP = 1
 
 data_par = pd.read_csv('PARout.csv')
@@ -61,8 +61,11 @@ class GreenhouseEnv(gym.Env):
         self.dirGreenhouse.update_state(C1M, TM, PARM)
         self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
         self.state = self.update_state()
-        reward = self.get_reward(self.state['NF'], self.state['H'])
         done = self.is_done()
+        if done:
+            reward = self.get_reward(self.state['NF'], self.state['H'])
+        else:
+            reward = 0
         self.i += 1
         return self.state, reward, done
         
