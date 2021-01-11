@@ -750,10 +750,11 @@ class GreenHouse(Director):
             #self.Modules[plant].Modules['Plant'].StateRHSs['Ci'].__init__()
 
 
-    def update_state(self, C1, T, PAR):
+    def update_state(self, C1, T, PAR, RH):
         self.Vars['C1'].val = C1 
         self.Vars['T'].val = T
         self.Vars['PAR'].val = PAR
+        self.Vars['RH'].val = RH
         
 
 
