@@ -12,10 +12,11 @@ import matplotlib.pyplot as plt
 
 LOW_OBS = np.array([0, 0, 0, 0, 0, 0, 0, 0]) # vars de estado de modelo clima + vars de estado de modelo prod 
 HIGH_OBS = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-TIME_MAX = 30
+TIME_MAX = 115
 STEP = 1
 
 data_par = pd.read_csv('PARout.csv')
+data_rh = pd.read_csv('RHair.csv')
 samples = data_par.shape[0] # 33133
 
 class GreenhouseEnv(gym.Env):
@@ -43,22 +44,23 @@ class GreenhouseEnv(gym.Env):
         else:
             return 0
 
-    def get_par(self):
+    def get_mean_data(self, data):
         N = 12 * 24 # 12 saltos de 5 min en una hora
         k = self.i % samples
-        par_mean = np.mean(data_par[k * N:(k+1) * N])
-        if math.isnan(par_mean):
+        mean = np.mean(data[k * N:(k+1) * N])
+        if math.isnan(mean):
             return 0.0
         else:
-            return float(par_mean)
+            return float(mean)
 
     def step(self, action):
         self.dirClimate.Modules['Module1'].update_controls(action)
         self.dirClimate.Run(Dt=1, n=self.dt*24*60, sch=self.dirClimate.sch)
         C1M = self.dirClimate.OutVar('C1').mean()
         TM = self.dirClimate.OutVar('T2').mean()
-        PARM = self.get_par()
-        self.dirGreenhouse.update_state(C1M, TM, PARM)
+        PARM = self.get_mean_data(data_par)
+        RHM = self.get_mean_data(data_rh)
+        self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
         self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
         self.state = self.update_state()
         done = self.is_done()
@@ -82,7 +84,8 @@ class GreenhouseEnv(gym.Env):
         T = np.random.normal(21, 2)
         C1 = np.random.normal(3, 2)
         PAR = float(data_par.iloc[0])
-        self.dirGreenhouse.update_state(C1, T, PAR)
+        RH = float(data_rh.iloc[0])
+        self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
         return self.update_state()
     
