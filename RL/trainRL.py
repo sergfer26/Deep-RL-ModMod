@@ -82,20 +82,24 @@ else:
     plt.savefig(PATH + '/reward.png')
     plt.close()
 
-###### Validation ######
-state = env.reset()
-state = np.array(list(state.values()))
-H = list()
-NF = list()
-for step in range(STEPS):
-    action = agent.get_action(state)
-    #action = noise.get_action(action, step)
-    new_state, reward, done = env.step(action) 
-    new_state = np.array(list(new_state.values()))
-    _, _, _, _, h, nf, _, _ = new_state
-    H.append(h)
-    NF.append(nf)
-    state = new_state
+###### Simulation ######
+def sim(agent, env):
+    state = env.reset()
+    state = np.array(list(state.values()))
+    H = list()
+    NF = list()
+    for step in range(STEPS):
+        action = agent.get_action(state)
+        #action = noise.get_action(action, step)
+        new_state, reward, done = env.step(action) 
+        new_state = np.array(list(new_state.values()))
+        _, _, _, _, h, nf, _, _ = new_state
+        H.append(h)
+        NF.append(nf)
+        state = new_state
+    return H, NF
+
+H, NF = sim(agent, env)
 
 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 ax1.plot(H, 'r')
@@ -114,3 +118,4 @@ data = pd.DataFrame(columns=('episode_reward', 'average_reward'))
 data.episode_reward = rewards
 data.average_reward = avg_rewards
 data.to_csv(PATH +'/rewards.csv', index=False)
+
