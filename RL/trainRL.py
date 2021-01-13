@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
-from env import GreenhouseEnv
+import pandas as pd
+from env import GreenhouseEnv, R, P
 from ddpg.ddpg import DDPGagent
 from ddpg.utils import *
 from tqdm import tqdm
@@ -27,7 +28,6 @@ minute = mexico_now.minute
 PATH = 'results/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 
-#env = gym.make("Pendulum-v0")
 
 def train_agent(agent, env, noise, steps=STEPS, episodes=EPISODES, batch_size=BATCH_SIZE):
     rewards = []
@@ -42,7 +42,7 @@ def train_agent(agent, env, noise, steps=STEPS, episodes=EPISODES, batch_size=BA
         for step in range(STEPS):
             action = agent.get_action(state)
             action = noise.get_action(action, step)
-            new_state, reward, done = env.step(action) 
+            new_state, reward, done = env.step(np.ones(10) - action) 
             new_state = np.array(list(new_state.values()))
             agent.memory.push(state, action, reward, new_state, done)
     
@@ -70,6 +70,8 @@ noise = OUNoise(env.action_space)
 rewards, avg_rewards = train_agent(agent, env, noise)
 agent.save(PATH)
 
+fig = plt.figure()
+fig.suptitle('R_t = '+ R + P, fontsize=10)
 plt.plot(rewards, "--b", label='reward (DDPG)', alpha=0.1)
 plt.plot(avg_rewards, "-b", label='avg reward (DDPG)')
 plt.legend(loc="lower right")
@@ -79,35 +81,31 @@ plt.ylabel('Reward')
 if SHOW:
     plt.show()
 else:
-    plt.savefig(PATH + '/reward.png')
+    fig.savefig(PATH + '/reward.png')
     plt.close()
 
 ###### Simulation ######
 def sim(agent, env):
     state = env.reset()
     state = np.array(list(state.values()))
-    H = list()
-    NF = list()
+    S = np.zeros((STEPS, 8 + 1))
+    reward = 0.0
     for step in range(STEPS):
         action = agent.get_action(state)
         #action = noise.get_action(action, step)
         new_state, reward, done = env.step(action) 
         new_state = np.array(list(new_state.values()))
-        _, _, _, _, h, nf, _, _ = new_state
-        H.append(h)
-        NF.append(nf)
         state = new_state
-    return H, NF
+        S[step, 0:8] = state
+        S[step, -1] = reward
+    return S
 
-H, NF = sim(agent, env)
+S = sim(agent, env)
 
-fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
-ax1.plot(H, 'r')
-ax1.set_xlabel('days')
-ax1.set_ylabel('H')
-ax2.plot(NF, 'b')
-ax2.set_xlabel('days')
-ax1.set_ylabel('NF')
+df = pd.DataFrame(S, columns=('C1', 'RH', 'T', 'PAR', 'H', 'NF', 'h', 'n', 'R'))
+df.plot(subplots=True) 
+plt.legend(loc='best')
+plt.xlabel('days')
 if SHOW:
     plt.show()
 else:
