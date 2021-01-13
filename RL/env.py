@@ -5,11 +5,21 @@ import numpy as np
 import math
 from time import time
 from gym import spaces
+import matplotlib.pyplot as plt
 from progress.bar import Bar
 from solver_climate import Dir as DirClimate
 from solver_prod import Model as Greenhouse
-import matplotlib.pyplot as plt
+from sympy import symbols, lambdify
+from sympy.parsing.sympy_parser import parse_expr
 
+OUTPUTS = symbols('h nf')
+CONTROLS = symbols('u1 u2 u3 u4 u5 u6 u7 u8 u9 u10')
+R = 'h / nf' 
+P = ' - 0.001 * (u1 + u2 + u3 + u5 + u6 + u7 + u8 + u9 + u10) - 10 * u4'
+symR = parse_expr(R)
+symP = parse_expr(P)
+reward = lambdify(OUTPUTS, symR)
+penalty = lambdify(CONTROLS, symP)
 LOW_OBS = np.array([0, 0, 0, 0, 0, 0, 0, 0]) # vars de estado de modelo clima + vars de estado de modelo prod 
 HIGH_OBS = np.array([1, 1, 1, 1, 1, 1, 1, 1])
 TIME_MAX = 115
@@ -38,11 +48,15 @@ class GreenhouseEnv(gym.Env):
         else: 
             return False
 
-    def get_reward(self, nf, h):
+    def get_reward(self, h, nf, action):
+        u1, u2, u3, u4, u5, u6, u7, u8, u9, u10 = action
+        out = 0.0
+        out += penalty(u1, u2, u3, u4, u5, u6, u7, u8, u9, u10)
         if nf:
-            return h/nf
+            out += reward(h, nf)
+            return out
         else:
-            return 0
+            return out
 
     def get_mean_data(self, data):
         N = 12 * 24 # 12 saltos de 5 min en una hora
@@ -65,7 +79,7 @@ class GreenhouseEnv(gym.Env):
         self.state = self.update_state()
         done = self.is_done()
         if done:
-            reward = self.get_reward(self.state['NF'], self.state['H'])
+            reward = self.get_reward(self.state['NF'], self.state['H'], action)
         else:
             reward = 0
         self.i += 1
@@ -82,7 +96,7 @@ class GreenhouseEnv(gym.Env):
         self.dirClimate.Modules['Module1'].reset()
         self.dirGreenhouse.reset()
         T = np.random.normal(21, 2)
-        C1 = np.random.normal(3, 2)
+        C1 = np.random.normal(500, 1)
         PAR = float(data_par.iloc[0])
         RH = float(data_rh.iloc[0])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
