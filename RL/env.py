@@ -6,24 +6,27 @@ import math
 from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
-from progress.bar import Bar
+#from progress.bar import Bar
 from solver_climate import Dir as DirClimate
-from solver_prod import Model as Greenhouse
+from solver_prod import GreenHouse
 from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
 
 OUTPUTS = symbols('h nf')
-CONTROLS = symbols('u1 u2 u3 u4 u5 u6 u7 u8 u9 u10')
-R = 'h / nf' 
-P = ' - 0.001 * (u1 + u2 + u3 + u5 + u6 + u7 + u8 + u9 + u10) - 10 * u4'
+CONTROLS = symbols('u3 u4 u7 u9 u10')
+R = '0.01 * h' 
+P = '- 0.125 * (u3 + u4 + u7 + u9 + u10)'
 symR = parse_expr(R)
 symP = parse_expr(P)
-reward = lambdify(OUTPUTS, symR)
-penalty = lambdify(CONTROLS, symP)
-LOW_OBS = np.array([0, 0, 0, 0, 0, 0, 0, 0]) # vars de estado de modelo clima + vars de estado de modelo prod 
-HIGH_OBS = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-TIME_MAX = 115
-STEP = 1
+reward_function = lambdify(OUTPUTS, symR)
+penalty_function = lambdify(CONTROLS, symP)
+LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
+HIGH_OBS = np.ones(6)
+LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
+HIGH_ACTION = np.ones(10)
+STEP = 1/4 # 6 horas por día
+TIME_MAX = 90 # días  
+
 
 data_par = pd.read_csv('PARout.csv')
 data_rh = pd.read_csv('RHair.csv')
@@ -31,15 +34,15 @@ samples = data_par.shape[0] # 33133
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
-        self.dt = STEP # numéros días
-        self.action_space = spaces.Box(low=0*np.ones(10), high=np.ones(10))
+        self.dt = STEP # días
+        self.action_space = spaces.Box(low=LOW_ACTION, high=HIGH_ACTION)
         self.observation_space = spaces.Box(low=LOW_OBS, high=HIGH_OBS)
         #PAR = c *max(sin, 0)
-        self.state_names = ['C1', 'RH', 'T', 'PAR', 'H', 'NF', 'h', 'n']
+        self.state_names = ['C1', 'RH', 'T', 'PAR', 'h', 'n']
         self.time_max = TIME_MAX
         self.dirClimate = DirClimate
-        self.dirGreenhouse = Greenhouse
-        self.state = self.reset()
+        self.dirGreenhouse = GreenHouse()
+        self._reset()
         self.i = 0
 
     def is_done(self):
@@ -49,17 +52,14 @@ class GreenhouseEnv(gym.Env):
             return False
 
     def get_reward(self, h, nf, action):
-        u1, u2, u3, u4, u5, u6, u7, u8, u9, u10 = action
+        _, _, u3, u4, _, _, u7, _, u9, u10 = action
         out = 0.0
-        out += penalty(u1, u2, u3, u4, u5, u6, u7, u8, u9, u10)
-        if nf:
-            out += reward(h, nf)
-            return out
-        else:
-            return out
+        out += penalty_function(u3, u4, u7, u9, u10)
+        out += reward_function(h, nf)
+        return out
 
     def get_mean_data(self, data):
-        N = 12 * 24 # 12 saltos de 5 min en una hora
+        N = int(12 * 24 * self.dt) # 12 saltos de 5 min en una hora
         k = self.i % samples
         mean = np.mean(data[k * N:(k+1) * N])
         if math.isnan(mean):
@@ -69,21 +69,25 @@ class GreenhouseEnv(gym.Env):
 
     def step(self, action):
         self.dirClimate.Modules['Module1'].update_controls(action)
-        self.dirClimate.Run(Dt=1, n=self.dt*24*60, sch=self.dirClimate.sch)
+        self.dirClimate.Run(Dt=1, n=int(self.dt*24*60), sch=self.dirClimate.sch)
         C1M = self.dirClimate.OutVar('C1').mean()
         TM = self.dirClimate.OutVar('T2').mean()
         PARM = self.get_mean_data(data_par)
         RHM = self.get_mean_data(data_rh)
         self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
-        self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
+        reward = 0.0
+        if (self.i + 1) % (1/self.dt) == 0:
+            self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
+            h = self.dirGreenhouse.V('h')
+            n = self.dirGreenhouse.V('n')
+            reward += reward_function(h, n)
         self.state = self.update_state()
         done = self.is_done()
-        if done:
-            reward = self.get_reward(self.state['NF'], self.state['H'], action)
-        else:
-            reward = 0
+        _, _, u3, u4, _, _, u7, _, u9, u10 = action
+        reward += penalty_function(u3, u4, u7, u9, u10)
         self.i += 1
-        return self.state, reward, done
+        state = np.array(list(self.state.values()))
+        return state, reward, done
         
         # 240 - Temperatura del aire
         # 244 - PAR
@@ -91,7 +95,7 @@ class GreenhouseEnv(gym.Env):
         state = {k: self.dirGreenhouse.V(k) for k in self.state_names}
         return state
     
-    def reset(self):
+    def _reset(self):
         self.i = 0
         self.dirClimate.Modules['Module1'].reset()
         self.dirGreenhouse.reset()
@@ -101,12 +105,15 @@ class GreenhouseEnv(gym.Env):
         RH = float(data_rh.iloc[0])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
-        return self.update_state()
-    
+
+    def reset(self):
+        self._reset()
+        state = np.array(list(self.state.values()))
+        return state
     
     def n_random_actions(self,n):
         t1 = time()
-        actions = np.random.uniform(0,1,(n,10))
+        actions = np.random.uniform(0, 1,(n,10))
         H_vector = []
         bar = Bar('Processing', max=n)
         for action in actions:
