@@ -14,8 +14,8 @@ from sympy.parsing.sympy_parser import parse_expr
 
 OUTPUTS = symbols('h nf')
 CONTROLS = symbols('u3 u4 u7 u9 u10')
-R = '0.01 * h' 
-P = '- 0.125 * (u3 + u4 + u7 + u9 + u10)'
+R = '0.25 * h' 
+P = '- 0.25 * (u3 + u4 + u7 + u9 + u10)'
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
@@ -76,11 +76,12 @@ class GreenhouseEnv(gym.Env):
         RHM = self.get_mean_data(data_rh)
         self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
         reward = 0.0
-        if (self.i + 1) % (1/self.dt) == 0:
+        old_h = self.dirGreenhouse.V('h')
+        if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
             self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
-            h = self.dirGreenhouse.V('h')
-            n = self.dirGreenhouse.V('n')
-            reward += reward_function(h, n)
+            #h = self.dirGreenhouse.V('h')
+            #n = self.dirGreenhouse.V('n')
+        reward += reward_function(old_h, 1)
         self.state = self.update_state()
         done = self.is_done()
         _, _, u3, u4, _, _, u7, _, u9, u10 = action
