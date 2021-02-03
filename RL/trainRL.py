@@ -14,6 +14,7 @@ from datetime import datetime
 from datetime import datetime, timezone
 import matplotlib as mpl
 import pytz
+#from torch.utils.tensorboard import SummaryWriter
 
 
 EPISODES = 500
@@ -44,7 +45,9 @@ else:
 noise = OUNoise(env.action_space)
 action_dim =  env.action_space.shape[0]
 state_dim = env.observation_space.shape[0]
-
+#writer_reward = SummaryWriter()
+#writer_abs = SummaryWriter()
+#writer_penalty = SummaryWriter()
 
 def train_agent(agent, env, noise):
     rewards = []
@@ -69,11 +72,10 @@ def train_agent(agent, env, noise):
             _, _, u3, u4, _, _, u7, _, u9, u10 = action # modify
             p = -penalty_function(u3, u4, u7, u9, u10)
             r = 0.0
-            if (env.i + 1) % (1/env.dt) == 0:
-                h = new_state[-2]; n = new_state[-1]
-                r = reward_function(h, n)
+            #if (env.i + 1) % (1/env.dt) == 0:
+            #    h = new_state[-2]; n = new_state[-1]
             episode_reward += reward
-            abs_reward += r
+            abs_reward += reward - p
             episode_penalty += p
             #pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(NF), H='{:2f}'.format(H))
             #pbar.update(1)      
@@ -83,8 +85,11 @@ def train_agent(agent, env, noise):
                 break
         rewards.append(episode_reward)
         abs_rewards.append(abs_reward)
-        penalties.append(episode_penalty) 
+        penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
+        #writer_reward.add_scalar("Reward", episode_reward, episode)
+        #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
+        #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
     return rewards, avg_rewards, penalties, abs_rewards
 
 
@@ -92,7 +97,7 @@ def train_agent(agent, env, noise):
 def sim(agent, env, noise):
     state = env.reset()
     S = np.zeros((STEPS, state_dim + 4))
-    A = np.zeros((STEPS, state_dim))
+    A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
         action = agent.get_action(state)
@@ -106,7 +111,7 @@ def sim(agent, env, noise):
         S[step, -2] = reward
         S[step, -1] = episode_reward
         A[step, :] = action
-        
+        print(reward)
     return S, A
 
 
@@ -114,7 +119,7 @@ rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
 agent.save(PATH)
 
 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
-fig.suptitle(r'$r_t =$ '+ R + r' \cdot \mathbb{1}_{day}' + P + ', {} Days'.format(TIME_MAX), fontsize=14)
+fig.suptitle(r'$r_t =$ '+ R + r' $\cdot \mathbb{1}_{t = k days}$' + P + ', {} Days'.format(TIME_MAX), fontsize=14)
 
 ax1.plot(rewards, "-b", label='reward (DDPG)')
 ax1.plot(avg_rewards, "--b", label='avg reward (DDPG)', alpha=0.2)
