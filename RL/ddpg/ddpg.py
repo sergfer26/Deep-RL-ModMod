@@ -109,5 +109,5 @@ class DDPGagent:
         self.actor.load_state_dict(torch.load(path + "/actor"))
         self.actor_optimizer.load_state_dict(torch.load(path + "/actor_optimizer"))
         self.actor_target = copy.deepcopy(self.actor)
-        with open(path +'/memory.pickle', 'rb') as handle:
-            self.memory.pickle.load(handle)
+        #with open(path +'/memory.pickle', 'rb') as handle:
+        #    self.memory.buffer = pickle.load(handle)
