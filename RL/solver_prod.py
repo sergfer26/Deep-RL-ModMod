@@ -21,6 +21,7 @@ Created on Tue Oct 13 12:49:18 2020
 ####### Módulos  ##########
 ###########################
 import numpy as np
+import copy
 from numpy import exp, floor, clip, arange, append
 from sympy import symbols
 from ModMod import Module, StateRHS, Director, ReadModule
@@ -555,22 +556,21 @@ class Plant(Module):
             self.V_Set('A', A1)
             
             ### Check if a fruit has reched is maximum thermic age, then harvest it
-            harvest = []
+            fruits = copy.deepcopy(self.fruits) # copy of all fruits
             wk = 0.0
             nfk = 0
-            for h, fruit in enumerate(self.fruits): # h is the indice and fruit is the object
+            for fruit in self.fruits: 
                 if (fruit[0] > 275 or fruit[1]>360): # It is harvested when a fruit reaches a thermic age of 275 °C d or if the fruit's weigth is greater than 360 g
-                    harvest += [h]
                     self.n_fruits -= 1 # number fruits in crop
                     self.n_fruits_h += 1 # accumulated number fruits harvested
                     w = self.V( 'Q_h') + fruit[1] # accumulated weight fruits harvested
                     self.V_Set( 'Q_h', w)
                     wk += fruit[1] # weigth fruits harvested in this moment
                     nfk += 1 # number fruits harvested in this moment
-            [self.fruits.pop(i) for i in harvest]# Harvested fruits are removed from the list
+                    fruits.remove(fruit) # Harvested fruits are removed from the list
+            self.fruits = fruits
             self.V_Set( 'n_k', nfk)
             self.V_Set( 'h_k', wk)
-            
             ### With the Floration Rate, create new fruits
             PA_mean_i = self.beta * self.V('PAR')
             self.new_fruit += TF( k1_TF=self.V('k1_TF'), k2_TF=self.V('k2_TF'), k3_TF=self.V('k3_TF'),\
@@ -735,7 +735,7 @@ class GreenHouse(Director):
         self.Vars['NF'].val = 0
         self.Vars['h'].val = 0
         self.Vars['n'].val = 0
-        for _, plant in enumerate(Model.PlantList):
+        for _, plant in enumerate(self.PlantList):
             self.Modules[plant].Modules['Plant'].veget = [0.0 , 0.0] ## characteristics for vegetative part: Weight and growth potential 
             self.Modules[plant].Modules['Plant'].fruits = [] # No fruits
             self.Modules[plant].Modules['Plant'].n_fruits = 0 ## Current number of fruits
@@ -762,7 +762,7 @@ class GreenHouse(Director):
 #################################################################
 ############ Módulo principal del invernadero #################
 #################################################################
-Model = GreenHouse()
+#Model = GreenHouse()
 
 ## Read data 
 #U = np.ones(10)
