@@ -14,8 +14,8 @@ from sympy.parsing.sympy_parser import parse_expr
 
 OUTPUTS = symbols('h nf')
 CONTROLS = symbols('u3 u4 u7 u9 u10')
-R = '0.25 * h' 
-P = '- 0.25 * (u3 + u4 + u7 + u9 + u10)'
+R = 'min(0.01 * h, 10)' 
+P = '- 0.5 * (u3 + u4 + u7 + u9 + u10)'
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
@@ -24,8 +24,8 @@ LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de model
 HIGH_OBS = np.ones(6)
 LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
-STEP = 1/4 # 6 horas por día
-TIME_MAX = 90 # días  
+STEP = 1/2 # 6 horas por día
+TIME_MAX = 15 # días  
 
 
 data_par = pd.read_csv('PARout.csv')
@@ -76,12 +76,12 @@ class GreenhouseEnv(gym.Env):
         RHM = self.get_mean_data(data_rh)
         self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
         reward = 0.0
-        old_h = self.dirGreenhouse.V('h')
+        #old_h = self.dirGreenhouse.V('h')
         if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
             self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
-            #h = self.dirGreenhouse.V('h')
-            #n = self.dirGreenhouse.V('n')
-        reward += reward_function(old_h, 1)
+            h = self.dirGreenhouse.V('h')
+            n = self.dirGreenhouse.V('n')
+            reward += reward_function(h, n)
         self.state = self.update_state()
         done = self.is_done()
         _, _, u3, u4, _, _, u7, _, u9, u10 = action
