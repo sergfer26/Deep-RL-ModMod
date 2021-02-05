@@ -14,10 +14,10 @@ from datetime import datetime
 from datetime import datetime, timezone
 import matplotlib as mpl
 import pytz
-#from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 
-EPISODES = 500
+EPISODES = 10
 STEPS = int(TIME_MAX/STEP)
 BATCH_SIZE = 32
 SHOW = False
@@ -45,9 +45,9 @@ else:
 noise = OUNoise(env.action_space)
 action_dim =  env.action_space.shape[0]
 state_dim = env.observation_space.shape[0]
-#writer_reward = SummaryWriter()
-#writer_abs = SummaryWriter()
-#writer_penalty = SummaryWriter()
+writer_reward = SummaryWriter()
+writer_abs = SummaryWriter()
+writer_penalty = SummaryWriter()
 
 def train_agent(agent, env, noise):
     rewards = []
@@ -87,16 +87,18 @@ def train_agent(agent, env, noise):
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
-        #writer_reward.add_scalar("Reward", episode_reward, episode)
-        #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
-        #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
+        writer_reward.add_scalar("Reward", episode_reward, episode)
+        writer_abs.add_scalar("Absolute reward", abs_reward, episode)
+        writer_penalty.add_scalar("Penalty", episode_penalty, episode)
     return rewards, avg_rewards, penalties, abs_rewards
 
 
 ###### Simulation ######
 def sim(agent, env, noise):
     state = env.reset()
-    S = np.zeros((STEPS, state_dim + 4))
+    S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
+    S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
+    S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
@@ -104,15 +106,15 @@ def sim(agent, env, noise):
         action = noise.get_action(action, step)
         new_state, reward, done = env.step(action)
         episode_reward += reward
-        state = new_state
-        S[step, 0:state_dim] = state
-        S[step:, -4] = env.dirGreenhouse.V('H')
-        S[step, -3] = env.dirGreenhouse.V('NF')
-        S[step, -2] = reward
-        S[step, -1] = episode_reward
+        C1, RH, T2, PAR, h, n = state
+        T1 = env.dirClimate.V('T1'); V1 = env.dirClimate.V('V1')
+        S_climate[step, :] = np.array([T1, T2, V1, C1]) 
+        H = env.dirGreenhouse.V('H'); NF= env.dirGreenhouse.V('NF')
+        S_data[step, :] = np.array([RH, PAR])
+        S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
-        print(reward)
-    return S, A
+        state = new_state
+    return S_climate, S_data, S_prod, A
 
 
 rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
@@ -139,16 +141,32 @@ else:
 
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
-S, A = sim(agent, env, noise)
+S_climate, S_data, S_prod, A = sim(agent, env, noise)
 
-dfs = pd.DataFrame(S, columns=('$C_1$', '$RH$', '$T$', '$PAR$', '$h$', '$n$', '$H$', '$NF$', '$r_t$', '$Cr_t$'))
-title='$H =$ {}, $NF=$ {}'.format(dfs['$H$'].iloc[-1], dfs['$NF$'].iloc[-1])
-x = ceil((state_dim + 4)/2)
-dfs.plot(subplots=True, layout=(x, 2), figsize=(10, 7), title=title) 
+df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
+df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
 if SHOW:
     plt.show()
 else:
-    plt.savefig(PATH + '/sim_states.png')
+    plt.savefig(PATH + '/sim_climate.png')
+    plt.close()
+
+
+df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
+df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7)) 
+if SHOW:
+    plt.show()
+else:
+    plt.savefig(PATH + '/sim_rh_par.png')
+    plt.close()
+
+df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
+title='$H =$ {}, $NF=$ {}'.format(df_prod['$H$'].iloc[-1], df_prod['$N$'].iloc[-1])
+df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
+if SHOW:
+    plt.show()
+else:
+    plt.savefig(PATH + '/sim_prod.png')
     plt.close()
 
 dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
