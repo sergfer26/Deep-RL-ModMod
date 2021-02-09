@@ -24,8 +24,8 @@ LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de model
 HIGH_OBS = np.ones(6)
 LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
-STEP = 1/2 # 6 horas por día
-TIME_MAX = 15 # días  
+STEP = 1/8 # día / # de pasos por día
+TIME_MAX = 90 # días  
 
 
 data_par = pd.read_csv('PARout.csv')
@@ -61,11 +61,13 @@ class GreenhouseEnv(gym.Env):
     def get_mean_data(self, data):
         N = int(12 * 24 * self.dt) # 12 saltos de 5 min en una hora
         k = self.i % samples
-        mean = np.mean(data[k * N:(k+1) * N])
-        if math.isnan(mean):
-            return 0.0
-        else:
-            return float(mean)
+        mean = float(data[k * N:(k+1) * N].mean(skipna=True))
+        return mean
+        #mean = np.mean(data[k * N:(k+1) * N])
+        #if math.isnan(mean):
+        #    return 0.0
+        #else:
+        #    return float(mean)
 
     def step(self, action):
         self.dirClimate.Modules['Module1'].update_controls(action)
