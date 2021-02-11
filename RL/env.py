@@ -6,7 +6,7 @@ import math
 from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
-#from progress.bar import Bar
+from progress.bar import Bar
 from solver_climate import Dir as DirClimate
 from solver_prod import GreenHouse
 from sympy import symbols, lambdify
@@ -26,11 +26,11 @@ LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
 STEP = 1/8 # día / # de pasos por día
 TIME_MAX = 90 # días  
-
-
-data_par = pd.read_csv('PARout.csv')
-data_rh = pd.read_csv('RHair.csv')
-samples = data_par.shape[0] # 33133
+#data_par = pd.read_csv('PARout.csv')
+#data_rh = pd.read_csv('RHair.csv')
+data_inputs = pd.read_csv('Inputs.csv')
+INPUT_NAMES = list(data_inputs.columns)[0:-2]
+samples = data_inputs['PAR'].shape[0] # 33133
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
@@ -70,12 +70,17 @@ class GreenhouseEnv(gym.Env):
         #    return float(mean)
 
     def step(self, action):
+        frec = int(self.dt*24*60) # frecuencia de acciones de modelo climatico
         self.dirClimate.Modules['Module1'].update_controls(action)
-        self.dirClimate.Run(Dt=1, n=int(self.dt*24*60), sch=self.dirClimate.sch)
+        for minute in range(1, frec + 1):
+            if minute % 5 == 0: # Los datos son de cada 5 minutos
+                k = minute // 5 - 1
+                self.update_vars_climate(k + self.i*frec/5) # hay 36 saltos de 5 minutos en 3 horas
+            self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
         C1M = self.dirClimate.OutVar('C1').mean()
         TM = self.dirClimate.OutVar('T2').mean()
-        PARM = self.get_mean_data(data_par)
-        RHM = self.get_mean_data(data_rh)
+        PARM = self.get_mean_data(data_inputs['PAR'])
+        RHM = self.get_mean_data(data_inputs['RH'])
         self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
         reward = 0.0
         #old_h = self.dirGreenhouse.V('h')
@@ -104,8 +109,8 @@ class GreenhouseEnv(gym.Env):
         self.dirGreenhouse.reset()
         T = np.random.normal(21, 2)
         C1 = np.random.normal(500, 1)
-        PAR = float(data_par.iloc[0])
-        RH = float(data_rh.iloc[0])
+        PAR = float(data_inputs['PAR'].iloc[0])
+        RH = float(data_inputs['RH'].iloc[0])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
 
@@ -114,20 +119,20 @@ class GreenhouseEnv(gym.Env):
         state = np.array(list(self.state.values()))
         return state
     
-    def n_random_actions(self,n):
+    def n_random_actions(self, n):
         t1 = time()
         actions = np.random.uniform(0, 1,(n,10))
-        H_vector = []
+        h_vector = []
         bar = Bar('Processing', max=n)
         for action in actions:
             self.step(action)
             aux = np.array(list(self.state.values()))
-            H_vector.append(aux[4])
+            h_vector.append(aux[4])
             bar.next()
         bar.finish()
         t2 = time()
-        plt.plot(range(n),H_vector)
-        plt.suptitle('Masa seca')
+        plt.plot(range(n), h_vector)
+        plt.suptitle('Incrementos de masa seca')
         plt.show()
         self.imagen_accion(actions,n,t2-t1)
 
@@ -141,3 +146,17 @@ class GreenhouseEnv(gym.Env):
             ax.set_title('$a_{}$'.format(i))
         plt.suptitle('Tiempo de ejecucion = ' + str(round(tiempo,2)))
         plt.show()
+
+    def update_vars_climate(self, index):
+        for arg in INPUT_NAMES:
+            self.dirClimate.Vars[arg].val = data_inputs[arg][index]
+
+    def return_inputs_climate(self):
+        N = self.time_max * 24 * 12
+        return data_inputs[INPUT_NAMES][0:N]
+
+
+
+if __name__ == '__main__':
+    env = GreenhouseEnv()
+    env.n_random_actions(240) #30 días
