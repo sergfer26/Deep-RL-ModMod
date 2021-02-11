@@ -17,7 +17,7 @@ import pytz
 from torch.utils.tensorboard import SummaryWriter
 
 
-EPISODES = 10
+EPISODES = 500
 STEPS = int(TIME_MAX/STEP)
 BATCH_SIZE = 32
 SHOW = False
@@ -114,7 +114,8 @@ def sim(agent, env, noise):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    return S_climate, S_data, S_prod, A
+    data_inputs = env.return_inputs_climate()
+    return S_climate, S_data, S_prod, A, data_inputs
 
 
 rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
@@ -141,7 +142,7 @@ else:
 
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
-S_climate, S_data, S_prod, A = sim(agent, env, noise)
+S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise)
 
 df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
 df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
@@ -176,4 +177,11 @@ if SHOW:
     plt.show()
 else:
     plt.savefig(PATH + '/sim_actions.png')
+    plt.close()
+
+data_inputs.plot(subplots=True, layout=(len(data_inputs.columns) // 2, 2), figsize=(10, 7)) 
+if SHOW:
+    plt.show()
+else:
+    plt.savefig(PATH + '/sim_climate_inputs.png')
     plt.close()
