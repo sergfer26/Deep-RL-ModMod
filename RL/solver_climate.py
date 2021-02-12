@@ -28,8 +28,8 @@ from numpy.random import seed
 ###########################
 ######### C1 ##############
 # Símbolos
-mt, mg, m, C, s, W, mg_CO2, J, g, mol_CH2O = symbols(
-    'mt mg m C s W mg_CO2 J g mol_CH2O')  # Symbolic use of base phisical units
+# Symbolic use of base phisical units
+mt, mg, m, C, s, W, mg_CO2, J, g, mol_CH2O = symbols('mt mg m C s W mg_CO2 J g mol_CH2O')  
 
 # previous functions
 
@@ -547,6 +547,21 @@ T2_in = 20
 T1_in = 20
 nmrec = 1
 
+I1 = 3.5 # Constant
+I2 = 0.0
+I3 = 20 # Constant
+I4 = 1 # Constant
+I5 = 0.0
+I6 = 16 # Constant
+I7 = 10 # Constant
+I8 = 0.0
+# I9
+I10 = 400 # Constant
+I11 = 1 # Constant?
+I12 = 1 # Constant?
+I13 = 0 # Constant?
+I14 = 0.0
+
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
 theta = np.array([2000, 15, 1.9e5])
@@ -598,17 +613,17 @@ class C1_rhs(StateRHS):
                     desc="Side vents Control", units=1, val=u6)
         # Inputs ---> No son constantes sino variables
         self.AddVar(typ='State', varid='I8', prn=r'$I_8$',
-                    desc="Outdoor wind speed", units=m * s**-1, val=5)
+                    desc="Outdoor wind speed", units=m * s**-1, val=I8)
         self.AddVar(typ='State', varid='I5', prn=r'$I_5$',
-                    desc="Outdoor temperature", units=C, val=18)
+                    desc="Outdoor temperature", units=C, val=I5)
         self.AddVar(typ='Cnts', varid='I10', prn=r'$I_{10}$',
-                    desc="Outdoor CO2 concentration", units=mg * m**-3, val=850)
+                    desc="Outdoor CO2 concentration", units=mg * m**-3, val=I10)
         self.AddVar(typ='Cnts', varid='I11', prn=r'$I_{11}$',
-                    desc="Inhibition of the rate of photosynthesis by saturation of the leaves with carbohydrates", units=1, val=1)  # Falta valor y unidades
+                    desc="Inhibition of the rate of photosynthesis by saturation of the leaves with carbohydrates", units=1, val=I11)  # Falta valor y unidades
         self.AddVar(typ='Cnts', varid='I12', prn=r'$I_{12}$',
-                    desc="Crude canopy photosynthesis rate", units=1, val=1)  # Falta valor y unidades
+                    desc="Crude canopy photosynthesis rate", units=1, val=I12)  # Falta valor y unidades
         self.AddVar(typ='Cnts', varid='I13', prn=r'$I_{13}$',
-                    desc="Photorespiration during photosynthesis", units=1, val=0)  # Falta valor y unidades
+                    desc="Photorespiration during photosynthesis", units=1, val=I13)  # Falta valor y unidades
         # Constants
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
                     desc="Heat capacity of direct air heater", units=W, val=1)  # Falta valor, aunque en los ejemplos del artículo no se considera
@@ -689,7 +704,8 @@ class C1_rhs(StateRHS):
         o_5 = o5(C1=self.Vk('C1'), I10=self.V(
             'I10'), f2=f_2, f3=f_3, f4=f_4)
         return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5)
-C1_rhs_ins = C1_rhs()  # Make an instance of rhs
+
+
 ########### V1 ############
 class V1_rhs(StateRHS):
     """Define a RHS, this is the rhs for V1, the vapour pression in the greenhouse air"""
@@ -730,15 +746,15 @@ class V1_rhs(StateRHS):
                     desc="Fog system control", units=1, val=u9)
         # Inputs
         self.AddVar(typ='State', varid='I8', prn=r'$I_8$',
-                    desc="Outdoor wind speed", units=m * s**-1, val=5)
+                    desc="Outdoor wind speed", units=m * s**-1, val=I8)
         self.AddVar(typ='State', varid='I5', prn=r'$I_5$',
-                    desc="Outdoor temperature", units=C, val=18)
+                    desc="Outdoor temperature", units=C, val=I5)
         self.AddVar(typ='State', varid='I6', prn=r'$I_6$',
-                    desc="Mechanical cooling system temperature", units=C, val=20)
+                    desc="Mechanical cooling system temperature", units=C, val=I6)
         self.AddVar(typ='Cnts', varid='I1', prn=r'$I_1$',
-                    desc="Leaf area index", units=m**2 * m**-2, val= 3) # Valor tomado de internet
+                    desc="Leaf area index", units=m**2 * m**-2, val=I1) # Valor tomado de internet
         self.AddVar(typ='State', varid='I14', prn=r'$\I_{14}$',
-                    desc="Global radiation above the canopy", units=W * m**-2, val=100)
+                    desc="Global radiation above the canopy", units=W * m**-2, val=I14)
         # Constants
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
                     desc="Heat capacity of direct air heater", units=W, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
@@ -823,6 +839,7 @@ class V1_rhs(StateRHS):
         self.AddVar(typ='Cnts', varid='eta12', prn=r'$\eta_{12}$',
                     desc="Amount of vapor that is released when a joule of sensible energy is produced by the direct air heater", units=kg_vapour * J**-1, val=4.43e-8) # ok
     def RHS(self, Dt):
+
         """RHS( Dt, k) = \kappa_1^{-1} F_1( t+Dt, X+k) where X is the current value of
            all state variables.  k is a simple dictionary { 'v1':k1, 'v2':k2 ... etc}
            ************* JUST CALL STATE VARIABLES WITH self.Vk ******************
@@ -881,7 +898,8 @@ class V1_rhs(StateRHS):
             'psi1'), omega2=self.V('omega2'), f1=f_1)
         p_7 = p7(V1=self.Vk('V1'), h3=h_3, q6=q_6)
         return (kappa_3**-1)*(p_1 + p_2 + p_3 + p_4 - p_5 - p_6 - p_7)
-V1_rhs_ins = V1_rhs()  # Make an instance of rhs
+
+
 ########### T1 ############
 class T1_rhs(StateRHS):
     """Define a RHS, this is the rhs for C1, the CO2 concentrartion in the greenhouse air"""
@@ -906,15 +924,15 @@ class T1_rhs(StateRHS):
                     desc="Thermal screen control", units=1, val=u1)
         # Inputs
         self.AddVar(typ='Cnts', varid='I1', prn=r'$I_1$',
-                    desc="Leaf area index", units=m**2 * m**-2, val= 3) # Valor tomado de internet
+                    desc="Leaf area index", units=m**2 * m**-2, val=I1) # Valor tomado de internet
         self.AddVar(typ='State', varid='I2', prn=r'$I_2$',
-                    desc="External global radiation", units=W * m**-2, val=100)
+                    desc="External global radiation", units=W * m**-2, val=I2)
         self.AddVar(typ='State', varid='I3', prn=r'$I_3$',
-                    desc="Heating pipe temperature", units=C, val=20)
+                    desc="Heating pipe temperature", units=C, val=I3)
         self.AddVar(typ='State', varid='I4', prn=r'$I_4$',
-                    desc="Sky temperature", units=C, val=18)
+                    desc="Sky temperature", units=C, val=I4)
         self.AddVar(typ='State', varid='I14', prn=r'$\I_{14}$',
-                    desc="Global radiation above the canopy", units=W * m**-2, val=100)
+                    desc="Global radiation above the canopy", units=W * m**-2, val=I14)
         # Constants
         self.AddVar(typ='Cnts', varid='beta3', prn=r'$\beta_3$',
                     desc="Canopy extinction coefficient for NIR radiation", units=1, val=0.27) # ok
@@ -1031,7 +1049,8 @@ class T1_rhs(StateRHS):
         r_7 = r7(T1=self.Vk('T1'), I4=self.V('I4'), epsil2=self.V(
             'epsil2'), epsil3=self.V('epsil3'), lamb=self.V('lamb'), a1=a_1, g2=g_2)
         return (kappa_1**-1)*(r_1 + r_5 + r_6 - h_1 - l_1 - r_7)
-T1_rhs_ins = T1_rhs()  # Make an instance of rhs
+
+
 ########### T2 ############
 class T2_rhs(StateRHS):
     """Define a RHS, this is the rhs for T2, Greenhouse air temperature"""
@@ -1070,21 +1089,21 @@ class T2_rhs(StateRHS):
                     desc="Fog system control", units=1, val=u9)
         # Inputs
         self.AddVar(typ='State', varid='I8', prn=r'$I_8$',
-                    desc="Outdoor wind speed", units=m * s**-1, val=5)
+                    desc="Outdoor wind speed", units=m * s**-1, val=I8)
         self.AddVar(typ='State', varid='I5', prn=r'$I_5$',
-                    desc="Outdoor temperature", units=C, val=18)
+                    desc="Outdoor temperature", units=C, val=I5)
         self.AddVar(typ='Cnts', varid='I1', prn=r'$I_1$',
-                    desc="Leaf area index", units=m**2 * m**-2, val= 3) # Valor tomado de internet
+                    desc="Leaf area index", units=m**2 * m**-2, val=I1) # Valor tomado de internet
         self.AddVar(typ='State', varid='I6', prn=r'$I_6$',
-                    desc="Mechanical cooling system temperature", units=C, val=20)
+                    desc="Mechanical cooling system temperature", units=C, val=I6)
         self.AddVar(typ='State', varid='I2', prn=r'$I_2$',
-                    desc="External global radiation", units=W * m**-2, val=100)
+                    desc="External global radiation", units=W * m**-2, val=I2)
         self.AddVar(typ='State', varid='I3', prn=r'$I_3$',
-                    desc="Heating pipe temperature", units=C, val=20)
+                    desc="Heating pipe temperature", units=C, val=I3)
         self.AddVar(typ='State', varid='I4', prn=r'$I_4$',
-                    desc="Sky temperature", units=C, val=18)
+                    desc="Sky temperature", units=C, val=I4)
         self.AddVar(typ='Cnts', varid='I7', prn=r'$I_7$',
-                    desc="Soil temperature", units=C, val=5) # Valor tomado de internet
+                    desc="Soil temperature", units=C, val=I7) # Valor tomado de internet
         # Constants
         self.AddVar(typ='Cnts', varid='tau3', prn=r'$\tau_3$',
                     desc="FIR transmission coefficient of the thermal screen", units=1, val=0.11) # ok --> usé el valor de Texas
@@ -1259,13 +1278,14 @@ class T2_rhs(StateRHS):
         h_11 = h11(T2=self.Vk('T2'), I7=self.V('I7'), nu7=self.V(
             'nu7'), nu8=self.V('nu8'), phi2=self.V('phi2'))
         return (kappa_2**-1)*(h_1 + h_2 + h_3 + h_4 + h_5 + h_6 + r_8 - h_7 - h_10 - l_2 - r_10 - h_11)
-T2_rhs_ins = T2_rhs()  # Make an instance of rhs
+
+
 ###########################
 ### Definición Director ###
 ###########################
 class Module1(Module):
 
-    def __init__(self, Dt=1):
+    def __init__(self, Dt=1, **kwargs):
         """Models one part of the process, uses the shared variables
            from Director.
            Dt=0.1, default Time steping of module
@@ -1273,10 +1293,8 @@ class Module1(Module):
         super().__init__(Dt)  # Time steping of module
         # Always, use the super class __init__, theare are several otjer initializations
         # Module specific constructors, add RHS's
-        self.AddStateRHS('T1', T1_rhs_ins)
-        self.AddStateRHS('T2', T2_rhs_ins)
-        self.AddStateRHS('V1', V1_rhs_ins)
-        self.AddStateRHS('C1', C1_rhs_ins)
+        for key, value in kwargs.items():
+            self.AddStateRHS(key, value)
         # print("State Variables for this module:", self.S_RHS_ids)
 
     def Advance(self, t1):
@@ -1310,14 +1328,20 @@ class Module1(Module):
             self.D.Vars['U'+str(i+1)].val = U[i]
         
 
+class Climate_model(Director):
+    def __init__(self):
+        super().__init__(t0=0.0, time_unit="", Vars={}, Modules={})
+        C1_rhs_ins = C1_rhs()  # Make an instance of rhs
+        V1_rhs_ins = V1_rhs()  # Make an instance of rhs
+        T1_rhs_ins = T1_rhs()  # Make an instance of rhs
+        T2_rhs_ins = T2_rhs()  # Make an instance of rhs
 
-
-symb_time_units = C1_rhs_ins.CheckSymbTimeUnits(C1_rhs_ins)
-# Genetare the director
-Dir = Director(t0=0.0, time_unit=symb_time_units, Vars={}, Modules={})
-Dir.MergeVarsFromRHSs( [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins], call=__name__)
-Dir.AddModule('Module1', Module1())
-Dir.sch = ['Module1']
+        symb_time_units = C1_rhs_ins.CheckSymbTimeUnits(C1_rhs_ins)
+        # Genetare the director
+        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins]
+        self.MergeVarsFromRHSs(RHS_list, call=__name__)
+        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins))
+        self.sch = ['Module1']
     
 
 # Attention: n must be equal to nrec in the RHSs
