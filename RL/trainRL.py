@@ -1,19 +1,18 @@
 import sys
 import gym
+import pytz
 import numpy as np
 import pandas as pd
 import pathlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-import pandas as pd
+from matplotlib import mdates
 from env import GreenhouseEnv, R, P, STEP, TIME_MAX, reward_function, penalty_function
 from ddpg.ddpg import DDPGagent
 from ddpg.utils import *
 from tqdm import tqdm
 from math import ceil
-from datetime import datetime
 from datetime import datetime, timezone
-import matplotlib as mpl
-import pytz
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -35,6 +34,7 @@ mpl.style.use('seaborn')
 
 env = GreenhouseEnv()
 agent = DDPGagent(env)
+
 if len(sys.argv) == 1:
     pass
 else:
@@ -96,6 +96,7 @@ def train_agent(agent, env, noise):
 ###### Simulation ######
 def sim(agent, env, noise):
     state = env.reset()
+    start = env.i # primer indice de los datos
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
@@ -114,8 +115,9 @@ def sim(agent, env, noise):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    data_inputs = env.return_inputs_climate()
-    return S_climate, S_data, S_prod, A, data_inputs
+    data_inputs = env.return_inputs_climate(start)
+    dates = env.return_dates(start)
+    return S_climate, S_data, S_prod, A, data_inputs, dates
 
 
 rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
@@ -142,7 +144,7 @@ else:
 
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
-S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise)
+S_climate, S_data, S_prod, A, data_inputs, dates = sim(agent, env, noise)
 
 df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
 df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
@@ -179,7 +181,7 @@ else:
     plt.savefig(PATH + '/sim_actions.png')
     plt.close()
 
-data_inputs.plot(subplots=True, layout=(len(data_inputs.columns) // 2, 2), figsize=(10, 7)) 
+data_inputs.plot(subplots=True, figsize=(10, 7)) 
 if SHOW:
     plt.show()
 else:
