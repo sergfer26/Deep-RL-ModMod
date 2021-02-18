@@ -537,10 +537,6 @@ def h11(T2, I7, nu7, nu8, phi2):
     return 2*nu7*(T2 - I7)/(phi2 + nu8)
 
 
-##################################################################
-######### Función que soluciona el sistema de EDO ################
-##################################################################
-
 C1_in = 432
 V1_in = 14
 T2_in = 20
@@ -1303,7 +1299,6 @@ class Module1(Module):
         s2 = 0.1281  # Desviación estándar de V1
         s3 = 10  # Desviación estándar de C1
         # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
-        #import pdb; pdb.set_trace()
         T1r = self.V('T1') + norm.rvs(scale=s1)
         T2r = self.V('T2') + norm.rvs(scale=s1)
         V1r = self.V('V1') + norm.rvs(scale=s2)
@@ -1316,16 +1311,6 @@ class Module1(Module):
         # Avance del RHS
         self.AdvanceRungeKutta(t1)
         return 1
-
-    def reset(self):
-        self.D.Vars['T1'].val = T1_in
-        self.D.Vars['T2'].val = T2_in
-        self.D.Vars['V1'].val = V1_in
-        self.D.Vars['C1'].val = C1_in
-
-    def update_controls(self, U=np.ones(10)):
-        for i in range(len(U)):
-            self.D.Vars['U'+str(i+1)].val = U[i]
         
 
 class Climate_model(Director):
@@ -1342,6 +1327,18 @@ class Climate_model(Director):
         self.MergeVarsFromRHSs(RHS_list, call=__name__)
         self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins))
         self.sch = ['Module1']
+
+
+    def reset(self):
+        self.Vars['T1'].val = np.random.normal(21, 2)
+        self.Vars['T2'].val = np.random.normal(21, 2)
+        self.Vars['V1'].val = V1_in
+        self.Vars['C1'].val = np.random.normal(500, 1)
+
+    def update_controls(self, U=np.ones(10)):
+        for i in range(len(U)):
+            self.Vars['U'+str(i+1)].val = U[i]
+
     
 
 # Attention: n must be equal to nrec in the RHSs

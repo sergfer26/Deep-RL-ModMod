@@ -12,40 +12,40 @@ from solver_prod import GreenHouse
 from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
 
-OUTPUTS = symbols('h nf')
-CONTROLS = symbols('u3 u4 u7 u9 u10')
-R = 'min(0.01 * h, 10)' 
-P = '- 0.5 * (u3 + u4 + u7 + u9 + u10)'
+
+OUTPUTS = symbols('h nf') # variables de recompensa
+CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
+R = 'min(0.01 * h, 10)'  # función de recompensa
+P = '- 0.5 * (u3 + u4 + u7 + u9 + u10)' #función de penalización
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
 penalty_function = lambdify(CONTROLS, symP)
+
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
 LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
 STEP = 1/8 # día / # de pasos por día
 TIME_MAX = 90 # días  
-#data_par = pd.read_csv('PARout.csv')
-#data_rh = pd.read_csv('RHair.csv')
-data_inputs = pd.read_csv('Inputs.csv')
+data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
-samples = len(data_inputs) # 33133
-FRECUENCY = 5 # Frecuencia de medición de inputs del modelo del clima
+SAMPLES = len(data_inputs) 
+FRECUENCY = 60 # Frecuencia de medición de inputs del modelo del clima (minutos)
 
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
-        self.dt = STEP # días
+        self.dt = STEP # tamaño de paso de tiempo (días)
+        self.frec = int(self.dt*24*60) # frecuencia de acciones de modelo climatico (minutos)
         self.action_space = spaces.Box(low=LOW_ACTION, high=HIGH_ACTION)
         self.observation_space = spaces.Box(low=LOW_OBS, high=HIGH_OBS)
-        #PAR = c *max(sin, 0)
         self.state_names = ['C1', 'RH', 'T', 'PAR', 'h', 'n']
         self.time_max = TIME_MAX
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
-        self._reset()
         self.i = 0
+        self._reset()
 
     def is_done(self):
         if self.i == self.time_max/self.dt -1:
@@ -62,21 +62,20 @@ class GreenhouseEnv(gym.Env):
 
     def get_mean_data(self, data):
         N = int(12 * 24 * self.dt) # 12 saltos de 5 min en una hora
-        k = self.i % samples
+        k = self.i % SAMPLES
         mean = float(data[k * N:(k+1) * N].mean(skipna=True))
         return mean
 
     def step(self, action):
-        frec = int(self.dt*24*60) # frecuencia de acciones de modelo climatico
-        self.dirClimate.Modules['Module1'].update_controls(action)
-        for minute in range(1, frec + 1):
+        self.dirClimate.update_controls(action)
+        for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
-                self.update_vars_climate(k + self.i*frec/FRECUENCY) # 
+                self.update_vars_climate(k + self.i*self.frec/FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
-        C1M = self.dirClimate.OutVar('C1').mean()
+        C1M = self.dirClimate.OutVar('C1').mean() 
         TM = self.dirClimate.OutVar('T2').mean()
-        PARM = self.get_mean_data(data_inputs['PAR'])
+        PARM = self.get_mean_data(data_inputs['I2']) # PAR
         RHM = self.get_mean_data(data_inputs['RH'])
         self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
         reward = 0.0
@@ -94,22 +93,24 @@ class GreenhouseEnv(gym.Env):
         state = np.array(list(self.state.values()))
         return state, reward, done
         
-        # 240 - Temperatura del aire
-        # 244 - PAR
     def update_state(self):
         state = {k: self.dirGreenhouse.V(k) for k in self.state_names}
         return state
     
     def _reset(self):
-        self.i = 0
-        self.dirClimate.Modules['Module1'].reset()
+        self.i = self.set_index()
+        self.dirClimate.reset()
         self.dirGreenhouse.reset()
-        T = np.random.normal(21, 2)
-        C1 = np.random.normal(500, 1)
-        PAR = float(data_inputs['PAR'].iloc[0])
-        RH = float(data_inputs['RH'].iloc[0])
+        T = self.dirClimate.V('T2')
+        C1 = self.dirClimate.V('C1')
+        PAR = float(data_inputs['I2'].iloc[self.i*self.frec//FRECUENCY])
+        RH = float(data_inputs['RH'].iloc[self.i*self.frec//FRECUENCY])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
+    
+    def set_index(self):
+        limit = ((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt
+        return np.random.randint(0,limit) 
 
     def reset(self):
         self._reset()
@@ -145,12 +146,19 @@ class GreenhouseEnv(gym.Env):
         plt.show()
 
     def update_vars_climate(self, index):
-        for arg in INPUT_NAMES:
-            self.dirClimate.Vars[arg].val = data_inputs[arg][index]
+        for name in INPUT_NAMES:
+            self.dirClimate.Vars[name].val = data_inputs[name][index]
 
-    def return_inputs_climate(self):
-        N = self.time_max * 24 * (60/FRECUENCY)
-        return data_inputs[INPUT_NAMES][0:N]
+    def return_inputs_climate(self, start):
+        end = start + self.time_max * 24 * (60/FRECUENCY)
+        return data_inputs[INPUT_NAMES][start: end]
+
+    def return_dates(self, start):
+        end = start + self.time_max * 24 * (60/FRECUENCY)
+        if 'Date' in data_inputs.columns:
+            return data_inputs['Date'][start: end]
+        else:
+            return None
 
 
 
