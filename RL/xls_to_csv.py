@@ -41,36 +41,19 @@ def csv_to_csv():
         data[column] = pd.to_numeric(data[column], downcast='integer')
         
     for row in range(len(data)):
-        dates.append(datetime(data['Year'][row],data['Month'][row],data['Day'][row], data['Hour'][row]))#.strftime(r"%x %H"))
+        dates.append(datetime(data['Year'][row],data['Month'][row],data['Day'][row], data['Hour'][row]).strftime(r"%x %H"))
  
     data['Date'] = dates
     data['I14'] = data['I2'] # Por ahora son el mismo (PAR)
 
     data[['I2','I5', 'I8', 'I14','RH', 'Date' ]].to_csv('Inputs_Bleiswijk.csv',index = False)
 
-#plt.plot_date(data['Date'][0:72], data['RH'][0:72], '-')
-'''
-import matplotlib.pyplot as plt
-from matplotlib import dates
-dtFmt = mdates.DateFormatter(r'%m/%d/%Y %H')
-figure = plt.figure() 
-axes = figure.add_subplot(1, 1, 1) 
-  
-axes.xaxis.set_major_formatter(dtFmt) 
-plt.setp(axes.get_xticklabels(), rotation = 15) 
-  
-axes.plot(data['Date'][0:72], data['RH'][0:72]) 
-plt.show()
-'''
-csv_to_csv()
-from matplotlib import dates
-file_name = 'Inputs_Bleiswijk.csv'
-#dtFmt = dates.DateFormatter(r'%Y-%m-%d %H:%M')
-data = pd.read_csv(file_name)[0:2640]
-data.Date= pd.to_datetime(data['Date']) #, format=r'%m/%d/%Y %H')
-data.set_index(['Date'], inplace=True)
-data.plot(subplots=True, layout=(3, 2), figsize=(10, 7))
-plt.show()
 
-#if __name__ == '__main__':
-#    csv_to_csv()
+if __name__ == '__main__':
+    file_name = 'Inputs_Bleiswijk.csv'
+    data = pd.read_csv(file_name)[0:2640]
+    print(data.head(10))
+    data.set_index(['Date'], inplace=True)
+    ax = data.plot(subplots=True, layout=(3, 2), figsize=(10, 7))
+    plt.tight_layout()
+    plt.show()
