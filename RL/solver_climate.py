@@ -552,9 +552,9 @@ I6 = 16 # Constant
 I7 = 10 # Constant
 I8 = 0.0
 # I9
-I10 = 400 # Constant
-I11 = 1 # Constant?
-I12 = 1 # Constant?
+I10 = 850 # Constant
+I11 = 0 # Constant?
+I12 = 0 # Constant?
 I13 = 0 # Constant?
 I14 = 0.0
 
