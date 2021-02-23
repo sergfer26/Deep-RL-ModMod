@@ -118,7 +118,7 @@ def sim(agent, env, noise):
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs
 
-'''
+
 rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
 agent.save(PATH)
 
@@ -140,17 +140,17 @@ if SHOW:
 else:
     fig.savefig(PATH + '/reward.png')
     plt.close()
-'''
+
 
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
 S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise)
 
 df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-df_climate['Date'] = dates
-df_climate.set_index(['Date'], inplace=True)
+#df_climate['Date'] = dates
+#df_climate.set_index(['Date'], inplace=True)
 df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
-plt.tight_layout()
+#plt.tight_layout()
 if SHOW:
     plt.show()
 else:
