@@ -25,7 +25,6 @@ import copy
 from numpy import exp, floor, clip, arange, append
 from sympy import symbols
 from ModMod import Module, StateRHS, Director, ReadModule
-from solver_climate import Dir as DirClim
 
 ###########################
 ####### Símbolos  #########
