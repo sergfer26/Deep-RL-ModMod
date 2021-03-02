@@ -24,7 +24,7 @@ penalty_function = lambdify(CONTROLS, symP)
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
+LOW_ACTION = np.zeros(10)
 HIGH_ACTION = np.ones(10)
 STEP = 1/8 # día / # de pasos por día
 TIME_MAX = 90 # días  
