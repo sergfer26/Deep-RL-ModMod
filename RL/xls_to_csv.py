@@ -48,30 +48,5 @@ def csv_to_csv():
 
     data[['I2','I5', 'I8', 'I14','RH', 'Date' ]].to_csv('Inputs_Bleiswijk.csv',index = False)
 
-#plt.plot_date(data['Date'][0:72], data['RH'][0:72], '-')
-'''
-import matplotlib.pyplot as plt
-from matplotlib import dates
-dtFmt = mdates.DateFormatter(r'%m/%d/%Y %H')
-figure = plt.figure() 
-axes = figure.add_subplot(1, 1, 1) 
-  
-axes.xaxis.set_major_formatter(dtFmt) 
-plt.setp(axes.get_xticklabels(), rotation = 15) 
-  
-axes.plot(data['Date'][0:72], data['RH'][0:72]) 
-plt.show()
-
-#csv_to_csv()
-from matplotlib import dates
-file_name = 'Inputs_Bleiswijk.csv'
-#dtFmt = dates.DateFormatter(r'%Y-%m-%d %H:%M')
-data = pd.read_csv(file_name)[0:2640]
-#data.Date = pd.to_datetime(data['Date']) #, format=r'%m/%d/%Y %H')
-#data.set_index(['Date'], inplace=True)
-data.plot(x=data.Date.strftime(r'%Y-%m-%d %H:%M'), subplots=True, layout=(3, 2), figsize=(10, 7))
-plt.show()
-'''
-
 if __name__ == '__main__':
     csv_to_csv()
