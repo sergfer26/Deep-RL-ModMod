@@ -16,7 +16,7 @@ from sympy.parsing.sympy_parser import parse_expr
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
 R = 'min(0.01 * h, 10)'  # función de recompensa
-P = '- 0.5 * (u3 + u4 + u7 + u9 + u10)' #función de penalización
+P = '- (0.5/5) * (u3 + u4 + u7 + u9 + u10)' #función de penalización
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
@@ -24,7 +24,7 @@ penalty_function = lambdify(CONTROLS, symP)
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
+LOW_ACTION = np.zeros(10); # LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
 STEP = 1/8 # día / # de pasos por día
 TIME_MAX = 90 # días  
