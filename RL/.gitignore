@@ -3,6 +3,5 @@
 runs/
 results_ddpg/
 .DS_Store
-Reporte.pdf
 ddpg/__pycache__
 __pycache__/
