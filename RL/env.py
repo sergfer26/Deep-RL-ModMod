@@ -12,11 +12,11 @@ from solver_prod import GreenHouse
 from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
 from get_indexes import Indexes
-
+from params import PARAMS_ENV
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
-R = 'min(0.01 * h, 10)'  # función de recompensa
-P = '- (0.5/5) * (u3 + u4 + u7 + u9 + u10)' #función de penalización
+R = PARAMS_ENV['R']   # función de recompensa
+P = PARAMS_ENV['P'] # función de penalización
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
@@ -26,13 +26,13 @@ LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de model
 HIGH_OBS = np.ones(6)
 LOW_ACTION = np.zeros(10); # LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
-STEP = 1/8 # día / # de pasos por día
-TIME_MAX = 90 # días  
+STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
+TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
 data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
 SAMPLES = len(data_inputs) 
-FRECUENCY = 60 # Frecuencia de medición de inputs del modelo del clima (minutos)
-MONTH = '03' # Puede ser 'RANDOM'
+FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
+MONTH = PARAMS_ENV['MONTH'] # Puede ser 'RANDOM'
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
