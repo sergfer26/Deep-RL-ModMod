@@ -11,7 +11,7 @@ from solver_climate import Climate_model
 from solver_prod import GreenHouse
 from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
-
+from get_indexes import Indexes
 
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
@@ -32,7 +32,7 @@ data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
 SAMPLES = len(data_inputs) 
 FRECUENCY = 60 # Frecuencia de medición de inputs del modelo del clima (minutos)
-
+MONTH = '03' # Puede ser 'RANDOM'
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
@@ -45,6 +45,7 @@ class GreenhouseEnv(gym.Env):
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
         self.i = 0
+        self.indexes = Indexes(data_inputs,MONTH)
         self._reset()
 
     def is_done(self):
@@ -62,7 +63,7 @@ class GreenhouseEnv(gym.Env):
 
     def get_mean_data(self, data):
         end = int((self.i +1) * self.frec // FRECUENCY)
-        start = int(end - 24 * 60/FRECUENCY)
+        start = int(end - 24 * 60/FRECUENCY) 
         mean = float(data[start: end].mean(skipna=True))
         return mean
 
@@ -113,7 +114,10 @@ class GreenhouseEnv(gym.Env):
     
     def set_index(self):
         limit = ((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt
-        return np.random.randint(0,limit) 
+        if SEASON == 'RANDOM':
+            return np.random.randint(0,limit)
+        else:
+            return np.random.choice(self.indexes)
 
     def reset(self):
         self._reset()
