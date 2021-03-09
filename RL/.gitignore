@@ -4,6 +4,7 @@ runs/
 results_ddpg/
 .DS_Store
 ddpg/__pycache__
-ddpg/__pycache__/
+ddpg/__pycache__/*
 __pycache__/
 runs/
+*.pyc
