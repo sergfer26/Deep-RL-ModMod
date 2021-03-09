@@ -42,10 +42,11 @@ class GreenhouseEnv(gym.Env):
         self.observation_space = spaces.Box(low=LOW_OBS, high=HIGH_OBS)
         self.state_names = ['C1', 'RH', 'T', 'PAR', 'h', 'n']
         self.time_max = TIME_MAX
+        self.limit = int(((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt) 
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
         self.i = 0
-        self.indexes = Indexes(data_inputs,MONTH)
+        self.indexes = Indexes(data_inputs[0:self.limit],MONTH) if MONTH != 'RANDOM' else None
         self._reset()
 
     def is_done(self):
@@ -74,7 +75,7 @@ class GreenhouseEnv(gym.Env):
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
-                self.update_vars_climate(k + self.i*self.frec/FRECUENCY) # 
+                self.update_vars_climate(k + self.i*self.frec//FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
         
         reward = 0.0
@@ -113,9 +114,8 @@ class GreenhouseEnv(gym.Env):
         self.state = self.update_state()
     
     def set_index(self):
-        limit = ((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt
-        if SEASON == 'RANDOM':
-            return np.random.randint(0,limit)
+        if MONTH == 'RANDOM':
+            return np.random.randint(0,self.limit)
         else:
             return np.random.choice(self.indexes)
 
