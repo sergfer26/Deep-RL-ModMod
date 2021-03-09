@@ -14,13 +14,14 @@ from tqdm import tqdm
 from math import ceil
 from datetime import datetime, timezone
 from torch.utils.tensorboard import SummaryWriter
+from get_report import create_report
+from params import PARAMS_TRAIN
 
-
-EPISODES = 500
-STEPS = int(TIME_MAX/STEP)
-BATCH_SIZE = 32
-SHOW = False
-INDICE = 8770
+EPISODES = PARAMS_TRAIN['EPISODES']
+STEPS = PARAMS_TRAIN['STEPS']
+BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
+SHOW = PARAMS_TRAIN['SHOW']
+INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -143,7 +144,6 @@ else:
     fig.savefig(PATH + '/reward.png')
     plt.close()
 
-
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
 S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
@@ -195,3 +195,6 @@ if SHOW:
 else:
     plt.savefig(PATH + '/sim_climate_inputs.png')
     plt.close()
+if not(SHOW):
+    PATH += '/'
+    create_report(PATH)
