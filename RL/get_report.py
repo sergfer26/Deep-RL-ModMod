@@ -10,6 +10,7 @@ from ddpg.params import PARAMS_UTILS, PARAMS_DDPG
 PATH = 'results_ddpg/2_27_1054/'
 
 fileName = 'Reporte.pdf'
+fileName = PATH + fileName
 documentTitle = 'Document title!'
 title = 'Reporte de Entrenamiento'
 subTitle = ''
