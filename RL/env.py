@@ -6,17 +6,17 @@ import math
 from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
-#from progress.bar import Bar
+from progress.bar import Bar
 from solver_climate import Climate_model
 from solver_prod import GreenHouse
 from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
-
-
+from get_indexes import Indexes
+from params import PARAMS_ENV
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
-R = 'min(0.01 * h, 10)'  # función de recompensa
-P = '- ((0.5)/10)* (u3 + u4 + u7 + u9 + u10)' #función de penalización
+R = PARAMS_ENV['R']   # función de recompensa
+P = PARAMS_ENV['P'] # función de penalización
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
@@ -24,15 +24,15 @@ penalty_function = lambdify(CONTROLS, symP)
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(10); LOW_ACTION[7] = 0.5
+LOW_ACTION = np.zeros(10); # LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(10)
-STEP = 1/8 # día / # de pasos por día
-TIME_MAX = 90 # días  
+STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
+TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
 data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
 SAMPLES = len(data_inputs) 
-FRECUENCY = 60 # Frecuencia de medición de inputs del modelo del clima (minutos)
-
+FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
+MONTH = PARAMS_ENV['MONTH'] # Puede ser 'RANDOM'
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
@@ -42,9 +42,11 @@ class GreenhouseEnv(gym.Env):
         self.observation_space = spaces.Box(low=LOW_OBS, high=HIGH_OBS)
         self.state_names = ['C1', 'RH', 'T', 'PAR', 'h', 'n']
         self.time_max = TIME_MAX
+        self.limit = int(((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt) 
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
         self.i = 0
+        self.indexes = Indexes(data_inputs[0:self.limit],MONTH) if MONTH != 'RANDOM' else None
         self._reset()
 
     def is_done(self):
@@ -62,7 +64,7 @@ class GreenhouseEnv(gym.Env):
 
     def get_mean_data(self, data):
         end = int((self.i +1) * self.frec // FRECUENCY)
-        start = int(end - 24 * 60/FRECUENCY)
+        start = int(end - 24 * 60/FRECUENCY) 
         mean = float(data[start: end].mean(skipna=True))
         return mean
 
@@ -73,7 +75,7 @@ class GreenhouseEnv(gym.Env):
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
-                self.update_vars_climate(k + self.i*self.frec/FRECUENCY) # 
+                self.update_vars_climate(k + self.i*self.frec//FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
         
         reward = 0.0
@@ -112,8 +114,10 @@ class GreenhouseEnv(gym.Env):
         self.state = self.update_state()
     
     def set_index(self):
-        limit = ((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt
-        return np.random.randint(0,limit) 
+        if MONTH == 'RANDOM':
+            return np.random.randint(0,self.limit)
+        else:
+            return np.random.choice(self.indexes)
 
     def reset(self):
         self._reset()
@@ -124,13 +128,13 @@ class GreenhouseEnv(gym.Env):
         t1 = time()
         actions = np.random.uniform(0, 1,(n,10))
         h_vector = []
-        #bar = Bar('Processing', max=n)
+        bar = Bar('Processing', max=n)
         for action in actions:
             self.step(action)
             aux = np.array(list(self.state.values()))
             h_vector.append(aux[4])
-            #bar.next()
-        #bar.finish()
+            bar.next()
+        bar.finish()
         t2 = time()
         plt.plot(range(n), h_vector)
         plt.suptitle('Incrementos de masa seca')
@@ -161,3 +165,4 @@ class GreenhouseEnv(gym.Env):
 if __name__ == '__main__':
     env = GreenhouseEnv()
     env.n_random_actions(240) #30 días
+

@@ -11,14 +11,19 @@ import torch.nn as nn
 from torch.autograd import Variable
 from .models import Actor, Critic
 from .utils import Memory
-
+from .params import PARAMS_DDPG 
 device = 'cpu'
+
 if torch.cuda.is_available():
     device = 'cuda'
 
 
 class DDPGagent:
-    def __init__(self, env, hidden_sizes=[64, 64], actor_learning_rate=1e-4, critic_learning_rate=1e-3, gamma=0.98, tau=0.125, max_memory_size=int(1e7)):
+    def __init__(self, env, hidden_sizes=PARAMS_DDPG['hidden_sizes'], \
+        actor_learning_rate=PARAMS_DDPG['actor_learning_rate'], \
+        critic_learning_rate=PARAMS_DDPG['critic_learning_rate'], \
+        gamma=PARAMS_DDPG['gamma'], tau=PARAMS_DDPG['tau'], \
+        max_memory_size=PARAMS_DDPG['max_memory_size']):
         # Params
         self.num_states = env.observation_space.shape[0]
         self.num_actions = env.action_space.shape[0]

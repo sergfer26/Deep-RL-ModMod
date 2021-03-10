@@ -13,14 +13,15 @@ from ddpg.utils import *
 from tqdm import tqdm
 from math import ceil
 from datetime import datetime, timezone
-#from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
+from get_report import create_report
+from params import PARAMS_TRAIN
 
-
-EPISODES = 200
-STEPS = int(TIME_MAX/STEP)
-BATCH_SIZE = 32
-SHOW = False
-
+EPISODES = PARAMS_TRAIN['EPISODES']
+STEPS = PARAMS_TRAIN['STEPS']
+BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
+SHOW = PARAMS_TRAIN['SHOW']
+INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -45,9 +46,9 @@ else:
 noise = OUNoise(env.action_space)
 action_dim =  env.action_space.shape[0]
 state_dim = env.observation_space.shape[0]
-#writer_reward = SummaryWriter()
-#writer_abs = SummaryWriter()
-#writer_penalty = SummaryWriter()
+writer_reward = SummaryWriter()
+writer_abs = SummaryWriter()
+writer_penalty = SummaryWriter()
 
 def train_agent(agent, env, noise):
     rewards = []
@@ -87,22 +88,24 @@ def train_agent(agent, env, noise):
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
-        #writer_reward.add_scalar("Reward", episode_reward, episode)
-        #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
-        #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
+        writer_reward.add_scalar("Reward", episode_reward, episode)
+        writer_abs.add_scalar("Absolute reward", abs_reward, episode)
+        writer_penalty.add_scalar("Penalty", episode_penalty, episode)
     return rewards, avg_rewards, penalties, abs_rewards
 
 
 ###### Simulation ######
-def sim(agent, env, noise):
-    state = env.reset()
-    start = env.i # primer indice de los datos
+def sim(agent, env, noise,indice = 0):
+    state = env.reset() 
+    start = env.i if indice == 0 else indice # primer indice de los datos
+    print('Voy a simular con indice = ', start)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
+        print(step)
         action = agent.get_action(state)
         action = noise.get_action(action, step)
         new_state, reward, done = env.step(action)
@@ -141,10 +144,9 @@ else:
     fig.savefig(PATH + '/reward.png')
     plt.close()
 
-
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
-S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise)
+S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
 
 df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
 #df_climate['Date'] = dates
@@ -193,3 +195,6 @@ if SHOW:
 else:
     plt.savefig(PATH + '/sim_climate_inputs.png')
     plt.close()
+if not(SHOW):
+    PATH += '/'
+    create_report(PATH)
