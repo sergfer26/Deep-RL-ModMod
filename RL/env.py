@@ -6,7 +6,7 @@ import math
 from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
-from progress.bar import Bar
+#from progress.bar import Bar
 from solver_climate import Climate_model
 from solver_prod import GreenHouse
 from sympy import symbols, lambdify
@@ -128,13 +128,13 @@ class GreenhouseEnv(gym.Env):
         t1 = time()
         actions = np.random.uniform(0, 1,(n,10))
         h_vector = []
-        bar = Bar('Processing', max=n)
+        #bar = Bar('Processing', max=n)
         for action in actions:
             self.step(action)
             aux = np.array(list(self.state.values()))
             h_vector.append(aux[4])
-            bar.next()
-        bar.finish()
+            #bar.next()
+        #bar.finish()
         t2 = time()
         plt.plot(range(n), h_vector)
         plt.suptitle('Incrementos de masa seca')
