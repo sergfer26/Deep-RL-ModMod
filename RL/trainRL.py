@@ -13,10 +13,10 @@ from ddpg.utils import *
 from tqdm import tqdm
 from math import ceil
 from datetime import datetime, timezone
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 
 
-EPISODES = 500
+EPISODES = 200
 STEPS = int(TIME_MAX/STEP)
 BATCH_SIZE = 32
 SHOW = False
@@ -45,9 +45,9 @@ else:
 noise = OUNoise(env.action_space)
 action_dim =  env.action_space.shape[0]
 state_dim = env.observation_space.shape[0]
-writer_reward = SummaryWriter()
-writer_abs = SummaryWriter()
-writer_penalty = SummaryWriter()
+#writer_reward = SummaryWriter()
+#writer_abs = SummaryWriter()
+#writer_penalty = SummaryWriter()
 
 def train_agent(agent, env, noise):
     rewards = []
@@ -87,9 +87,9 @@ def train_agent(agent, env, noise):
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
-        writer_reward.add_scalar("Reward", episode_reward, episode)
-        writer_abs.add_scalar("Absolute reward", abs_reward, episode)
-        writer_penalty.add_scalar("Penalty", episode_penalty, episode)
+        #writer_reward.add_scalar("Reward", episode_reward, episode)
+        #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
+        #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
     return rewards, avg_rewards, penalties, abs_rewards
 
 

@@ -6,7 +6,7 @@ import math
 from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
-from progress.bar import Bar
+#from progress.bar import Bar
 from solver_climate import Climate_model
 from solver_prod import GreenHouse
 from sympy import symbols, lambdify
@@ -16,7 +16,7 @@ from sympy.parsing.sympy_parser import parse_expr
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
 R = 'min(0.01 * h, 10)'  # función de recompensa
-P = '- 0.5 * (u3 + u4 + u7 + u9 + u10)' #función de penalización
+P = '- ((0.5)/10)* (u3 + u4 + u7 + u9 + u10)' #función de penalización
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
@@ -124,13 +124,13 @@ class GreenhouseEnv(gym.Env):
         t1 = time()
         actions = np.random.uniform(0, 1,(n,10))
         h_vector = []
-        bar = Bar('Processing', max=n)
+        #bar = Bar('Processing', max=n)
         for action in actions:
             self.step(action)
             aux = np.array(list(self.state.values()))
             h_vector.append(aux[4])
-            bar.next()
-        bar.finish()
+            #bar.next()
+        #bar.finish()
         t2 = time()
         plt.plot(range(n), h_vector)
         plt.suptitle('Incrementos de masa seca')
