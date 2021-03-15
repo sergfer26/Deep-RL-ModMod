@@ -39,5 +39,5 @@ def tournament(agent, env, noise):
         i+=1
     data.to_csv('A_tournament.csv',index=0)
     
-
-tournament(agent, env, noise)
+if __name__ == '__main__':
+    tournament(agent, env, noise)
