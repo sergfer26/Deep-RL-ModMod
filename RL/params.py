@@ -9,4 +9,4 @@ PARAMS_TRAIN = {'EPISODES': 500, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
                 'BATCH_SIZE': 128, \
                 'SHOW': False, \
-                'INDICE': 0}
+                'INDICE': 0} # Cuando es distinto de 0, fija un indice para simular
