@@ -24,13 +24,13 @@ def get_score(agent, env, noise, month,path):
         aux = len(df_prod) - 1
         number_of_fruit =  df_prod['$N$'][aux]
         production.append(number_of_fruit)
-    return np.mean(production)
+    return [np.mean(production),np.var(production)]
 
 def get_score(agent, env, noise, month,path):
     production = []
     for s in range(number_of_simulations):
         production.append(np.random.uniform())
-    return np.mean(production)
+    return [np.mean(production),np.var(production)]
 
 def tournament(agent, env, noise):
     COLUMNS = ['Agent']
