@@ -15,8 +15,8 @@ from sympy.parsing.sympy_parser import parse_expr
 
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
-R = 'min(0.01 * h, 10)'  # función de recompensa
-P = '- (0.5/5) * (u3 + u4 + u7 + u9 + u10)' #función de penalización
+R = '0.01 * h'  # función de recompensa
+P = '- 0.2 * (u3 + u4 + u7 + u9 + u10)' #función de penalización
 symR = parse_expr(R)
 symP = parse_expr(P)
 reward_function = lambdify(OUTPUTS, symR)
