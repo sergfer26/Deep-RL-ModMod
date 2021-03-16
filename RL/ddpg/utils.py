@@ -2,11 +2,14 @@ import numpy as np
 import gym
 from collections import deque
 import random
+from .params import PARAMS_UTILS
 
 # Ornstein-Ulhenbeck Process
 # Taken from #https://github.com/vitchyr/rlkit/blob/master/rlkit/exploration_strategies/ou_strategy.py
 class OUNoise(object):
-    def __init__(self, action_space, mu=0.0, theta=0.15, max_sigma=0.05, min_sigma=0.025, decay_period=100000):
+    def __init__(self, action_space, mu=PARAMS_UTILS['mu'], \
+        theta=PARAMS_UTILS['theta'], max_sigma=PARAMS_UTILS['max_sigma'], \
+        min_sigma=PARAMS_UTILS['min_sigma'], decay_period=PARAMS_UTILS['decay_period']):
         self.mu           = mu
         self.theta        = theta
         self.sigma        = max_sigma
