@@ -22,7 +22,7 @@ path_agent3 = '3_12_1518' #Agente que se entreno en diciembre
 AGENTS = [path_agent0,path_agent1,path_agent2,path_agent3]
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
-number_of_simulations = 1
+number_of_simulations = 60
 UMBRAL = 0.01
 
 tz = pytz.timezone('America/Mexico_City')
@@ -66,10 +66,10 @@ def get_score(agent, env, noise, month,path):
     varianzas /= number_of_simulations
     dic = {'mean_production':np.mean(production), 'var_production':np.var(production), 'mean_actions': list(promedios),\
         'var_actions': list(varianzas),'actions_above_umbral': list(acciones)}
-    
+    name = PATH + '/'+month+'_'+path+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
-
+'''
 def get_score(agent, env, noise, month,path):
     X = np.random.uniform(0,1,2)
     dic = {'mean_production':X[0], 'var_production':X[1], 'mean_actions': list(np.random.uniform(0,1,10)),\
@@ -77,7 +77,7 @@ def get_score(agent, env, noise, month,path):
     name = PATH + '/'+month+'_'+path+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
-
+'''
 def fig_production():
     PROMEDIOS = list()
     VARIANZAS = list()
