@@ -3,7 +3,7 @@ PARAMS_ENV = {'R': 'min(0.01 * h, 10)' , \
               'STEP': 1/8, \
               'TIME_MAX': 90, \
               'FRECUENCY': 60, 
-              'MONTH': '03'}
+              'MONTH': '12'}
 
 PARAMS_TRAIN = {'EPISODES': 500, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
