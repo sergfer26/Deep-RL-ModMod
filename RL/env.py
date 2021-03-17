@@ -116,9 +116,9 @@ class GreenhouseEnv(gym.Env):
     
     def set_index(self):
         if MONTH == 'RANDOM':
-            return np.random.randint(0,self.limit)
+            return np.random.RandomState().randint(0,self.limit)
         else:
-            return np.random.choice(self.indexes)
+            return np.random.RandomState().choice(self.indexes)
 
     def reset(self):
         self._reset()
