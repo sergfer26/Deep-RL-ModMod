@@ -29,19 +29,9 @@ day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
 
-PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
-pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
-mpl.style.use('seaborn')
 
 env = GreenhouseEnv()
 agent = DDPGagent(env)
-
-if len(sys.argv) == 1:
-    pass
-else:
-    # Load trained model 
-    old_path = sys.argv[1:].pop()
-    agent.load(old_path)
 
 noise = OUNoise(env.action_space)
 action_dim =  env.action_space.shape[0]
@@ -98,6 +88,7 @@ def train_agent(agent, env, noise):
 def sim(agent, env, noise,indice = 0):
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
+    env.i = start 
     print('Voy a simular con indice = ', start)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
@@ -121,80 +112,94 @@ def sim(agent, env, noise,indice = 0):
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs
 
+def main():
+    PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+    pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+    mpl.style.use('seaborn')
 
-rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
-agent.save(PATH)
+    if len(sys.argv) == 1:
+        pass
+    else:
+    # Load trained model 
+        old_path = sys.argv[1:].pop()
+        agent.load(old_path)
 
-fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
-fig.suptitle(r'$r_t =$ '+ R + r' $\cdot \mathbb{1}_{t = k days}$' + P + ', {} Days'.format(TIME_MAX), fontsize=14)
+    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
+    agent.save(PATH)
 
-ax1.plot(rewards, "-b", label='reward (DDPG)')
-ax1.plot(avg_rewards, "--b", label='avg reward (DDPG)', alpha=0.2)
-ax1.set_xlabel('episode')
-ax1.legend(loc='best')
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
+    fig.suptitle(r'$r_t =$ '+ R + r' $\cdot \mathbb{1}_{t = k days}$' + P + ', {} Days'.format(TIME_MAX), fontsize=14)
 
-ax2.plot(abs_rewards, label='absolute reward', alpha=0.5)
-ax2.plot(penalties, label='penalty', alpha=0.5)
-ax2.set_xlabel('episode')
-ax2.legend(loc='best')
+    ax1.plot(rewards, "-b", label='reward (DDPG)')
+    ax1.plot(avg_rewards, "--b", label='avg reward (DDPG)', alpha=0.2)
+    ax1.set_xlabel('episode')
+    ax1.legend(loc='best')
 
-if SHOW:
-    plt.show()
-else:
-    fig.savefig(PATH + '/reward.png')
-    plt.close()
+    ax2.plot(abs_rewards, label='absolute reward', alpha=0.5)
+    ax2.plot(penalties, label='penalty', alpha=0.5)
+    ax2.set_xlabel('episode')
+    ax2.legend(loc='best')
 
-noise.max_sigma = 0.0
-noise.min_sigma = 0.0
-S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
+    if SHOW:
+        plt.show()
+    else:
+        fig.savefig(PATH + '/reward.png')
+        plt.close()
 
-df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-#df_climate['Date'] = dates
-#df_climate.set_index(['Date'], inplace=True)
-df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
-#plt.tight_layout()
-if SHOW:
-    plt.show()
-else:
-    plt.savefig(PATH + '/sim_climate.png')
-    plt.close()
+    noise.max_sigma = 0.0
+    noise.min_sigma = 0.0
+    S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
 
-
-df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
-df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7)) 
-if SHOW:
-    plt.show()
-else:
-    plt.savefig(PATH + '/sim_rh_par.png')
-    plt.close()
-
-df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-title='$H =$ {}, $NF=$ {}'.format(df_prod['$H$'].iloc[-1], df_prod['$N$'].iloc[-1])
-df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
-if SHOW:
-    plt.show()
-else:
-    plt.savefig(PATH + '/sim_prod.png')
-    plt.close()
-
-dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
-title= '$U$' # $U$
-dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
-if SHOW:
-    plt.show()
-else:
-    plt.savefig(PATH + '/sim_actions.png')
-    plt.close()
+    df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
+    #df_climate['Date'] = dates
+    #df_climate.set_index(['Date'], inplace=True)
+    df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
+    #plt.tight_layout()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/sim_climate.png')
+        plt.close()
 
 
-data_inputs.set_index(['Date'], inplace=True)
-data_inputs.plot(subplots=True, figsize=(10, 7))
-plt.tight_layout()
-if SHOW:
-    plt.show()
-else:
-    plt.savefig(PATH + '/sim_climate_inputs.png')
-    plt.close()
-if not(SHOW):
-    PATH += '/'
-    create_report(PATH)
+    df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
+    df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7)) 
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/sim_rh_par.png')
+        plt.close()
+
+    df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
+    title='$H =$ {}, $NF=$ {}'.format(df_prod['$H$'].iloc[-1], df_prod['$N$'].iloc[-1])
+    df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/sim_prod.png')
+        plt.close()
+
+    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
+    title= '$U$' # $U$
+    dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/sim_actions.png')
+        plt.close()
+
+
+    data_inputs.set_index(['Date'], inplace=True)
+    data_inputs.plot(subplots=True, figsize=(10, 7))
+    plt.tight_layout()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/sim_climate_inputs.png')
+        plt.close()
+    if not(SHOW):
+        PATH += '/'
+        create_report(PATH)
+
+if __name__=='__main__':
+    main()

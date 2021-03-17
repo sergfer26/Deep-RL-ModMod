@@ -13,6 +13,7 @@ from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
 from get_indexes import Indexes
 from params import PARAMS_ENV
+
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
 R = PARAMS_ENV['R']   # función de recompensa
