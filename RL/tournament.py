@@ -9,6 +9,7 @@ import json
 import pathlib
 from datetime import datetime, timezone
 from get_indexes import Indexes
+from get_report_agents import create_report
 
 MONTHS = ['03','06','09','12']
 
@@ -17,12 +18,7 @@ path_agent0 = '3_10_1425' #Agente que se entreno en marzo
 path_agent1 = '3_10_1429' #Agente que se entreno en junio 
 path_agent2 = '3_12_1515' #Agente que se entreno en septiembre 
 path_agent3 = '3_12_1518' #Agente que se entreno en diciembre 
-'''
-path_agent0 = '2_22_1449' #Agente que se entreno en marzo 
-path_agent1 = '2_22_1449' #Agente que se entreno en junio 
-path_agent2 = '2_22_1449' #Agente que se entreno en septiembre 
-path_agent3 = '2_22_1449' #Agente que se entreno en diciembre 
-'''
+
 AGENTS = [path_agent0,path_agent1,path_agent2,path_agent3]
 noise.max_sigma = 0.0
 noise.min_sigma = 0.0
@@ -36,9 +32,9 @@ day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
 PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
-#pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+SHOW = False
 
-PATH = 'results_ddpg/tournament/3_16_1827'
 def get_score(agent, env, noise, month,path):
     agent.load('results_ddpg/'+ path) # Carga la red neuronal
     env.indexes = Indexes(data_inputs[0:env.limit],month)
@@ -68,9 +64,11 @@ def get_score(agent, env, noise, month,path):
     acciones /= number_of_simulations
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_production':np.mean(production), 'var_production':np.var(production), 'mean_actions': promedios,\
-        'var_actions': varianzas,'actions_above_umbral': acciones} 
-    return dic
+    dic = {'mean_production':np.mean(production), 'var_production':np.var(production), 'mean_actions': list(promedios),\
+        'var_actions': list(varianzas),'actions_above_umbral': list(acciones)}
+    
+    with open(name, 'w') as fp:
+        json.dump(dic, fp,  indent=4)
 
 def get_score(agent, env, noise, month,path):
     X = np.random.uniform(0,1,2)
@@ -95,6 +93,8 @@ def fig_production():
         VARIANZAS.append(varianzas)
     fig, axes = plt.subplots(nrows=2)
     X = np.arange(len(MONTHS))
+    axes[0].set_ylabel('mean')
+    axes[1].set_ylabel('var')
     axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = 'agent0')
     axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label = 'agent0')
     axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label = 'agent1')
@@ -111,72 +111,57 @@ def fig_production():
     axes[0].set_xticklabels(MONTHS)
     axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
         ncol=4, fancybox=True, shadow=True)
-    plt.show()
+    fig.set_size_inches(18.5, 10.5, forward=True)
+    fig.suptitle('Number of fruits (mean/var)', fontsize=15)
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/scores_productions.png')
+        plt.close()
+
 
 def fig_actions(key):
-    dic = dict.fromkeys(MONTHS, list())
-    LISTA = []
-    month = '03'
-    for path in AGENTS:
-        with open(PATH + '/'+month+'_'+path+'.json') as f:
-            data = json.load(f)
-            #dic[month].append(data[key])
-            LISTA.append(data[key])
-    fig, axes = plt.subplots(nrows=1)
+    fig, axes = plt.subplots(nrows=len(MONTHS))
     names = ['$u_' + str(x + 1) + '$' for x in range(9)]
     names.append('$u_{10}$')
     X = np.arange(len(names))
-    axes.bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label = 'agent0')
-    axes.bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label = 'agent1')
-    axes.bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label = 'agent2')
-    axes.bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label = 'agent3')
-    '''
-    axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label = 'agent0')
-    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label = 'agent1')
-    axes[1].bar(X + 0.15, VARIANZAS[1],  color = 'g', width = 0.15, label = 'agent1')
-    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label = 'agent2')
-    axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label = 'agent2')
-    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label = 'agent3')
-    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label = 'agent3')
-    '''
-    axes.set_xticks(X)
-    axes.set_xticklabels(names)
-    axes.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-        ncol=4, fancybox=True, shadow=True)
-    axes.set_xticks(X)
-    axes.set_xticklabels(names)
-    axes.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-        ncol=4, fancybox=True, shadow=True)
-    plt.show()
-
-
-
-
-def tournament(agent, env, noise):
-    aux = {'mean_production':list(), 'var_production':list(), 'mean_actions': list(),\
-        'var_actions': list(),'actions_above_umbral': list() }
-    dictionaries = [{'03':aux},{'06':aux}]
-    for llave,indice in zip(MONTHS,range(len(dictionaries))):
-        print(llave,indice)
-        for path_agent in AGENTS:
-            dic = get_score(agent, env, noise, llave ,path_agent)
-            for k, v in dic.items():
-                dictionaries[indice][llave][k].append(v)
-    print(len(dictionaries[0]['03']['mean_actions']))
-    breakpoint()
-    fig, axes = plt.subplots(nrows=range(MONTHS))
-    X = np.arange(10) #
-    for ax, month in zip(axes, MONTHS):
-        for x in X:
-            ax.bar(X + 0.00, dictionary[month]['mean_actions'][:][0], color = 'b', width = 0.25)
+    for i,month in enumerate(MONTHS):
+        LISTA = list()
+        for path in AGENTS:
+            with open(PATH + '/'+month+'_'+path+'.json') as f:
+                data = json.load(f)
+                #dic[month].append(data[key])
+                LISTA.append(data[key])
     
+        axes[i].set_ylabel(datetime(2018, int(month), 1).strftime("%b"))
+        axes[i].bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label = 'agent0')
+        axes[i].bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label = 'agent1')
+        axes[i].bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label = 'agent2')
+        axes[i].bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label = 'agent3')
+
+        axes[i].set_xticks(X)
+        axes[i].set_xticklabels(names)
+    axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+            ncol=4, fancybox=True, shadow=True)
+    fig.suptitle(key, fontsize=15)
+    fig.set_size_inches(18.5, 10.5, forward=True)
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/'+key+'.png')
+        plt.close()
+
+
 def create_json():
     for month in MONTHS:
         for path in AGENTS:
             get_score(agent, env, noise, month,path)
         
-fig_actions('mean_actions')
-#if __name__ == '__main__':
-#    tournament(agent, env, noise)
 
-
+if __name__ == '__main__':
+    create_json()
+    fig_production()
+    fig_actions('mean_actions')
+    fig_actions('var_actions')
+    fig_actions('actions_above_umbral')
+    create_report(PATH)
