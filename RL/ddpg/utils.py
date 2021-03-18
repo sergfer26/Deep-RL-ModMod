@@ -20,19 +20,22 @@ class OUNoise(object):
         self.low          = action_space.low
         self.high         = action_space.high
         self.reset()
+        self.on = True
         
     def reset(self):
+        self.t = 0
         self.state = np.ones(self.action_dim) * self.mu
         
     def evolve_state(self):
         x  = self.state
         dx = self.theta * (self.mu - x) + self.sigma * np.random.randn(self.action_dim)
-        self.state = x + dx
+        self.state = np.clip(x + dx,self.low, self.high) if self.on else np.ones(self.action_dim) * self.mu 
         return self.state
     
-    def get_action(self, action, t=0):
+    def get_action(self, action):
         ou_state = self.evolve_state()
-        self.sigma = self.max_sigma - (self.max_sigma - self.min_sigma) * min(1.0, t / self.decay_period)
+        self.sigma = self.max_sigma - (self.max_sigma - self.min_sigma) * min(1.0, self.t / self.decay_period)
+        self.t += 1
         return np.clip(action + ou_state, self.low, self.high)
 
 
