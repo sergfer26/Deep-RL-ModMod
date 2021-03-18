@@ -55,7 +55,7 @@ def train_agent(agent, env, noise):
         episode_penalty = 0
         for step in range(STEPS):
             action = agent.get_action(state)
-            action = noise.get_action(action, step)
+            action = noise.get_action(action)
             new_state, reward, done = env.step(action) # modify
             agent.memory.push(state, action, reward, new_state, done)
             if len(agent.memory) > BATCH_SIZE:
@@ -98,7 +98,7 @@ def sim(agent, env, noise,indice = 0):
     for step in range(STEPS):
         #print(step)
         action = agent.get_action(state)
-        action = noise.get_action(action, step)
+        action = noise.get_action(action)
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -146,8 +146,7 @@ def main():
         fig.savefig(PATH + '/reward.png')
         plt.close()
 
-    noise.max_sigma = 0.0
-    noise.min_sigma = 0.0
+    noise.on = False
     S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
@@ -198,7 +197,6 @@ def main():
         plt.savefig(PATH + '/sim_climate_inputs.png')
         plt.close()
     if not(SHOW):
-        PATH += '/'
         create_report(PATH)
 
 if __name__=='__main__':
