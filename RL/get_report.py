@@ -83,7 +83,7 @@ def add_image(PATH,pdf,name,x,y,width = 500,height=500):
     pdf.drawInlineImage(PATH + name , x,y, width = width, height=height,preserveAspectRatio=True)
 
 def create_report(PATH):
-    fileName = 'Reporte.pdf'
+    fileName = '/Reporte.pdf'
     fileName = PATH + fileName
     documentTitle = 'Document title!'
     title = 'Reporte de Entrenamiento'
@@ -113,15 +113,15 @@ def create_report(PATH):
     add_table(pdf,PARAMS_UTILS,100,30)
 
     pdf.showPage()
-    add_image(PATH,pdf,'reward.png',10, 350,600,600)
-    add_image(PATH,pdf,'sim_climate_inputs.png',30,10)
+    add_image(PATH,pdf,'/reward.png',10, 350,600,600)
+    add_image(PATH,pdf,'/sim_climate_inputs.png',30,10)
     pdf.showPage()
     #Siguiente pagina
-    add_image(PATH,pdf,'sim_rh_par.png',30, 350,550,550)
-    add_image(PATH,pdf,'sim_climate.png',30,0,550,550)
+    add_image(PATH,pdf,'/sim_rh_par.png',30, 350,550,550)
+    add_image(PATH,pdf,'/sim_climate.png',30,0,550,550)
 
     pdf.showPage()
-    add_image(PATH,pdf,'sim_prod.png',30, 350,550,550)
-    add_image(PATH,pdf,'sim_actions.png',30,0,550,550)
+    add_image(PATH,pdf,'/sim_prod.png',30, 350,550,550)
+    add_image(PATH,pdf,'/sim_actions.png',30,0,550,550)
     pdf.save()  
     
