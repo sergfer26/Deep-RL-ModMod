@@ -89,7 +89,7 @@ def sim(agent, env, noise,indice = 0):
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
-    print('Voy a simular con indice = ', start)
+    #print('Voy a simular con indice = ', start)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
@@ -99,6 +99,8 @@ def sim(agent, env, noise,indice = 0):
         #print(step)
         action = agent.get_action(state)
         action = noise.get_action(action)
+        #action = np.zeros(10)
+        #action[3] = 1.0 #Control del calentador de aire
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -188,7 +190,7 @@ def main():
         plt.close()
 
 
-    data_inputs.set_index(['Date'], inplace=True)
+    data_inputs.set_index(['Date'], inplace=True) #Hace que el eje x sea la fecha
     data_inputs.plot(subplots=True, figsize=(10, 7))
     plt.tight_layout()
     if SHOW:
