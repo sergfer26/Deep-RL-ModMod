@@ -75,14 +75,8 @@ def get_score(month_path,noise):
     name = PATH + '/'+month+'_'+path+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
-<<<<<<< HEAD
-'''
-def get_score(agent, env, noise, month,path):
-    X = np.random.uniform(0,1,2)
-    dic = {'mean_production':X[0], 'var_production':X[1], 'mean_actions': list(np.random.uniform(0,1,10)),\
-        'var_actions': list(np.random.uniform(0,1,10)),'actions_above_umbral': list(np.random.uniform(0,1,10)) }
-=======
 
+'''
 def get_score(month_path,noise):
     month,path = month_path
     env = GreenhouseEnv()                                 #Se crea el ambiente 
@@ -98,6 +92,7 @@ def get_score(month_path,noise):
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
 '''
+
 def fig_production():
     PROMEDIOS = list()
     VARIANZAS = list()
