@@ -61,8 +61,8 @@ class DDPGagent:
     def get_action(self, state):
         state = Variable(torch.from_numpy(state).float().unsqueeze(0))
         action = self.actor.forward(state.to(device))
-        # action = action.detach().cpu().numpy()[0,:]
-        action = action.detach().numpy()[0,:]
+        action = action.detach().cpu().numpy()[0,:]
+        #action = action.detach().numpy()[0,:]
         return action
 
     def update(self, batch_size):
