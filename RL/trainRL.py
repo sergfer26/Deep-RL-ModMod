@@ -55,7 +55,7 @@ def train_agent(agent, env, noise):
         episode_penalty = 0
         for step in range(STEPS):
             action = agent.get_action(state)
-            action = noise.get_action(action, step)
+            action = noise.get_action(action)
             new_state, reward, done = env.step(action) # modify
             agent.memory.push(state, action, reward, new_state, done)
             if len(agent.memory) > BATCH_SIZE:
@@ -89,16 +89,16 @@ def sim(agent, env, noise,indice = 0):
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
-    print('Voy a simular con indice = ', start)
+    #print('Voy a simular con indice = ', start)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #print(step)
+        print(step)
         action = agent.get_action(state)
-        action = noise.get_action(action, step)
+        action = noise.get_action(action)
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -123,7 +123,7 @@ def main():
     # Load trained model 
         old_path = sys.argv[1:].pop()
         agent.load(old_path)
-
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -146,8 +146,8 @@ def main():
         fig.savefig(PATH + '/reward.png')
         plt.close()
 
-    noise.max_sigma = 0.0
-    noise.min_sigma = 0.0
+
+    noise.on = False
     S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
@@ -189,7 +189,7 @@ def main():
         plt.close()
 
 
-    data_inputs.set_index(['Date'], inplace=True)
+    data_inputs.set_index(['Date'], inplace=True) #Hace que el eje x sea la fecha
     data_inputs.plot(subplots=True, figsize=(10, 7))
     plt.tight_layout()
     if SHOW:
@@ -198,7 +198,6 @@ def main():
         plt.savefig(PATH + '/sim_climate_inputs.png')
         plt.close()
     if not(SHOW):
-        PATH += '/'
         create_report(PATH)
 
 if __name__=='__main__':

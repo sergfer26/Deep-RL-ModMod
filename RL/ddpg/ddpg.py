@@ -38,8 +38,8 @@ class DDPGagent:
         # Networks
         self.actor = Actor(sizes_actor, self.num_actions)
         self.actor_target = Actor(sizes_actor, self.num_actions)
-        self.critic = Critic(sizes_critic, self.num_actions)
-        self.critic_target = Critic(sizes_critic, self.num_actions)
+        self.critic = Critic(sizes_critic)
+        self.critic_target = Critic(sizes_critic)
         if torch.cuda.is_available():
             self.actor.cuda()
             self.actor_target.cuda()
