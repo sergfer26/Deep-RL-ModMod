@@ -5,7 +5,7 @@ PARAMS_ENV = {'R': 'min(0.01 * h, 10)' , \
               'FRECUENCY': 60, 
               'MONTH': '12'}
 
-PARAMS_TRAIN = {'EPISODES': 500, \
+PARAMS_TRAIN = {'EPISODES': 1, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
                 'BATCH_SIZE': 128, \
                 'SHOW': False, \
