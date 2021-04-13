@@ -96,11 +96,9 @@ def sim(agent, env, noise,indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #print(step)
+        print(step)
         action = agent.get_action(state)
         action = noise.get_action(action)
-        #action = np.zeros(10)
-        #action[3] = 1.0 #Control del calentador de aire
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -125,7 +123,7 @@ def main():
     # Load trained model 
         old_path = sys.argv[1:].pop()
         agent.load(old_path)
-
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -147,6 +145,7 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
+
 
     noise.on = False
     S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
