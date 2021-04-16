@@ -13,19 +13,7 @@ from get_indexes import Indexes
 from get_report_agents import create_report
 import multiprocessing
 from functools import partial
-MONTHS = ['03','06','09','12']
-
-
-path_agent0 = '3_10_1425' #Agente que se entreno en marzo 
-path_agent1 = '3_10_1429' #Agente que se entreno en junio 
-path_agent2 = '3_12_1515' #Agente que se entreno en septiembre 
-path_agent3 = '3_12_1518' #Agente que se entreno en diciembre 
-
-AGENTS = [path_agent0,path_agent1,path_agent2,path_agent3]
-noise.max_sigma = 0.0
-noise.min_sigma = 0.0
-number_of_simulations = 50
-UMBRAL = 0.01
+import sys
 
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -37,61 +25,71 @@ PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + 
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
-def get_score(month_path,noise):
-    month,path = month_path
+MONTHS = ['03','06','09','12']
+number_of_simulations = 50 
+path = sys.argv[1]
+
+def sim_(v):
+    agent,env = v
+    return sim(agent,env)
+
+class OtherAgent(object):
+
+    def __init__(self, env, type_):
+        self.num_actions = env.action_space.shape[0]
+        self.type = type_ # random, on, off
+
+    def get_action(self):
+
+        if self.type == 'random':
+            return np.random.RandomState().uniform(0, 1, self.num_actions)
+        elif self.type == 'on':
+            return np.ones(self.num_actions)
+        elif self.type == 'off':
+            return np.zeros(self.num_actions)
+
+
+env = GreenhouseEnv()
+agent = DDPGagent(env)
+agent.load('results_ddpg/'+ path)
+agent_random = OtherAgent(env, 'random')
+agent_on = OtherAgent(env, 'on')
+agent_off = OtherAgent(env, 'off')
+AGENTS = [agent, agent_random, agent_on, agent_off]
+
+def get_score(month,agent):
     env = GreenhouseEnv()                                 #Se crea el ambiente 
     env.indexes = Indexes(data_inputs[0:env.limit],month) #Se crean nuevos indices
-    agent = DDPGagent(env)                                #Se crea el agente 
-    agent.load('results_ddpg/'+ path)                     # Carga la red neuronal
-
     production = []
-    acciones = np.zeros(10)
+    mass = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
-    for s in range(number_of_simulations):
-        _, _, S_prod, A, _ = sim(agent, env, noise) 
+    p = Pool(number_of_simulations)
+    V = [[agent,env] for _ in range(number_of_simulations)]
+    BIG_DATA = list(p.map(sim_, V))
+    for s in BIG_DATA:
+        _, _, S_prod, A, _ = s
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
         aux = len(df_prod) - 1
         number_of_fruit =  df_prod['$N$'][aux]
+        dry_mass =  df_prod['$H$'][aux]
         production.append(number_of_fruit)
-
+        mass.append(dry_mass)
         dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
-        vector_aux1 = [] # para acciones arriba del umbral
         vector_aux2 = [] # para promedio de acciones
         vector_aux3 = [] # para varianza de acciones
         for c in dfa.columns:
-            vector_aux1.append(sum(dfa[c] > UMBRAL))
             vector_aux2.append(np.mean(dfa[c]))
             vector_aux3.append(np.var(dfa[c]))
-
-        acciones += vector_aux1
         promedios += vector_aux2
         varianzas += vector_aux3
-    acciones /= number_of_simulations
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
     dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),\
-        'var_actions': list(varianzas),'actions_above_umbral': list(acciones)}
-    name = PATH + '/'+month+'_'+path+'.json'
-    with open(name, 'w') as fp:
-        json.dump(dic, fp,  indent=4)
-
-'''
-def get_score(month_path,noise):
-    month,path = month_path
-    env = GreenhouseEnv()                                 #Se crea el ambiente 
-    env.indexes = Indexes(data_inputs[0:env.limit],month) #Se crean nuevos indices
-    agent = DDPGagent(env)                                #Se crea el agente 
-    agent.load('results_ddpg/'+ path)                     # Carga la red neuronal
+        'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass)}
     
-    X = np.random.RandomState().uniform(0,1,2)
-    dic = {'mean_production':X[0], 'var_production':X[1], 'mean_actions': list(np.random.RandomState().uniform(0,1,10)),\
-        'var_actions': list(np.random.RandomState().uniform(0,1,10)),'actions_above_umbral': list(np.random.RandomState().uniform(0,1,10)) }
->>>>>>> 3b1bc0126f5abf0a1602780a919cb2c3a57369f0
-    name = PATH + '/'+month+'_'+path+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
-'''
 
 def fig_production(string)
     PROMEDIOS = list()
@@ -131,7 +129,7 @@ def fig_production(string)
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/scores_productions.png')
+        plt.savefig(PATH + '/scores_'+ string +''.png')
         plt.close()
 
 
@@ -166,16 +164,11 @@ def fig_actions(key):
         plt.savefig(PATH + '/'+key+'.png')
         plt.close()
 
-
 def create_json():
-    data_pairs = []
-    pool = multiprocessing.Pool(processes=16)
     for month in MONTHS:
-        for path in AGENTS:
-            data_pairs.append([month,path])
-    get_score_ = partial(get_score,noise = noise)
-    pool.map(get_score_, data_pairs)
-        
+        for agent in AGENTS:
+            get_score(month,agent)
+
 
 if __name__ == '__main__':
     create_json()
@@ -183,4 +176,9 @@ if __name__ == '__main__':
     fig_actions('mean_actions')
     fig_actions('var_actions')
     fig_actions('actions_above_umbral')
-    create_report(PATH)
+
+
+
+
+
+
