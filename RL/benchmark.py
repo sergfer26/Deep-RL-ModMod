@@ -14,7 +14,9 @@ from get_report_agents import create_report
 from multiprocessing import Pool
 from functools import partial
 import sys
+import torch
 
+torch.multiprocessing.set_start_method('spawn')
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -49,14 +51,13 @@ class OtherAgent(object):
 
 env = GreenhouseEnv()
 agent = DDPGagent(env)
-agent.load('results_ddpg/2_27_1057')
+agent.load('results_ddpg/4_13_1412')
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
 AGENTS = [agent, agent_random, agent_on, agent_off]
 
-def get_score(month,agent,name):                                
-    
+def get_score(month,agent,name):                                    
     production = []
     mass = []
     promedios = np.zeros(10)
@@ -67,6 +68,7 @@ def get_score(month,agent,name):
         env = GreenhouseEnv() #Se crea el ambiente 
         env.indexes = Indexes(data_inputs[0:env.limit],month) #Se crean nuevos indices
         V.append([agent,env])
+    print('Aqui empieza el multiprossessing')
     BIG_DATA = list(p.map(sim_, V))
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
@@ -86,12 +88,12 @@ def get_score(month,agent,name):
         varianzas += vector_aux3
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass)}
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass)}
     name = PATH + '/'+month+'_'+name+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
 
-def fig_production(string)
+def fig_production(string):
     PROMEDIOS = list()
     VARIANZAS = list()
     for name in NAMES:
@@ -129,7 +131,7 @@ def fig_production(string)
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/scores_'+ string +''.png')
+        plt.savefig(PATH + '/scores_'+ string +'.png')
         plt.close()
 
 
@@ -141,7 +143,7 @@ def fig_actions(key):
     for i,month in enumerate(MONTHS):
         LISTA = list()
         for name in NAMES:
-            with open(PATH + '/'+month+'_'+name'.json') as f:
+            with open(PATH + '/'+month+'_' + name + '.json') as f:
                 data = json.load(f)
                 #dic[month].append(data[key])
                 LISTA.append(data[key])
@@ -170,12 +172,13 @@ def fig_actions(key):
 
 if __name__ == '__main__':
     for month in MONTHS:
-        for agent in AGENTS:
-            get_score(month,agent)
-    fig_production('number_of_fruit')
-    fig_production('mass')
-    fig_actions('mean_actions')
-    fig_actions('var_actions')
+        for agent,name in zip(AGENTS,NAMES):
+            print(month,name)
+            get_score(month,agent,name)
+    #fig_production('number_of_fruit')
+    #fig_production('mass')
+    #fig_actions('mean_actions')
+    #fig_actions('var_actions')
 
 
 
