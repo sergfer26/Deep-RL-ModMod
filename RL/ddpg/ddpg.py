@@ -108,9 +108,9 @@ class DDPGagent:
             pickle.dump(self.memory, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
     def load(self, path):
-        self.critic.load_state_dict(torch.load(path + "/critic.pth", map_location=device))
-        self.critic_optimizer.load_state_dict(torch.load(path + "/critic_optimizer.pth",  map_location=device))
+        self.critic.load_state_dict(torch.load(path + "/critic", map_location=device))
+        self.critic_optimizer.load_state_dict(torch.load(path + "/critic_optimizer",  map_location=device))
         self.critic_target = copy.deepcopy(self.critic)
-        self.actor.load_state_dict(torch.load(path + "/actor.pth",  map_location=device))
-        self.actor_optimizer.load_state_dict(torch.load(path + "/actor_optimizer.pth",  map_location=device))
+        self.actor.load_state_dict(torch.load(path + "/actor",  map_location=device))
+        self.actor_optimizer.load_state_dict(torch.load(path + "/actor_optimizer",  map_location=device))
         self.actor_target = copy.deepcopy(self.actor)
