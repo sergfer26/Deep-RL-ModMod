@@ -27,7 +27,7 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 2
+number_of_simulations = 50
 path = sys.argv[1]
 
 def sim_(v):
