@@ -14,9 +14,7 @@ from get_report_agents import create_report
 from multiprocessing import Pool
 from functools import partial
 import sys
-import torch
 
-torch.multiprocessing.set_start_method('spawn')
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -30,11 +28,11 @@ SHOW = False
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
 number_of_simulations = 2
-#path = sys.argv[1]
+path = sys.argv[1]
 
 def sim_(v):
-    agent,env = v
-    return sim(agent,env)
+    agent, env = v
+    return sim(agent, env)
 
 class OtherAgent(object):
     def __init__(self, env, type_):
@@ -50,25 +48,30 @@ class OtherAgent(object):
 
 
 env = GreenhouseEnv()
+LIMIT = env.limit
 agent = DDPGagent(env)
-agent.load('results_ddpg/4_13_1412')
+agent.load('results_ddpg/' + path )
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
 AGENTS = [agent, agent_random, agent_on, agent_off]
 
+
+
 def get_score(month,agent,name):                                    
     production = []
     mass = []
+    reward = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
     p = Pool(number_of_simulations)
     V = list()
+    indexes = Indexes(data_inputs[0:LIMIT],month)
     for _ in range(number_of_simulations):
         env = GreenhouseEnv() #Se crea el ambiente 
-        env.indexes = Indexes(data_inputs[0:env.limit],month) #Se crean nuevos indices
+        env.indexes = indexes
         V.append([agent,env])
-    print('Aqui empieza el multiprossessing')
+    breakpoint()
     BIG_DATA = list(p.map(sim_, V))
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
@@ -76,8 +79,10 @@ def get_score(month,agent,name):
         aux = len(df_prod) - 1
         number_of_fruit =  df_prod['$N$'][aux]
         dry_mass =  df_prod['$H$'][aux]
+        accumulated_reward = df_prod['$Cr_t$'][aux]
         production.append(number_of_fruit)
         mass.append(dry_mass)
+        reward.append(accumulated_reward)
         dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
         vector_aux2 = [] # para promedio de acciones
         vector_aux3 = [] # para varianza de acciones
@@ -88,10 +93,11 @@ def get_score(month,agent,name):
         varianzas += vector_aux3
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass)}
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward)}
     name = PATH + '/'+month+'_'+name+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
+
 
 def fig_production(string):
     PROMEDIOS = list()
@@ -110,14 +116,14 @@ def fig_production(string):
     X = np.arange(len(MONTHS))
     axes[0].set_ylabel('mean')
     axes[1].set_ylabel('var')
-    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = 'agent0')
-    axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label = 'agent0')
-    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label = 'agent1')
-    axes[1].bar(X + 0.15, VARIANZAS[1],  color = 'g', width = 0.15, label = 'agent1')
-    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label = 'agent2')
-    axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label = 'agent2')
-    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label = 'agent3')
-    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label = 'agent3')
+    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0])
+    axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label =  NAMES[0])
+    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1])
+    axes[1].bar(X + 0.15, VARIANZAS[1],  color = 'g', width = 0.15, label =  NAMES[1])
+    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2])
+    axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label =  NAMES[2])
+    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3])
+    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[0])
     axes[1].set_xticks(X)
     axes[1].set_xticklabels(MONTHS)
     axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
@@ -127,7 +133,7 @@ def fig_production(string):
     axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
         ncol=4, fancybox=True, shadow=True)
     fig.set_size_inches(18.5, 10.5, forward=True)
-    fig.suptitle('Number of fruits (mean/var)', fontsize=15)
+    fig.suptitle( string + ' (mean/var)', fontsize=15)
     if SHOW:
         plt.show()
     else:
@@ -136,7 +142,7 @@ def fig_production(string):
 
 
 def fig_actions(key):
-    fig, axes = plt.subplots(nrows=len(MONTHS))
+    fig, axes = plt.subplots(nrows=len(MONTHS)+1)
     names = ['$u_' + str(x + 1) + '$' for x in range(9)]
     names.append('$u_{10}$')
     X = np.arange(len(names))
@@ -147,12 +153,11 @@ def fig_actions(key):
                 data = json.load(f)
                 #dic[month].append(data[key])
                 LISTA.append(data[key])
-    
         axes[i].set_ylabel(datetime(2018, int(month), 1).strftime("%b"))
-        axes[i].bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label = 'agent0')
-        axes[i].bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label = 'agent1')
-        axes[i].bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label = 'agent2')
-        axes[i].bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label = 'agent3')
+        axes[i].bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label =  NAMES[0])
+        axes[i].bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label =  NAMES[1])
+        axes[i].bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label =  NAMES[2])
+        axes[i].bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label =  NAMES[3])
 
         axes[i].set_xticks(X)
         axes[i].set_xticklabels(names)
@@ -167,18 +172,18 @@ def fig_actions(key):
         plt.close()
 
 
-
-
-
 if __name__ == '__main__':
     for month in MONTHS:
         for agent,name in zip(AGENTS,NAMES):
             print(month,name)
             get_score(month,agent,name)
-    #fig_production('number_of_fruit')
-    #fig_production('mass')
-    #fig_actions('mean_actions')
-    #fig_actions('var_actions')
+    fig_production('number_of_fruit')
+    fig_production('mass')
+    fig_production('reward')
+    fig_actions('mean_actions')
+    fig_actions('var_actions')
+    create_report
+
 
 
 
