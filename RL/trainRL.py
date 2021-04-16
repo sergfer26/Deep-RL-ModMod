@@ -85,7 +85,7 @@ def train_agent(agent, env, noise):
 
 
 ###### Simulation ######
-def sim(agent, env, noise,indice = 0):
+def sim(agent, env, indice = 0):
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -97,7 +97,6 @@ def sim(agent, env, noise,indice = 0):
     episode_reward = 0.0
     for step in range(STEPS):
         action = agent.get_action(state)
-        action = noise.get_action(action)
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -146,8 +145,8 @@ def main():
         plt.close()
 
 
-    noise.on = False
-    S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, noise,indice = INDICE)
+    
+    S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, indice = INDICE)
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
     #df_climate['Date'] = dates
