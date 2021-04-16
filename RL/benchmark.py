@@ -11,7 +11,7 @@ import pathlib
 from datetime import datetime, timezone
 from get_indexes import Indexes
 from get_report_agents import create_report
-import multiprocessing
+from multiprocessing import Pool
 from functools import partial
 import sys
 
@@ -25,22 +25,20 @@ PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + 
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
-MONTHS = ['03','06','09','12']
-number_of_simulations = 50 
-path = sys.argv[1]
+MONTHS = ['03']
+NAMES = ['nn','random','on','off']
+number_of_simulations = 2
+#path = sys.argv[1]
 
 def sim_(v):
     agent,env = v
     return sim(agent,env)
 
 class OtherAgent(object):
-
     def __init__(self, env, type_):
         self.num_actions = env.action_space.shape[0]
         self.type = type_ # random, on, off
-
-    def get_action(self):
-
+    def get_action(self,state):
         if self.type == 'random':
             return np.random.RandomState().uniform(0, 1, self.num_actions)
         elif self.type == 'on':
@@ -51,21 +49,24 @@ class OtherAgent(object):
 
 env = GreenhouseEnv()
 agent = DDPGagent(env)
-agent.load('results_ddpg/'+ path)
+agent.load('results_ddpg/2_27_1057')
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
 AGENTS = [agent, agent_random, agent_on, agent_off]
 
-def get_score(month,agent):
-    env = GreenhouseEnv()                                 #Se crea el ambiente 
-    env.indexes = Indexes(data_inputs[0:env.limit],month) #Se crean nuevos indices
+def get_score(month,agent,name):                                
+    
     production = []
     mass = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
     p = Pool(number_of_simulations)
-    V = [[agent,env] for _ in range(number_of_simulations)]
+    V = list()
+    for _ in range(number_of_simulations):
+        env = GreenhouseEnv() #Se crea el ambiente 
+        env.indexes = Indexes(data_inputs[0:env.limit],month) #Se crean nuevos indices
+        V.append([agent,env])
     BIG_DATA = list(p.map(sim_, V))
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
@@ -85,20 +86,19 @@ def get_score(month,agent):
         varianzas += vector_aux3
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),\
-        'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass)}
-    
+    dic {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass)}
+    name = PATH + '/'+month+'_'+name+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
 
 def fig_production(string)
     PROMEDIOS = list()
     VARIANZAS = list()
-    for path in AGENTS:
+    for name in NAMES:
         promedios = list()
         varianzas = list()
         for month in MONTHS:
-            with open(PATH + '/'+month+'_'+path+'.json') as f:
+            with open(PATH + '/'+month+'_'+name+'.json') as f:
                 data = json.load(f)
             promedios.append(data['mean_' + string ])
             varianzas.append(data['var_' + string ])
@@ -140,8 +140,8 @@ def fig_actions(key):
     X = np.arange(len(names))
     for i,month in enumerate(MONTHS):
         LISTA = list()
-        for path in AGENTS:
-            with open(PATH + '/'+month+'_'+path+'.json') as f:
+        for name in NAMES:
+            with open(PATH + '/'+month+'_'+name'.json') as f:
                 data = json.load(f)
                 #dic[month].append(data[key])
                 LISTA.append(data[key])
@@ -164,18 +164,18 @@ def fig_actions(key):
         plt.savefig(PATH + '/'+key+'.png')
         plt.close()
 
-def create_json():
-    for month in MONTHS:
-        for agent in AGENTS:
-            get_score(month,agent)
+
+
 
 
 if __name__ == '__main__':
-    create_json()
-    fig_production('number_of_fruits')
+    for month in MONTHS:
+        for agent in AGENTS:
+            get_score(month,agent)
+    fig_production('number_of_fruit')
+    fig_production('mass')
     fig_actions('mean_actions')
     fig_actions('var_actions')
-    fig_actions('actions_above_umbral')
 
 
 
