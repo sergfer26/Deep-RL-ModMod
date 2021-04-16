@@ -70,7 +70,7 @@ def get_score(month_path,noise):
     acciones /= number_of_simulations
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_production':np.mean(production), 'var_production':np.var(production), 'mean_actions': list(promedios),\
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),\
         'var_actions': list(varianzas),'actions_above_umbral': list(acciones)}
     
     with open(name, 'w') as fp:
@@ -90,7 +90,7 @@ def get_score(month_path,noise):
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
 
-def fig_production():
+def fig_production(string)
     PROMEDIOS = list()
     VARIANZAS = list()
     for path in AGENTS:
@@ -99,8 +99,8 @@ def fig_production():
         for month in MONTHS:
             with open(PATH + '/'+month+'_'+path+'.json') as f:
                 data = json.load(f)
-            promedios.append(data['mean_production'])
-            varianzas.append(data['var_production'])
+            promedios.append(data['mean_' + string ])
+            varianzas.append(data['var_' + string ])
         PROMEDIOS.append(promedios)
         VARIANZAS.append(varianzas)
     fig, axes = plt.subplots(nrows=2)
@@ -176,7 +176,7 @@ def create_json():
 
 if __name__ == '__main__':
     create_json()
-    fig_production()
+    fig_production('number_of_fruits')
     fig_actions('mean_actions')
     fig_actions('var_actions')
     fig_actions('actions_above_umbral')
