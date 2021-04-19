@@ -71,7 +71,6 @@ def get_score(month,agent,name):
         env = GreenhouseEnv() #Se crea el ambiente 
         env.indexes = indexes
         V.append([agent,env])
-    breakpoint()
     BIG_DATA = list(p.map(sim_, V))
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
