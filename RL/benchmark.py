@@ -27,7 +27,7 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 50
+number_of_simulations = 5'
 path = sys.argv[1]
 
 def sim_(v):
@@ -50,7 +50,7 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-agent.load('results_ddpg/' + path )
+agent.load('results_ddpg/' + path)
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
@@ -71,7 +71,6 @@ def get_score(month,agent,name):
         env = GreenhouseEnv() #Se crea el ambiente 
         env.indexes = indexes
         V.append([agent,env])
-    breakpoint()
     BIG_DATA = list(p.map(sim_, V))
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
@@ -182,7 +181,7 @@ if __name__ == '__main__':
     fig_production('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
-    create_report
+    create_report(PATH)
 
 
 
