@@ -14,6 +14,7 @@ from get_report_agents import create_report
 from multiprocessing import Pool
 from functools import partial
 import sys
+import os
 
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -64,7 +65,7 @@ def get_score(month,agent,name):
     reward = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
-    p = Pool(number_of_simulations)
+    p = Pool()
     V = list()
     indexes = Indexes(data_inputs[0:LIMIT],month)
     for _ in range(number_of_simulations):
