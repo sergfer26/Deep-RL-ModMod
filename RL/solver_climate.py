@@ -545,7 +545,7 @@ nmrec = 1
 
 I1 = 3.5 # Constant
 I2 = 0.0
-I3 = 20 # Constant
+I3 = 20 # Constant 40 para calentar el invernadero
 I4 = 1 # Constant
 I5 = 0.0
 I6 = 16 # Constant
