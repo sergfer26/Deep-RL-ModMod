@@ -38,8 +38,8 @@ class DDPGagent:
         # Networks
         self.actor = Actor(sizes_actor, self.num_actions)
         self.actor_target = Actor(sizes_actor, self.num_actions)
-        self.critic = Critic(sizes_critic, self.num_actions)
-        self.critic_target = Critic(sizes_critic, self.num_actions)
+        self.critic = Critic(sizes_critic)
+        self.critic_target = Critic(sizes_critic)
         if torch.cuda.is_available():
             self.actor.cuda()
             self.actor_target.cuda()
@@ -61,8 +61,8 @@ class DDPGagent:
     def get_action(self, state):
         state = Variable(torch.from_numpy(state).float().unsqueeze(0))
         action = self.actor.forward(state.to(device))
-        # action = action.detach().cpu().numpy()[0,:]
-        action = action.detach().numpy()[0,:]
+        action = action.detach().cpu().numpy()[0,:]
+        #action = action.detach().numpy()[0,:]
         return action
 
     def update(self, batch_size):
@@ -108,11 +108,9 @@ class DDPGagent:
             pickle.dump(self.memory, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
     def load(self, path):
-        self.critic.load_state_dict(torch.load(path + "/critic"))
-        self.critic_optimizer.load_state_dict(torch.load(path + "/critic_optimizer"))
+        self.critic.load_state_dict(torch.load(path + "/critic", map_location=device))
+        self.critic_optimizer.load_state_dict(torch.load(path + "/critic_optimizer",  map_location=device))
         self.critic_target = copy.deepcopy(self.critic)
-        self.actor.load_state_dict(torch.load(path + "/actor"))
-        self.actor_optimizer.load_state_dict(torch.load(path + "/actor_optimizer"))
+        self.actor.load_state_dict(torch.load(path + "/actor",  map_location=device))
+        self.actor_optimizer.load_state_dict(torch.load(path + "/actor_optimizer",  map_location=device))
         self.actor_target = copy.deepcopy(self.actor)
-        #with open(path +'/memory.pickle', 'rb') as handle:
-        #    self.memory.buffer = pickle.load(handle)

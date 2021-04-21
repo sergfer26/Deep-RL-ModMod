@@ -70,12 +70,13 @@ def get_score(month_path,noise):
     acciones /= number_of_simulations
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_production':np.mean(production), 'var_production':np.var(production), 'mean_actions': list(promedios),\
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),\
         'var_actions': list(varianzas),'actions_above_umbral': list(acciones)}
-    
+    name = PATH + '/'+month+'_'+path+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
 
+'''
 def get_score(month_path,noise):
     month,path = month_path
     env = GreenhouseEnv()                                 #Se crea el ambiente 
@@ -86,11 +87,13 @@ def get_score(month_path,noise):
     X = np.random.RandomState().uniform(0,1,2)
     dic = {'mean_production':X[0], 'var_production':X[1], 'mean_actions': list(np.random.RandomState().uniform(0,1,10)),\
         'var_actions': list(np.random.RandomState().uniform(0,1,10)),'actions_above_umbral': list(np.random.RandomState().uniform(0,1,10)) }
+>>>>>>> 3b1bc0126f5abf0a1602780a919cb2c3a57369f0
     name = PATH + '/'+month+'_'+path+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
+'''
 
-def fig_production():
+def fig_production(string)
     PROMEDIOS = list()
     VARIANZAS = list()
     for path in AGENTS:
@@ -99,8 +102,8 @@ def fig_production():
         for month in MONTHS:
             with open(PATH + '/'+month+'_'+path+'.json') as f:
                 data = json.load(f)
-            promedios.append(data['mean_production'])
-            varianzas.append(data['var_production'])
+            promedios.append(data['mean_' + string ])
+            varianzas.append(data['var_' + string ])
         PROMEDIOS.append(promedios)
         VARIANZAS.append(varianzas)
     fig, axes = plt.subplots(nrows=2)
@@ -176,7 +179,7 @@ def create_json():
 
 if __name__ == '__main__':
     create_json()
-    fig_production()
+    fig_production('number_of_fruits')
     fig_actions('mean_actions')
     fig_actions('var_actions')
     fig_actions('actions_above_umbral')

@@ -97,12 +97,15 @@ def create_report(PATH):
     pdf.setFont("Courier-Bold", 26)
     pdf.drawCentredString(290,720, subTitle)
     #drawMyRuler(pdf)
-    add_image(PATH,pdf,'/actions_above_umbral.png',10, 350,600,600)
-    add_image(PATH,pdf,'/mean_actions.png',10,10,600,600)
+    add_image(PATH,pdf,'/mean_actions.png',10, 350,600,600)
+    add_image(PATH,pdf,'/var_actions.png',10,10,600,600)
     pdf.showPage()
     #Siguiente pagina
-    add_image(PATH,pdf,'/var_actions.png',10, 350,600,600)
-    add_image(PATH,pdf,'/scores_productions.png',10,0,600,600)
+    add_image(PATH,pdf,'/scores_number_of_fruit.png',10, 350,600,600)
+    add_image(PATH,pdf,'/scores_mass.png',10,0,600,600)
+    pdf.showPage()
+    #Siguiente pagina
+    add_image(PATH,pdf,'/scores_reward.png',10, 350,600,600)
 
     pdf.save()  
     

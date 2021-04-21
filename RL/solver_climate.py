@@ -1330,10 +1330,10 @@ class Climate_model(Director):
 
 
     def reset(self):
-        self.Vars['T1'].val = np.random.normal(21, 2)
-        self.Vars['T2'].val = np.random.normal(21, 2)
+        self.Vars['T1'].val = np.random.RandomState().normal(21, 2)
+        self.Vars['T2'].val = np.random.RandomState().normal(21, 2)
         self.Vars['V1'].val = V1_in
-        self.Vars['C1'].val = np.random.normal(500, 1)
+        self.Vars['C1'].val = np.random.RandomState().normal(500, 1)
 
     def update_controls(self, U=np.ones(10)):
         for i in range(len(U)):
