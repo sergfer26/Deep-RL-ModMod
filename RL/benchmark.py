@@ -93,7 +93,7 @@ def get_score(month,agent,name):
         varianzas += vector_aux3
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward)}
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward),'vector_mass': mass,'vector_number_of_fruit':production}
     name = PATH + '/'+month+'_'+name+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
