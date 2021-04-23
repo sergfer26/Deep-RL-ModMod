@@ -11,11 +11,11 @@ import pathlib
 from datetime import datetime, timezone
 from get_indexes import Indexes
 from get_report_agents import create_report
-from multiprocessing import Pool
+import multiprocessing
 from functools import partial
 import sys
 import os
-
+from time import time
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -28,7 +28,7 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 5'
+number_of_simulations = 40
 path = sys.argv[1]
 
 def sim_(v):
@@ -65,7 +65,8 @@ def get_score(month,agent,name):
     reward = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
-    p = Pool()
+    number_of_process = 20
+    p = multiprocessing.Pool(number_of_process)
     V = list()
     indexes = Indexes(data_inputs[0:LIMIT],month)
     for _ in range(number_of_simulations):
@@ -173,16 +174,18 @@ def fig_actions(key):
 
 
 if __name__ == '__main__':
-    for month in MONTHS:
-        for agent,name in zip(AGENTS,NAMES):
-            print(month,name)
-            get_score(month,agent,name)
-    fig_production('number_of_fruit')
-    fig_production('mass')
-    fig_production('reward')
-    fig_actions('mean_actions')
-    fig_actions('var_actions')
-    create_report(PATH)
+    t1 = time()
+    #for month in MONTHS:
+    #    for agent,name in zip(AGENTS,NAMES):
+    #        print(month,name)
+    get_score('03',AGENTS[0],'nn')
+    print('TIME: ' , time() - t1)
+    #fig_production('number_of_fruit')
+    #fig_production('mass')
+    #fig_production('reward')
+    #fig_actions('mean_actions')
+    #fig_actions('var_actions')
+    #create_report(PATH)
 
 
 
