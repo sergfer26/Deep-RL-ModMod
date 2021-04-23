@@ -10,3 +10,4 @@ runs/
 *.pyc
 ../.DS_Store
 *.out
+*.png
