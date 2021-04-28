@@ -16,6 +16,7 @@ from functools import partial
 import sys
 import os
 from time import time
+import ray
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -28,11 +29,12 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 40
+number_of_simulations = 2
 path = sys.argv[1]
+ray.init()
 
-def sim_(v):
-    agent, env = v
+@ray.remote
+def RAY_SIM(agent,env):
     return sim(agent, env)
 
 class OtherAgent(object):
@@ -65,15 +67,13 @@ def get_score(month,agent,name):
     reward = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
-    number_of_process = 20
-    p = multiprocessing.Pool(number_of_process)
-    V = list()
     indexes = Indexes(data_inputs[0:LIMIT],month)
+    result_ids = []
     for _ in range(number_of_simulations):
         env = GreenhouseEnv() #Se crea el ambiente 
-        env.indexes = indexes
-        V.append([agent,env])
-    BIG_DATA = list(p.map(sim_, V))
+        env.indexes = indexes # Se crean indices
+        result_ids.append(RAY_SIM.remote(agent,env))
+    BIG_DATA = ray.get(result_ids)
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
