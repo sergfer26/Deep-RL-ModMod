@@ -16,6 +16,7 @@ from functools import partial
 import sys
 import os
 from time import time
+
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -31,8 +32,9 @@ NAMES = ['nn','random','on','off']
 number_of_simulations = 100
 path = sys.argv[1]
 
-def sim_(v):
-    agent, env = v
+
+def sim_(agent,env):
+    print(os.getpid())
     return sim(agent, env)
 
 class OtherAgent(object):
@@ -67,15 +69,15 @@ def get_score(month,agent,name):
     varianzas = np.zeros(10)
     number_of_process = 32
     p = multiprocessing.Pool(number_of_process)
-    V = list()
     indexes = Indexes(data_inputs[0:LIMIT],month)
+    V = list()
     for _ in range(number_of_simulations):
         env = GreenhouseEnv() #Se crea el ambiente 
-        env.indexes = indexes
+        env.indexes = indexes # Se crean indices
         V.append([agent,env])
-    BIG_DATA = [p.apply_async(sim, args = V)]
-    results = [r.get()[1] for r in BIG_DATA]
-    for s in results:
+    BIG_DATA = p.starmap(sim_, V)
+    BIG_DATA = list(BIG_DATA)
+    for s in BIG_DATA:
         _, _, S_prod, A, _ = s
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
         aux = len(df_prod) - 1
