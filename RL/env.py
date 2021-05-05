@@ -73,17 +73,20 @@ class GreenhouseEnv(gym.Env):
         if np.isnan(list(self.state.values())).any():
             breakpoint()
         self.dirClimate.update_controls(action)
+        C1 = list(); T = list()
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
                 self.update_vars_climate(k + self.i*self.frec//FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
+            C1.append(self.dirClimate.OutVar('C1'))
+            T.append(self.dirClimate.OutVar('T2'))
         
         reward = 0.0
         #old_h = self.dirGreenhouse.V('h')
         if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
-            C1M = self.dirClimate.OutVar('C1').mean() 
-            TM = self.dirClimate.OutVar('T2').mean()
+            C1M = float(np.mean(C1)) 
+            TM = float(np.mean(T))                    
             PARM = self.get_mean_data(data_inputs['I2']) # PAR
             RHM = self.get_mean_data(data_inputs['RH'])
             self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
