@@ -95,6 +95,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
+        print(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
