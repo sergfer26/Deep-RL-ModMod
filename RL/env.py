@@ -104,6 +104,8 @@ class GreenhouseEnv(gym.Env):
         
     def update_state(self):
         state = {k: self.dirGreenhouse.V(k) for k in self.state_names}
+        state['T'] = self.dirClimate.V('T2')
+        state['C1'] = self.dirClimate.V('C1')
         return state
     
     def _reset(self):
