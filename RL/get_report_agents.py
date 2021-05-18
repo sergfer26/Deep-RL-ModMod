@@ -101,11 +101,10 @@ def create_report(PATH):
     add_image(PATH,pdf,'/var_actions.png',10,10,600,600)
     pdf.showPage()
     #Siguiente pagina
-    add_image(PATH,pdf,'/scores_number_of_fruit.png',10, 350,600,600)
-    add_image(PATH,pdf,'/scores_mass.png',10,0,600,600)
+    add_image(PATH,pdf,'/histograms.png',10, 350,600,600)
+    add_image(PATH,pdf,'/scores_reward.png',10,0,600,600)
     pdf.showPage()
     #Siguiente pagina
-    add_image(PATH,pdf,'/scores_reward.png',10, 350,600,600)
 
     pdf.save()  
     

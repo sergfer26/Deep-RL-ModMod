@@ -11,10 +11,11 @@ import pathlib
 from datetime import datetime, timezone
 from get_indexes import Indexes
 from get_report_agents import create_report
-from multiprocessing import Pool
+import multiprocessing
 from functools import partial
 import sys
 import os
+from time import time
 
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -22,17 +23,18 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
-pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+PATH = 'results_ddpg/tournament/prueba' #+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+#pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 5'
+number_of_simulations = 100
 path = sys.argv[1]
 
-def sim_(v):
-    agent, env = v
+
+def sim_(agent,env):
+    print(os.getpid())
     return sim(agent, env)
 
 class OtherAgent(object):
@@ -65,14 +67,16 @@ def get_score(month,agent,name):
     reward = []
     promedios = np.zeros(10)
     varianzas = np.zeros(10)
-    p = Pool()
-    V = list()
+    number_of_process = 16
+    p = multiprocessing.Pool(number_of_process)
     indexes = Indexes(data_inputs[0:LIMIT],month)
+    V = list()
     for _ in range(number_of_simulations):
         env = GreenhouseEnv() #Se crea el ambiente 
-        env.indexes = indexes
+        env.indexes = indexes # Se crean indices
         V.append([agent,env])
-    BIG_DATA = list(p.map(sim_, V))
+    BIG_DATA = p.starmap(sim_, V)
+    BIG_DATA = list(BIG_DATA)
     for s in BIG_DATA:
         _, _, S_prod, A, _ = s
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
@@ -123,7 +127,7 @@ def fig_production(string):
     axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2])
     axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label =  NAMES[2])
     axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3])
-    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[0])
+    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[3])
     axes[1].set_xticks(X)
     axes[1].set_xticklabels(MONTHS)
     axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
@@ -142,7 +146,7 @@ def fig_production(string):
 
 
 def fig_actions(key):
-    fig, axes = plt.subplots(nrows=len(MONTHS)+1)
+    fig, axes = plt.subplots()
     names = ['$u_' + str(x + 1) + '$' for x in range(9)]
     names.append('$u_{10}$')
     X = np.arange(len(names))
@@ -153,17 +157,17 @@ def fig_actions(key):
                 data = json.load(f)
                 #dic[month].append(data[key])
                 LISTA.append(data[key])
-        axes[i].set_ylabel(datetime(2018, int(month), 1).strftime("%b"))
-        axes[i].bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label =  NAMES[0])
-        axes[i].bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label =  NAMES[1])
-        axes[i].bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label =  NAMES[2])
-        axes[i].bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label =  NAMES[3])
+        axes.set_ylabel(datetime(2018, int(month), 1).strftime("%b"))
+        axes.bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label =  NAMES[0])
+        axes.bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label =  NAMES[1])
+        axes.bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label =  NAMES[2])
+        axes.bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label =  NAMES[3])
 
-        axes[i].set_xticks(X)
-        axes[i].set_xticklabels(names)
-    axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+        axes.set_xticks(X)
+        axes.set_xticklabels(names)
+    axes.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
             ncol=4, fancybox=True, shadow=True)
-    fig.suptitle(key, fontsize=15)
+    fig.suptitle(key.upper(), fontsize=15)
     fig.set_size_inches(18.5, 10.5, forward=True)
     if SHOW:
         plt.show()
@@ -172,17 +176,37 @@ def fig_actions(key):
         plt.close()
 
 
+def histograms(key):
+    fig, axes = plt.subplots(4,sharey=True)
+    m = 0
+    for i,name in enumerate(NAMES):
+        with open(PATH + '/03_' + name + '.json') as f:
+            data = json.load(f)
+            data = data['vector_' + key]
+            m = max(m,max(data))
+            axes[i].hist(data)
+            axes[i].set_ylabel(name.upper())
+    for i in range(4): axes[i].set_xlim(0,m)
+    fig.suptitle(key.upper(), fontsize=15)
+    fig.set_size_inches(18.5, 10.5, forward=True)
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(PATH + '/'+'histograms_' + key + '.png')
+        plt.close()  
+
+
 if __name__ == '__main__':
-    for month in MONTHS:
-        for agent,name in zip(AGENTS,NAMES):
-            print(month,name)
-            get_score(month,agent,name)
-    fig_production('number_of_fruit')
-    fig_production('mass')
+    for agente, nombre in zip(AGENTS,NAMES):
+        get_score('03',agente,nombre)
     fig_production('reward')
     fig_actions('mean_actions')
-    fig_actions('var_actions')
+    fig_actions('mean_actions')
+    histograms('mass')
+    histograms('number_of_fruit')
     create_report(PATH)
+
+
 
 
 
