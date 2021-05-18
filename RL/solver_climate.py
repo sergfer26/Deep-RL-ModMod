@@ -661,6 +661,7 @@ class C1_rhs(StateRHS):
                     desc="Capacity of the external CO2 source", units=mg * s**-1, val=theta[2])  # Falta valor, tomé el del ejemplo de Texas 4.3e5
         self.AddVar(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
                     desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031)  # ok
+                    
     def RHS(self, Dt):
         """RHS( Dt, k) = \kappa_1^{-1} F_1( t+Dt, X+k) where X is the current value of
            all state variables.  k is a simple dictionary { 'v1':k1, 'v2':k2 ... etc}

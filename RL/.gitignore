@@ -10,9 +10,6 @@ runs/
 *.pyc
 ../.DS_Store
 *.out
-<<<<<<< HEAD
 .vscode/
 *.txt
-=======
 *.png
->>>>>>> ea8db5e93b46456562887f4014fc19a1945c5dc3
