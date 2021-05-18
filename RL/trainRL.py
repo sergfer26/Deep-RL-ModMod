@@ -20,7 +20,7 @@ from params import PARAMS_TRAIN
 EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
 BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
-SHOW = PARAMS_TRAIN['SHOW']
+SHOW = not(PARAMS_TRAIN['SHOW'])
 INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -85,15 +85,15 @@ def train_agent(agent, env, noise):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
-    #env.i = 75992 
+    env.i = 75992 
     print('Se simula con indice = ', env.i)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
@@ -101,7 +101,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #pbar.update(step)
+        pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -113,7 +113,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    #pbar.finish()
+    pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs
 
@@ -126,11 +126,11 @@ def main():
         pass
     else:
     # Load trained model 
-        old_path = sys.argv[1:].pop()
-        #old_path = 'results_ddpg/5_8_1656'
-        #print('Se cargo el modelo')
+        #old_path = sys.argv[1:].pop()
+        old_path = 'results_ddpg/5_14_145'
+        print('Se cargo el modelo')
         agent.load(old_path)
-        
+    '''   
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -152,7 +152,7 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-
+   '''
 
     S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, indice = INDICE)
 

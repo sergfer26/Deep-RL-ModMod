@@ -546,19 +546,19 @@ T1_in = 20
 nmrec = 1
 
 I1 = 3.5 # Constant
-I2 = 0.0
+I2 = 100.0
 I3 = 20 # Constant
-I4 = 1 # Constant
-I5 = 0.0
-I6 = 16 # Constant
-I7 = 10 # Constant
-I8 = 0.0
+I4 = 18 # Constant
+I5 = 18.0
+I6 = 20 # Constant
+I7 = 5 # Constant
+I8 = 5.0
 # I9
-I10 = 850 # Constant
+I10 = 700 # Constant
 I11 = 0 # Constant?
 I12 = 0 # Constant?
 I13 = 0 # Constant?
-I14 = 0.0
+I14 = 100.0
 
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
