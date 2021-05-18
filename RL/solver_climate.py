@@ -113,8 +113,8 @@ def o4(I11, I12, I13, psi3):
 def o5(C1, I10, f2, f3, f4):
     return (C1 - I10) * (f2 + f3 + f4)
 
-def o6 (C1, omega3):
-    return omega3*C1
+#def o6 (C1, omega3):
+#    return omega3*C1
 
 ######### V1 ##############
 # Symbols
@@ -662,8 +662,7 @@ class C1_rhs(StateRHS):
                     desc="Capacity of the external CO2 source", units=mg * s**-1, val=theta[2])  # Falta valor, tomé el del ejemplo de Texas 4.3e5
         self.AddVar(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
                     desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031)  # ok
-        self.AddVar( typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
-                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03) 
+                    
     def RHS(self, Dt):
         """RHS( Dt, k) = \kappa_1^{-1} F_1( t+Dt, X+k) where X is the current value of
            all state variables.  k is a simple dictionary { 'v1':k1, 'v2':k2 ... etc}
@@ -702,8 +701,8 @@ class C1_rhs(StateRHS):
                  I13=self.V('I13'), psi3=self.V('psi3'))
         o_5 = o5(C1=self.Vk('C1'), I10=self.V(
             'I10'), f2=f_2, f3=f_3, f4=f_4)
-        o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') )
-        return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5 - o_6)
+        #o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') )
+        return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5 )# - o_6)
 
 
 ########### V1 ############
