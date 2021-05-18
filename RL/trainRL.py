@@ -85,16 +85,23 @@ def train_agent(agent, env, noise):
 
 
 ###### Simulation ######
+#from progressbar import*
+
 def sim(agent, env, indice = 0):
+    #pbar = ProgressBar(maxval=STEPS)
+    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
+    #env.i = 75992 
+    print('Se simula con indice = ', env.i)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
+        #pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -106,6 +113,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
+    #pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs
 
@@ -119,8 +127,10 @@ def main():
     else:
     # Load trained model 
         old_path = sys.argv[1:].pop()
+        #old_path = 'results_ddpg/5_8_1656'
+        #print('Se cargo el modelo')
         agent.load(old_path)
-    
+        
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -144,7 +154,6 @@ def main():
         plt.close()
 
 
-    
     S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, indice = INDICE)
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
@@ -194,8 +203,8 @@ def main():
     else:
         plt.savefig(PATH + '/sim_climate_inputs.png')
         plt.close()
-    if not(SHOW):
-        create_report(PATH)
+    #if not(SHOW):
+    #    create_report(PATH)
 
 if __name__=='__main__':
     main()

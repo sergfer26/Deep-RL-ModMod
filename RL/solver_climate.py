@@ -113,6 +113,8 @@ def o4(I11, I12, I13, psi3):
 def o5(C1, I10, f2, f3, f4):
     return (C1 - I10) * (f2 + f3 + f4)
 
+#def o6 (C1, omega3):
+#    return omega3*C1
 
 ######### V1 ##############
 # Symbols
@@ -561,7 +563,6 @@ I14 = 0.0
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
 theta = np.array([2000, 15, 1.9e5])
-
 """
     Se resuelve el sistema de EDO en función de los parámetros
     contenidos en el vector theta.
@@ -700,7 +701,8 @@ class C1_rhs(StateRHS):
                  I13=self.V('I13'), psi3=self.V('psi3'))
         o_5 = o5(C1=self.Vk('C1'), I10=self.V(
             'I10'), f2=f_2, f3=f_3, f4=f_4)
-        return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5)
+        #o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') )
+        return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5 )# - o_6)
 
 
 ########### V1 ############
@@ -1300,10 +1302,10 @@ class Module1(Module):
         s2 = 0.1281  # Desviación estándar de V1
         s3 = 10  # Desviación estándar de C1
         # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
-        T1r = self.V('T1') + norm.rvs(scale=s1)
-        T2r = self.V('T2') + norm.rvs(scale=s1)
-        V1r = self.V('V1') + norm.rvs(scale=s2)
-        C1r = self.V('C1') + norm.rvs(scale=s3)
+        T1r = self.V('T1') #+ norm.rvs(scale=s1)
+        T2r = self.V('T2') #+ norm.rvs(scale=s1)
+        V1r = self.V('V1') #+ norm.rvs(scale=s2)
+        C1r = self.V('C1') #+ norm.rvs(scale=s3)
         # Actualización de las variables
         self.V_Set('T1', T1r)
         self.V_Set('T2', T2r)
