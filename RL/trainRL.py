@@ -61,7 +61,7 @@ def train_agent(agent, env, noise):
             if len(agent.memory) > BATCH_SIZE:
                 agent.update(BATCH_SIZE)  
             _, _, u3, u4, _, _, u7, _, u9, u10 = action # modify
-            p = -penalty_function(u3, u4, u7, u9, u10)
+            p = -penalty_function(u3, u4, u7, u9, u10,float(env.state['C1']))
             r = 0.0
             #if (env.i + 1) % (1/env.dt) == 0:
             #    h = new_state[-2]; n = new_state[-1]
@@ -94,7 +94,7 @@ def sim(agent, env, indice = 0):
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
     #env.i = 75992 
-    print('Se simula con indice = ', env.i)
+    #print('Se simula con indice = ', env.i)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
@@ -122,15 +122,13 @@ def main():
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     mpl.style.use('seaborn')
 
-    if len(sys.argv) == 1:
-        pass
-    else:
+    if len(sys.argv) != 1:
     # Load trained model 
         old_path = sys.argv[1:].pop()
-        #old_path = 'results_ddpg/5_8_1656'
+        #old_path = 'results_ddpg/5_14_145'
         #print('Se cargo el modelo')
         agent.load(old_path)
-        
+       
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -152,15 +150,13 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-
+   
 
     S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, indice = INDICE)
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-    #df_climate['Date'] = dates
-    #df_climate.set_index(['Date'], inplace=True)
     df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
-    #plt.tight_layout()
+
     if SHOW:
         plt.show()
     else:
@@ -203,8 +199,8 @@ def main():
     else:
         plt.savefig(PATH + '/sim_climate_inputs.png')
         plt.close()
-    #if not(SHOW):
-    #    create_report(PATH)
+    if not(SHOW):
+        create_report(PATH)
 
 if __name__=='__main__':
     main()

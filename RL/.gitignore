@@ -10,4 +10,7 @@ runs/
 *.pyc
 ../.DS_Store
 *.out
+.vscode/
+*.txt
 *.png
+Solver.py

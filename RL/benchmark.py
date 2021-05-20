@@ -127,7 +127,7 @@ def fig_production(string):
     axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2])
     axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label =  NAMES[2])
     axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3])
-    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[0])
+    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[3])
     axes[1].set_xticks(X)
     axes[1].set_xticklabels(MONTHS)
     axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
@@ -176,20 +176,23 @@ def fig_actions(key):
         plt.close()
 
 
-def histogram(name):
-    fig, axes = plt.subplots(2)
-    for month in MONTHS:
-        for i,s in enumerate(['number_of_fruit','mass']):
-            with open(PATH + '/'+month+'_' + name + '.json') as f:
-                data = json.load(f)
-                data = data['vector_' + s]
-                axes[i].hist(data)
-                axes[i].set_title(s.upper())
+def histograms(key):
+    fig, axes = plt.subplots(4,sharey=True)
+    m = 0
+    for i,name in enumerate(NAMES):
+        with open(PATH + '/03_' + name + '.json') as f:
+            data = json.load(f)
+            data = data['vector_' + key]
+            m = max(m,max(data))
+            axes[i].hist(data)
+            axes[i].set_ylabel(name.upper())
+    for i in range(4): axes[i].set_xlim(0,m)
+    fig.suptitle(key.upper(), fontsize=15)
     fig.set_size_inches(18.5, 10.5, forward=True)
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/'+'histograms.png')
+        plt.savefig(PATH + '/'+'histograms_' + key + '.png')
         plt.close()  
 
 
@@ -198,9 +201,11 @@ if __name__ == '__main__':
         get_score('03',agente,nombre)
     fig_production('reward')
     fig_actions('mean_actions')
-    fig_actions('var_actions')
-    histogram('nn') 
+    fig_actions('mean_actions')
+    histograms('mass')
+    histograms('number_of_fruit')
     create_report(PATH)
+
 
 
 
