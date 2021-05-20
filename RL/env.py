@@ -15,7 +15,7 @@ from get_indexes import Indexes
 from params import PARAMS_ENV
 
 OUTPUTS = symbols('h nf') # variables de recompensa
-CONTROLS = symbols('u3 u4 u7 u9 u10') # varibles de costo
+CONTROLS = symbols('u3 u4 u7 u9 u10 C1') # varibles de costo y clima
 R = PARAMS_ENV['R']   # función de recompensa
 P = PARAMS_ENV['P'] # función de penalización
 symR = parse_expr(R)
@@ -97,7 +97,7 @@ class GreenhouseEnv(gym.Env):
         self.state = self.update_state()
         done = self.is_done()
         _, _, u3, u4, _, _, u7, _, u9, u10 = action
-        reward += penalty_function(u3, u4, u7, u9, u10)
+        reward += penalty_function(u3, u4, u7, u9, u10,float(self.state['C1']))
         self.i += 1
         state = np.array(list(self.state.values()))
         return state, reward, done
