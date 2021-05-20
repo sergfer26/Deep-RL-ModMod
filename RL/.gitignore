@@ -14,3 +14,5 @@ runs/
 *.txt
 *.png
 Solver.py
+params_correo.py
+correo.py
