@@ -13,3 +13,4 @@ runs/
 .vscode/
 *.txt
 *.png
+Solver.py
