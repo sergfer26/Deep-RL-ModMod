@@ -194,7 +194,8 @@ def histogram(name):
 
 
 if __name__ == '__main__':
-    get_score('03',AGENTS[0],'nn')
+    for agente, nombre in zip(AGENTS,NAMES):
+        get_score('03',agente,nombre)
     fig_production('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
