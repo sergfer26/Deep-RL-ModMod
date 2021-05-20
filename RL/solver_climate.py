@@ -113,13 +113,12 @@ def o4(I11, I12, I13, psi3):
 def o5(C1, I10, f2, f3, f4):
     return (C1 - I10) * (f2 + f3 + f4)
 
-#def o6 (C1, omega3):
-#    return omega3*C1
+def o6 (C1, omega3):
+    return omega3*C1
 
 ######### V1 ##############
 # Symbols
-mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, kmol, kg_air, kg_vapour = symbols(
-    'mt mg m C s W mg_CO2 J Pa kg_water kg K ppm kmol kg_air kg_vapour')  # Symbolic use of base phisical units
+mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, kmol, kg_air, kg_vapour = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm kmol kg_air kg_vapour') # Symbolic use of base phisical units
 
 ### previous functions ###
 
@@ -136,7 +135,7 @@ def f2(U1, eta6, eta7, eta8, f5, f6):
     if (eta7 >= eta8):
         return eta6*f5 + 0.5*f6
     else:
-        return eta6*(U1*f5 + (1-U1)*f5) + 0.5*f6
+        return eta6*( U1*f5 + (1-U1)*f5 ) + 0.5*f6
 
 
 def f3(U7, phi8, alpha6):
@@ -147,7 +146,7 @@ def f4(U1, eta6, eta7, eta8, f6, f7):
     if (eta7 >= eta8):
         return eta6*f7 + 0.5*f6
     else:
-        return eta6*(U1*f7 + (1-U1)*f7) + 0.5*f6
+        return eta6*( U1*f7 + (1-U1)*f7 ) + 0.5*f6
 
 
 def f5(I8, alpha6, n1, n2, n3):
@@ -163,12 +162,12 @@ def f6(I8, nu4):
 
 def f7(T2, U8, I5, I8, nu5, alpha6, omega1, nu6, n1, n3):
     T_bar = (T2 + I5)/2
-    return (U8*nu5*n1)/(2*alpha6) * sqrt(max((omega1*nu6*(T2-I5))/(2*(T_bar+273.15)) + n3*I8, 0))
+    return (U8*nu5*n1)/(2*alpha6) * sqrt( max( (omega1*nu6*(T2-I5))/(2*(T_bar+273.15)) + n3*I8, 0 ) )
 
 
 def h3(T2, V1, U3, I6, lamb1, lamb2, alpha6, gamma2, q6):
     num = (U3*lamb1*lamb2/alpha6)*(I6-T2)
-    den = T2 - I6 + (6.4e-9 * gamma2*(V1 - q6))
+    den = T2 - I6 + ( 6.4e-9 * gamma2*(V1 - q6 ) )
     return num/den
 
 
@@ -185,7 +184,7 @@ def n3(U5, nu2, eta11):
 
 
 def q1(I1, rho3, alpha5, gamma, gamma2, gamma3, q3):
-    return (2*rho3*alpha5*I1) / (gamma*gamma2*(gamma3 + q3))
+    return (2*rho3*alpha5*I1) / ( gamma*gamma2*(gamma3 + q3 ) )
 
 
 def q2(T1):
@@ -271,9 +270,8 @@ def p7(V1, h3, q6):
 
 
 ######### T1 ##############
-# Symbols
-mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm = symbols(
-    'mt mg m C s W mg_CO2 J Pa kg_water kg K ppm')  # Symbolic use of base phisical units
+#### Symbols
+mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm')  # Symbolic use of base phisical units
 
 ### previous functions ###
 
@@ -287,7 +285,7 @@ def b1(U1, tau3):
 
 
 def r2(I1, beta1, rho1, r4):
-    return r4*(1 - rho1)*(1 - exp(-beta1*I1))
+    return r4*(1 - rho1)*( 1 - exp(-beta1*I1) )
 
 
 def r3(I1, beta1, beta2, rho1, rho2, r4):
@@ -307,11 +305,11 @@ def g2(tau2, b1):
 
 
 def p1(V1, q1, q2):
-    return q1*(q2 - V1)
+    return q1*( q2 - V1 )
 
 
 def q1(I1, rho3, alpha5, gamma, gamma2, gamma3, q3):
-    return (2*rho3*alpha5*I1) / (gamma*gamma2*(gamma3 + q3))
+    return (2*rho3*alpha5*I1) / ( gamma*gamma2*( gamma3 + q3 ) )
 
 
 def q2(T1):
@@ -384,8 +382,7 @@ def r7(T1, I4, epsil2, epsil3, lamb, a1, g2):
 
 ######### T2 ##############
 #### Symbols ########
-mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, m_cover, kg_air = symbols(
-    'mt mg m C s W mg_CO2 J Pa kg_water kg K ppm m_cover kg_air')  # Symbolic use of base phisical units
+mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, m_cover, kg_air = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm m_cover kg_air')  # Symbolic use of base phisical units
 
 ### previous functions ###
 
@@ -545,24 +542,24 @@ T2_in = 20
 T1_in = 20
 nmrec = 1
 
-I1 = 3.5 # Constant
-I2 = 100.0
-I3 = 20 # Constant
-I4 = 18 # Constant
-I5 = 18.0
-I6 = 20 # Constant
-I7 = 5 # Constant
-I8 = 5.0
+I1 = 3.0     #Leaf area index
+I2 = 100.0   #External global radiation
+I3 = 20      #Heating pipe temperature
+I4 = 0       #Sky temperature
+I5 = 18.0    #Outdoor temperature
+I6 = 20      #Mechanical cooling system temperature 
+I7 = 5.0     #Soil temperature
+I8 = 3.2     #Outdoor wind speed
 # I9
-I10 = 700 # Constant
-I11 = 0 # Constant?
-I12 = 0 # Constant?
-I13 = 0 # Constant?
-I14 = 100.0
+I10 = 700    #Outdoor CO2 concentration
+I11 = 0      #FALTA VALOR Inhibition of the rate of photosynthesis by saturation of the leaves with carbohydrates 
+I12 = 0      #FALTA VALOR Crude canopy photosynthesis rate
+I13 = 0      #FALTA VALOE Photorespiration during photosynthesis
+I14 = 100.0  #Global radiation above the canopy
 
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
-theta = np.array([2000, 15, 1.9e5])
+theta = np.array([3000, 20, 2.3e5])
 """
     Se resuelve el sistema de EDO en función de los parámetros
     contenidos en el vector theta.
@@ -662,6 +659,8 @@ class C1_rhs(StateRHS):
                     desc="Capacity of the external CO2 source", units=mg * s**-1, val=theta[2])  # Falta valor, tomé el del ejemplo de Texas 4.3e5
         self.AddVar(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
                     desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031)  # ok
+        self.AddVar( typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
+                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03)
                     
     def RHS(self, Dt):
         """RHS( Dt, k) = \kappa_1^{-1} F_1( t+Dt, X+k) where X is the current value of
@@ -673,12 +672,9 @@ class C1_rhs(StateRHS):
         # Once defined h1 in your terminal run TranslateArgNames(h1)
         # and follow the instrucions
         #### Sub-functions ####
-        h_6 = h6(U4=self.V('U4'), lamb4=self.V(
-            'lamb4'), alpha6=self.V('alpha6'))
-        f_1 = f1(U2=self.V('U2'), phi7=self.V(
-            'phi7'), alpha6=self.V('alpha6'))
-        f_3 = f3(U7=self.V('U7'), phi8=self.V(
-            'phi8'), alpha6=self.V('alpha6'))
+        h_6 = h6(U4=self.V('U4'), lamb4=self.V('lamb4'), alpha6=self.V('alpha6'))
+        f_1 = f1(U2=self.V('U2'), phi7=self.V('phi7'), alpha6=self.V('alpha6'))
+        f_3 = f3(U7=self.V('U7'), phi8=self.V('phi8'), alpha6=self.V('alpha6'))
         f_6 = f6(I8=self.V('I8'), nu4=self.V('nu4'))
         n_1 = n1(U5=self.V('U5'), nu1=self.V('nu1'), eta10=self.V('eta10'))
         n_2 = n2(U6=self.V('U6'), nu3=self.V('nu3'))
@@ -701,8 +697,8 @@ class C1_rhs(StateRHS):
                  I13=self.V('I13'), psi3=self.V('psi3'))
         o_5 = o5(C1=self.Vk('C1'), I10=self.V(
             'I10'), f2=f_2, f3=f_3, f4=f_4)
-        #o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') )
-        return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5 )# - o_6)
+        o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') )
+        return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5  - o_6)
 
 
 ########### V1 ############
@@ -1302,10 +1298,10 @@ class Module1(Module):
         s2 = 0.1281  # Desviación estándar de V1
         s3 = 10  # Desviación estándar de C1
         # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
-        T1r = self.V('T1') #+ norm.rvs(scale=s1)
-        T2r = self.V('T2') #+ norm.rvs(scale=s1)
-        V1r = self.V('V1') #+ norm.rvs(scale=s2)
-        C1r = self.V('C1') #+ norm.rvs(scale=s3)
+        T1r = self.V('T1') + norm.rvs(scale=s1)
+        T2r = self.V('T2') + norm.rvs(scale=s1)
+        V1r = self.V('V1') + norm.rvs(scale=s2)
+        C1r = self.V('C1') + norm.rvs(scale=s3)
         # Actualización de las variables
         self.V_Set('T1', T1r)
         self.V_Set('T2', T2r)
@@ -1333,10 +1329,10 @@ class Climate_model(Director):
 
 
     def reset(self):
-        self.Vars['T1'].val = np.random.RandomState().normal(21, 2)
-        self.Vars['T2'].val = np.random.RandomState().normal(21, 2)
+        self.Vars['T1'].val = T1_in # np.random.RandomState().normal(21, 2)
+        self.Vars['T2'].val = T2_in #np.random.RandomState().normal(21, 2)
         self.Vars['V1'].val = V1_in
-        self.Vars['C1'].val = np.random.RandomState().normal(500, 1)
+        self.Vars['C1'].val = C1_in #np.random.RandomState().normal(500, 1)
 
     def update_controls(self, U=np.ones(10)):
         for i in range(len(U)):
