@@ -82,7 +82,7 @@ def add_text(pdf,textLines,x,y):
 def add_image(PATH,pdf,name,x,y,width = 500,height=500):
     pdf.drawInlineImage(PATH + name , x,y, width = width, height=height,preserveAspectRatio=True)
 
-def create_report(PATH):
+def create_report(PATH, time = 0):
     fileName = '/Reporte.pdf'
     fileName = PATH + fileName
     documentTitle = 'Document title!'
@@ -123,5 +123,9 @@ def create_report(PATH):
     pdf.showPage()
     add_image(PATH,pdf,'/sim_prod.png',30, 350,550,550)
     add_image(PATH,pdf,'/sim_actions.png',30,0,550,550)
+    cadena = 'Tiempo de ejecucion: '
+    cadena += str(round((time/(60)),2)) + ' Horas'
+    add_text(pdf,[cadena],30,60)
     pdf.save()  
+
     
