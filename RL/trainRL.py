@@ -13,6 +13,8 @@ from ddpg.utils import *
 from tqdm import tqdm
 from math import ceil
 from datetime import datetime, timezone
+from time import time
+from correo import send_correo
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
@@ -118,6 +120,7 @@ def sim(agent, env, indice = 0):
     return S_climate, S_data, S_prod, A, data_inputs
 
 def main():
+    t1 = time()
     PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     mpl.style.use('seaborn')
@@ -199,8 +202,10 @@ def main():
     else:
         plt.savefig(PATH + '/sim_climate_inputs.png')
         plt.close()
+    t2 = time()
     if not(SHOW):
-        create_report(PATH)
+        create_report(PATH,t2-t1)
+        send_correo(PATH + '/Reporte.pdf')
 
 if __name__=='__main__':
     main()
