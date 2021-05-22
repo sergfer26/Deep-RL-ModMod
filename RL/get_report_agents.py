@@ -106,6 +106,7 @@ def create_report(PATH):
     pdf.showPage()
     #Siguiente pagina
     add_image(PATH,pdf,'/scores_reward.png',10, 350,600,600)
+    add_text(pdf,[PATH],10,60)
     pdf.showPage()
     #Siguiente pagina
 
