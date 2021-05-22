@@ -16,6 +16,8 @@ from functools import partial
 import sys
 import os
 from time import time
+import shutil
+import os
 
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -29,7 +31,7 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 100
+number_of_simulations = 10
 path = sys.argv[1]
 
 
@@ -54,14 +56,14 @@ env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
 agent.load('results_ddpg/' + path)
-agent_random = OtherAgent(env, 'random')
-agent_on = OtherAgent(env, 'on')
-agent_off = OtherAgent(env, 'off')
-AGENTS = [agent, agent_random, agent_on, agent_off]
+#agent_random = OtherAgent(env, 'random')
+#agent_on = OtherAgent(env, 'on')
+#agent_off = OtherAgent(env, 'off')
+#AGENTS = [agent, agent_random, agent_on, agent_off]
 
 
 
-def get_score(month,agent,name):                                    
+def get_score(month,agent,name):                             
     production = []
     mass = []
     reward = []
@@ -197,14 +199,21 @@ def histograms(key):
 
 
 if __name__ == '__main__':
-    for agente, nombre in zip(AGENTS,NAMES):
-        get_score('03',agente,nombre)
+    for name in NAMES[1:]:
+        shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
+    #for agente, nombre in zip(AGENTS,NAMES):
+    get_score('03',agent,'nn')
     fig_production('reward')
     fig_actions('mean_actions')
-    fig_actions('mean_actions')
+    fig_actions('var_actions')
     histograms('mass')
     histograms('number_of_fruit')
     create_report(PATH)
+    for name in NAMES[1:]:
+        os.remove(PATH + '/03_' + name + '.json' )
+    shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
+    os.remove(PATH + '/Reporte_agentes.pdf')
+
 
 
 
