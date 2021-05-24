@@ -212,6 +212,7 @@ if __name__ == '__main__':
     for name in NAMES[1:]:
         os.remove(PATH + '/03_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
 
 
