@@ -119,6 +119,11 @@ def sim(agent, env, indice = 0):
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs
 
+def smooth(y, box_pts):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return y_smooth
+
 def main():
     t1 = time()
     PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
@@ -138,8 +143,10 @@ def main():
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
     fig.suptitle(r'$r_t =$ '+ R + r' $\cdot \mathbb{1}_{t = k days}$' + P + ', {} Days'.format(TIME_MAX), fontsize=14)
 
-    ax1.plot(rewards, "-b", label='reward (DDPG)')
+    ax1.plot(rewards, "-b", label='reward (DDPG)',alpha = 0.3)
     ax1.plot(avg_rewards, "--b", label='avg reward (DDPG)', alpha=0.2)
+    pts = 100 if EPISODES > 100 else 10 
+    ax1.plot(smooth(rewards,pts), color= 'indigo', label='Smooth reward DDPG', alpha=0.6)
     ax1.set_xlabel('episode')
     ax1.legend(loc='best')
 
