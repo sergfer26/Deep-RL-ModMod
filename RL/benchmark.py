@@ -25,7 +25,7 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/' + str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 #pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
@@ -212,6 +212,7 @@ if __name__ == '__main__':
     for name in NAMES[1:]:
         os.remove(PATH + '/03_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
+    shutil.copy(PATH + '03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
 
 
