@@ -26,12 +26,12 @@ day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
 PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
-#pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 10
+number_of_simulations = 100
 path = sys.argv[1]
 
 
@@ -122,13 +122,14 @@ def fig_production(string):
     X = np.arange(len(MONTHS))
     axes[0].set_ylabel('mean')
     axes[1].set_ylabel('var')
-    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0])
+    breakpoint()
+    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0] + ' = ' + str(float(np.round(PROMEDIOS[0],3))))
     axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label =  NAMES[0])
-    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1])
+    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1] + ' = '+ str(float(np.round(PROMEDIOS[1],3))))
     axes[1].bar(X + 0.15, VARIANZAS[1],  color = 'g', width = 0.15, label =  NAMES[1])
-    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2])
+    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2] + ' = '+ str(float(np.round(PROMEDIOS[2],3))))
     axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label =  NAMES[2])
-    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3])
+    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3] + ' = '+ str(float(np.round(PROMEDIOS[3],3))))
     axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[3])
     axes[1].set_xticks(X)
     axes[1].set_xticklabels(MONTHS)
@@ -212,7 +213,7 @@ if __name__ == '__main__':
     for name in NAMES[1:]:
         os.remove(PATH + '/03_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
-    shutil.copy(PATH + '03_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
 
 
