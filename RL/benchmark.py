@@ -25,14 +25,14 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/' + str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/Month_03'#+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 100 #Debe ser 100
-path = sys.argv[1]
+number_of_simulations = 10
+#path = sys.argv[1]
 
 
 def sim_(agent,env):
@@ -55,10 +55,10 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-agent.load('results_ddpg/' + path)
-#agent_random = OtherAgent(env, 'random')
-#agent_on = OtherAgent(env, 'on')
-#agent_off = OtherAgent(env, 'off')
+#agent.load('results_ddpg/' + path)
+agent_random = OtherAgent(env, 'random')
+agent_on = OtherAgent(env, 'on')
+agent_off = OtherAgent(env, 'off')
 #AGENTS = [agent, agent_random, agent_on, agent_off]
 
 
@@ -99,7 +99,7 @@ def get_score(month,agent,name):
         varianzas += vector_aux3
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward),'vector_mass': mass,'vector_number_of_fruit':production}
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward),'vector_mass': mass,'vector_number_of_fruit':production,'vector_reward':reward}
     name = PATH + '/'+month+'_'+name+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
@@ -122,13 +122,14 @@ def fig_production(string):
     X = np.arange(len(MONTHS))
     axes[0].set_ylabel('mean')
     axes[1].set_ylabel('var')
-    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0])
+    breakpoint()
+    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0] + ' = ' + str(float(np.round(PROMEDIOS[0],3))))
     axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label =  NAMES[0])
-    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1])
+    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1] + ' = '+ str(float(np.round(PROMEDIOS[1],3))))
     axes[1].bar(X + 0.15, VARIANZAS[1],  color = 'g', width = 0.15, label =  NAMES[1])
-    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2])
+    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2] + ' = '+ str(float(np.round(PROMEDIOS[2],3))))
     axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label =  NAMES[2])
-    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3])
+    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3] + ' = '+ str(float(np.round(PROMEDIOS[3],3))))
     axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[3])
     axes[1].set_xticks(X)
     axes[1].set_xticklabels(MONTHS)
@@ -199,10 +200,11 @@ def histograms(key):
 
 
 if __name__ == '__main__':
-    for name in NAMES[1:]:
-        shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
+    #for name in NAMES[1:]:
+    #    shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
     #for agente, nombre in zip(AGENTS,NAMES):
-    get_score('03',agent,'nn')
+    get_score('03',agent_random,'random')
+    '''
     fig_production('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
@@ -214,6 +216,7 @@ if __name__ == '__main__':
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
+    '''
 
 
 
