@@ -25,14 +25,14 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/Month_03'#+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
 number_of_simulations = 100
-path = sys.argv[1]
+#path = sys.argv[1]
 
 
 def sim_(agent,env):
@@ -55,10 +55,10 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-agent.load('results_ddpg/' + path)
-#agent_random = OtherAgent(env, 'random')
-#agent_on = OtherAgent(env, 'on')
-#agent_off = OtherAgent(env, 'off')
+#agent.load('results_ddpg/' + path)
+agent_random = OtherAgent(env, 'random')
+agent_on = OtherAgent(env, 'on')
+agent_off = OtherAgent(env, 'off')
 #AGENTS = [agent, agent_random, agent_on, agent_off]
 
 
@@ -99,7 +99,7 @@ def get_score(month,agent,name):
         varianzas += vector_aux3
     promedios /= number_of_simulations
     varianzas /= number_of_simulations
-    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward),'vector_mass': mass,'vector_number_of_fruit':production}
+    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward),'vector_mass': mass,'vector_number_of_fruit':production,'vector_reward':reward}
     name = PATH + '/'+month+'_'+name+'.json'
     with open(name, 'w') as fp:
         json.dump(dic, fp,  indent=4)
@@ -200,10 +200,11 @@ def histograms(key):
 
 
 if __name__ == '__main__':
-    for name in NAMES[1:]:
-        shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
+    #for name in NAMES[1:]:
+    #    shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
     #for agente, nombre in zip(AGENTS,NAMES):
-    get_score('03',agent,'nn')
+    get_score('03',agent_random,'random')
+    '''
     fig_production('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
@@ -215,6 +216,7 @@ if __name__ == '__main__':
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
+    '''
 
 
 
