@@ -31,7 +31,7 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 10
+number_of_simulations = 100
 #path = sys.argv[1]
 
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     #for name in NAMES[1:]:
     #    shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
     #for agente, nombre in zip(AGENTS,NAMES):
-    get_score('03',agent_random,'random')
+    get_score('03',agent_off,'off')
     '''
     fig_production('reward')
     fig_actions('mean_actions')
