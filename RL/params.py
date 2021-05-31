@@ -8,7 +8,7 @@ PARAMS_ENV = {'R': 'min(0.01 * h, 10)' , \
 #Para entrenamiento MONTH puede ser '03','06','09' o 'RANDOM'
 #Para benchmark y tournament es recomendable que sea 'RANDOM', pero no absolutamente necesario.
 
-PARAMS_TRAIN = {'EPISODES': 500, \
+PARAMS_TRAIN = {'EPISODES': 1000, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
                 'BATCH_SIZE': 128, \
                 'SHOW': False, \

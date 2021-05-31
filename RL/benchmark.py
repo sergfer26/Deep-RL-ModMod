@@ -31,7 +31,7 @@ SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 10
+number_of_simulations = 100 #Debe ser 100
 path = sys.argv[1]
 
 

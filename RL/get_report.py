@@ -124,7 +124,7 @@ def create_report(PATH, time = 0):
     add_image(PATH,pdf,'/sim_prod.png',30, 350,550,550)
     add_image(PATH,pdf,'/sim_actions.png',30,0,550,550)
     cadena = 'Tiempo de ejecucion: '
-    cadena += str(round((time/(60)),2)) + ' Horas'
+    cadena += str(round((time/(60**2)),2)) + ' Horas'
     add_text(pdf,[cadena],30,60)
     pdf.save()  
 
