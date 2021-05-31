@@ -1,3 +1,4 @@
+from numpy.lib.histograms import histogram
 from trainRL import sim, noise
 import numpy as np
 import pandas as pd
@@ -25,14 +26,14 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/Month_03'#+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 100
-#path = sys.argv[1]
+number_of_simulations = 10
+path = sys.argv[1]
 
 
 def sim_(agent,env):
@@ -55,7 +56,7 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-#agent.load('results_ddpg/' + path)
+agent.load('results_ddpg/' + path)
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
@@ -189,7 +190,8 @@ def histograms(key):
             m = max(m,max(data))
             axes[i].hist(data)
             axes[i].set_ylabel(name.upper())
-    for i in range(4): axes[i].set_xlim(0,m)
+            axes[i].axvline(np.mean(data), color='k', linestyle='dashed', linewidth=1)
+    #for i in range(4): axes[i].set_xlim(0,m)
     fig.suptitle(key.upper(), fontsize=15)
     fig.set_size_inches(18.5, 10.5, forward=True)
     if SHOW:
@@ -200,12 +202,11 @@ def histograms(key):
 
 
 if __name__ == '__main__':
-    #for name in NAMES[1:]:
-    #    shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
+    for name in NAMES[1:]:
+        shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
     #for agente, nombre in zip(AGENTS,NAMES):
-    get_score('03',agent_random,'random')
-    '''
-    fig_production('reward')
+    get_score('03',agent,'nn')
+    histograms('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
     histograms('mass')
@@ -216,7 +217,6 @@ if __name__ == '__main__':
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
-    '''
 
 
 
