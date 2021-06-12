@@ -145,7 +145,7 @@ def main():
 
     ax1.plot(rewards, "-b", label='reward (DDPG)',alpha = 0.3)
     ax1.plot(avg_rewards, "--b", label='avg reward (DDPG)', alpha=0.2)
-    pts = 100 if EPISODES > 100 else 10 
+    pts = 30 if EPISODES > 30 else 10 
     ax1.plot(smooth(rewards,pts), color= 'indigo', label='Smooth reward DDPG', alpha=0.6)
     ax1.set_xlabel('episode')
     ax1.legend(loc='best')
