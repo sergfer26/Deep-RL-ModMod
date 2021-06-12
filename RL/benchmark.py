@@ -26,15 +26,16 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/Month_06' #+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/' + str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
-SHOW = False
+SHOW = not(False)
 
-MONTHS = ['03']
+
 NAMES = ['nn','random','on','off']
-number_of_simulations = 10
+number_of_simulations = 100
 path = sys.argv[1]
-
+mes = sys.argv[2]
+MONTHS = [mes]
 
 def sim_(agent,env):
     print(os.getpid())
@@ -55,8 +56,8 @@ class OtherAgent(object):
 
 env = GreenhouseEnv()
 LIMIT = env.limit
-#agent = DDPGagent(env)
-#agent.load('results_ddpg/' + path)
+agent = DDPGagent(env)
+agent.load('results_ddpg/' + path)
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
@@ -180,18 +181,19 @@ def fig_actions(key):
         plt.close()
 
 
-def histograms(key):
+def histograms(key,same_x = False):
     fig, axes = plt.subplots(4,sharey=True)
     m = 0
     for i,name in enumerate(NAMES):
-        with open(PATH + '/03_' + name + '.json') as f:
+        with open(PATH + '/'+mes+'_' + name + '.json') as f:
             data = json.load(f)
             data = data['vector_' + key]
             m = max(m,max(data))
             axes[i].hist(data)
             axes[i].set_ylabel(name.upper())
             axes[i].axvline(np.mean(data), color='k', linestyle='dashed', linewidth=1)
-    #for i in range(4): axes[i].set_xlim(0,m)
+    if same_x: 
+        for i in range(4): axes[i].set_xlim(0,m)
     fig.suptitle(key.upper(), fontsize=15)
     fig.set_size_inches(18.5, 10.5, forward=True)
     if SHOW:
@@ -202,27 +204,22 @@ def histograms(key):
 
 
 if __name__ == '__main__':
-    '''
     for name in NAMES[1:]:
-        shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
-    '''
-    get_score('06',agent_on,'on')
-    get_score('06',agent_off,'off')
-    get_score('06',agent_random,'random')
+        shutil.copy('results_ddpg/tournament/Month_' + mes + '/' + mes + '_' + name + '.json', PATH)
+    get_score(mes,agent,'nn')
 
-    '''
     histograms('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
-    histograms('mass')
-    histograms('number_of_fruit')
+    histograms('mass',1)
+    histograms('number_of_fruit',1)
     create_report(PATH)
     for name in NAMES[1:]:
-        os.remove(PATH + '/03_' + name + '.json' )
+        os.remove(PATH + '/' + mes + '_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
-    shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/' + mes + '_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
-    '''
+ 
 
 
 
