@@ -26,14 +26,14 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/Month_06' #+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/Month_12' #+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
 MONTHS = ['03']
 NAMES = ['nn','random','on','off']
-number_of_simulations = 100
-path = sys.argv[1]
+number_of_simulations = 100 
+#path = sys.argv[1]
 
 
 def sim_(agent,env):
@@ -206,9 +206,9 @@ if __name__ == '__main__':
     for name in NAMES[1:]:
         shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
     '''
-    get_score('06',agent_on,'on')
-    get_score('06',agent_off,'off')
-    get_score('06',agent_random,'random')
+    get_score('12',agent_on,'on')
+    get_score('12',agent_off,'off')
+    get_score('12',agent_random,'random')
 
     '''
     histograms('reward')
