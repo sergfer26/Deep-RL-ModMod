@@ -26,7 +26,7 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/Month_06' #+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
@@ -55,8 +55,8 @@ class OtherAgent(object):
 
 env = GreenhouseEnv()
 LIMIT = env.limit
-agent = DDPGagent(env)
-agent.load('results_ddpg/' + path)
+#agent = DDPGagent(env)
+#agent.load('results_ddpg/' + path)
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 agent_off = OtherAgent(env, 'off')
@@ -202,10 +202,15 @@ def histograms(key):
 
 
 if __name__ == '__main__':
+    '''
     for name in NAMES[1:]:
         shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
-    #for agente, nombre in zip(AGENTS,NAMES):
-    get_score('03',agent,'nn')
+    '''
+    get_score('06',agent_on,'on')
+    get_score('06',agent_off,'off')
+    get_score('06',agent_random,'random')
+
+    '''
     histograms('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
@@ -217,6 +222,7 @@ if __name__ == '__main__':
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
+    '''
 
 
 
