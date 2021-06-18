@@ -88,11 +88,11 @@ def train_agent(agent, env, noise):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -104,8 +104,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        print(step)
-        #pbar.update(step)
+        pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -117,9 +116,9 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    #pbar.finish()
+    pbar.finish()
     data_inputs = env.return_inputs_climate(start)
-    return S_climate, S_data, S_prod, A, data_inputs
+    return S_climate, S_data, S_prod, A, data_inputs,start
 
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
@@ -127,8 +126,9 @@ def smooth(y, box_pts):
     return y_smooth
 
 def main():
+    from time import time
     t1 = time()
-    PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+    PATH = 'results_ddpg/5_24_216' #'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     mpl.style.use('seaborn')
 
@@ -138,12 +138,8 @@ def main():
         #old_path = 'results_ddpg/5_14_145'
         #print('Se cargo el modelo')
         agent.load(old_path)
-       
+    '''
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
-    dic_rewards = {'rewards': rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    name = PATH + '/rewards.json'
-    with open(name, 'w') as fp:
-        json.dump(dic_rewards, fp,  indent=4)
     agent.save(PATH)
 
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
@@ -165,9 +161,14 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-   
+   '''
 
-    S_climate, S_data, S_prod, A, df_inputs = sim(agent, env, indice = INDICE)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
+    #dic_rewards = {'rewards': rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards,'start':start}
+    #name = PATH + '/rewards.json'
+    #with open(name, 'w') as fp:
+    #    json.dump(dic_rewards, fp,  indent=4)
+
     data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
     
     #Es necesario crear nuevos indices para las graficas, depende de STEP:
@@ -244,7 +245,7 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/Reporte.pdf')
+        #send_correo(PATH + '/Reporte.pdf')
 
 if __name__=='__main__':
     main()
