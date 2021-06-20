@@ -28,11 +28,11 @@ hour = mexico_now.hour
 minute = mexico_now.minute
 PATH = 'results_ddpg/tournament/' + str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
-SHOW = not(False)
+SHOW = False
 
 
 NAMES = ['nn','random','on','off']
-number_of_simulations = 10
+number_of_simulations = 100
 path = sys.argv[1]
 mes = sys.argv[2]
 MONTHS = [mes]
@@ -183,17 +183,19 @@ def fig_actions(key):
 
 def histograms(key,same_x = False):
     fig, axes = plt.subplots(4,sharey=True)
-    m = 0
+    m1 = 0
+    m2 = 0
     for i,name in enumerate(NAMES):
         with open(PATH + '/'+mes+'_' + name + '.json') as f:
             data = json.load(f)
             data = data['vector_' + key]
-            m = max(m,max(data))
+            m1 = max(m1,max(data))
+            m2 = min(m2,min(data))
             axes[i].hist(data)
             axes[i].set_ylabel(name.upper())
             axes[i].axvline(np.mean(data), color='k', linestyle='dashed', linewidth=1)
     if same_x: 
-        for i in range(4): axes[i].set_xlim(0,m)
+        for i in range(4): axes[i].set_xlim(m2,m1)
     fig.suptitle(key.upper(), fontsize=15)
     fig.set_size_inches(18.5, 10.5, forward=True)
     if SHOW:
@@ -213,7 +215,7 @@ if __name__ == '__main__':
     fig_actions('var_actions')
     histograms('mass',1)
     histograms('number_of_fruit',1)
-    create_report(PATH)
+    create_report(PATH,mes)
     for name in NAMES[1:]:
         os.remove(PATH + '/' + mes + '_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)

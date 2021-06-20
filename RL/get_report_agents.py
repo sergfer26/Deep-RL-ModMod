@@ -82,7 +82,7 @@ def add_text(pdf,textLines,x,y):
 def add_image(PATH,pdf,name,x,y,width = 500,height=500):
     pdf.drawInlineImage(PATH + name , x,y, width = width, height=height,preserveAspectRatio=True)
 
-def create_report(PATH):
+def create_report(PATH, mes = ''):
     fileName = '/Reporte_agentes.pdf'
     fileName = PATH + fileName
     documentTitle = 'Document title!'
@@ -106,7 +106,7 @@ def create_report(PATH):
     pdf.showPage()
     #Siguiente pagina
     add_image(PATH,pdf,'/histograms_reward.png',10, 350,600,600)
-    add_text(pdf,[PATH],10,60)
+    add_text(pdf,[PATH + ' ' + 'mes: ' + mes],10,60)
     pdf.showPage()
     #Siguiente pagina
 
