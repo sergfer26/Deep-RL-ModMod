@@ -128,7 +128,7 @@ def smooth(y, box_pts):
 def main():
     from time import time
     t1 = time()
-    PATH = 'results_ddpg/5_24_216' #'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+    PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     mpl.style.use('seaborn')
 
@@ -138,7 +138,7 @@ def main():
         #old_path = 'results_ddpg/5_14_145'
         #print('Se cargo el modelo')
         agent.load(old_path)
-    '''
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -161,13 +161,14 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-   '''
+
 
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    #dic_rewards = {'rewards': rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards,'start':start}
-    #name = PATH + '/rewards.json'
-    #with open(name, 'w') as fp:
-    #    json.dump(dic_rewards, fp,  indent=4)
+    breakpoint()
+    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    name = PATH + '/rewards.json'
+    with open(name, 'w') as fp:
+        json.dump(dic_rewards, fp,  indent=4)
 
     data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
     
@@ -180,15 +181,17 @@ def main():
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
 
     df_climate.index = final_indexes
-    ax = df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
-    ax[0,0].set_ylabel('C')
-    ax[0,1].set_ylabel('C')
+    ax = df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7),title = 'Variables de estado') 
+    ax[0,0].set_ylabel('$ ^{\circ} C$')
+    ax[0,1].set_ylabel('$ ^{\circ} C$')
     ax[1,0].set_ylabel('Pa')
     ax[1,1].set_ylabel('$mg * m^{-3}$')
+
     plt.gcf().autofmt_xdate()
 
     if SHOW:
         plt.show()
+        plt.close()
     else:
         plt.savefig(PATH + '/sim_climate.png')
         plt.close()
@@ -196,7 +199,7 @@ def main():
 
     df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
     df_data.index = final_indexes
-    ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7)) 
+    ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Información extra diaria') 
     ax[0,0].set_ylabel('%')
     ax[0,1].set_ylabel('$W*m^{2}$')
     plt.gcf().autofmt_xdate()
@@ -208,8 +211,10 @@ def main():
 
     df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
     df_prod.index = final_indexes
-    title='$H =$ {}, $NF=$ {}'.format(df_prod['$H$'].iloc[-1], df_prod['$N$'].iloc[-1])
-    df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
+    title= 'Produccion y recompensas'
+    ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
+    ax[0,0].set_ylabel('g')
+    ax[1,0].set_ylabel('g')
     plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
@@ -218,7 +223,7 @@ def main():
         plt.close()
 
     dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
-    title= '$U$' # $U$
+    title= 'Controles' # $U$
     dfa.index = final_indexes
     dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
     plt.gcf().autofmt_xdate()
@@ -229,13 +234,12 @@ def main():
         plt.close()
     
     df_inputs.index = final_indexes
-    ax = df_inputs.plot(subplots=True, figsize=(10, 7))
+    ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
     ax[0].set_ylabel('$W*m^{2}$')
     ax[1].set_ylabel('C')
     ax[2].set_ylabel('$Km*h^{-1}$')
     ax[3].set_ylabel('$W*m^{2}$')
     ax[4].set_ylabel('%')
-
     plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
