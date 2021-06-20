@@ -15,6 +15,7 @@ from math import ceil
 from datetime import datetime, timezone
 from time import time
 from correo import send_correo
+import json
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
@@ -87,11 +88,11 @@ def train_agent(agent, env, noise):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -103,7 +104,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #pbar.update(step)
+        pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -115,9 +116,9 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    #pbar.finish()
+    pbar.finish()
     data_inputs = env.return_inputs_climate(start)
-    return S_climate, S_data, S_prod, A, data_inputs
+    return S_climate, S_data, S_prod, A, data_inputs,start
 
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
@@ -125,6 +126,7 @@ def smooth(y, box_pts):
     return y_smooth
 
 def main():
+    from time import time
     t1 = time()
     PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
@@ -136,7 +138,7 @@ def main():
         #old_path = 'results_ddpg/5_14_145'
         #print('Se cargo el modelo')
         agent.load(old_path)
-       
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -154,28 +156,53 @@ def main():
     ax2.plot(penalties, label='penalty', alpha=0.5)
     ax2.set_xlabel('episode')
     ax2.legend(loc='best')
-
     if SHOW:
         plt.show()
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-   
 
-    S_climate, S_data, S_prod, A, data_inputs = sim(agent, env, indice = INDICE)
+
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
+    breakpoint()
+    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    name = PATH + '/rewards.json'
+    with open(name, 'w') as fp:
+        json.dump(dic_rewards, fp,  indent=4)
+
+    data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
+    
+    #Es necesario crear nuevos indices para las graficas, depende de STEP:
+    for_indexes = int(STEP*24) 
+    num_steps = int(1/STEP)*TIME_MAX
+    new_indexes = [env.i+(for_indexes*j) for j in range(num_steps)]
+    final_indexes = [data_inputs['Date'][index] for index in new_indexes]
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-    df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7)) 
+
+    df_climate.index = final_indexes
+    ax = df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7),title = 'Variables de estado') 
+    ax[0,0].set_ylabel('$ ^{\circ} C$')
+    ax[0,1].set_ylabel('$ ^{\circ} C$')
+    ax[1,0].set_ylabel('Pa')
+    ax[1,1].set_ylabel('$mg * m^{-3}$')
+
+    plt.gcf().autofmt_xdate()
 
     if SHOW:
         plt.show()
+        plt.close()
     else:
         plt.savefig(PATH + '/sim_climate.png')
         plt.close()
 
 
     df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
-    df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7)) 
+    df_data.index = final_indexes
+    ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Información extra diaria') 
+    ax[0,0].set_ylabel('%')
+    ax[0,1].set_ylabel('$W*m^{2}$')
+    plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
     else:
@@ -183,8 +210,12 @@ def main():
         plt.close()
 
     df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-    title='$H =$ {}, $NF=$ {}'.format(df_prod['$H$'].iloc[-1], df_prod['$N$'].iloc[-1])
-    df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
+    df_prod.index = final_indexes
+    title= 'Produccion y recompensas'
+    ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
+    ax[0,0].set_ylabel('g')
+    ax[1,0].set_ylabel('g')
+    plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
     else:
@@ -192,18 +223,24 @@ def main():
         plt.close()
 
     dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
-    title= '$U$' # $U$
+    title= 'Controles' # $U$
+    dfa.index = final_indexes
     dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
+    plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
     else:
         plt.savefig(PATH + '/sim_actions.png')
         plt.close()
-
-
-    data_inputs.set_index(['Date'], inplace=True) #Hace que el eje x sea la fecha
-    data_inputs.plot(subplots=True, figsize=(10, 7))
-    plt.tight_layout()
+    
+    df_inputs.index = final_indexes
+    ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
+    ax[0].set_ylabel('$W*m^{2}$')
+    ax[1].set_ylabel('C')
+    ax[2].set_ylabel('$Km*h^{-1}$')
+    ax[3].set_ylabel('$W*m^{2}$')
+    ax[4].set_ylabel('%')
+    plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
     else:
@@ -212,7 +249,7 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/Reporte.pdf')
+        #send_correo(PATH + '/Reporte.pdf')
 
 if __name__=='__main__':
     main()
