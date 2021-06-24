@@ -19,6 +19,7 @@ import os
 from time import time
 import shutil
 import os
+import glob
 
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -220,6 +221,8 @@ if __name__ == '__main__':
         os.remove(PATH + '/' + mes + '_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/' + mes + '_nn.json', 'results_ddpg/' + path)
+    for pngfile in glob.iglob(os.path.join(PATH, "*.png")): #Copiar todas las imagenes
+        shutil.copy(pngfile, 'results_ddpg/' + path)
     os.remove(PATH + '/Reporte_agentes.pdf')
  
 
