@@ -33,7 +33,7 @@ SHOW = False
 
 
 NAMES = ['nn','random','on','off']
-number_of_simulations = 100
+number_of_simulations = 5
 path = sys.argv[1]
 mes = sys.argv[2]
 MONTHS = [mes]
@@ -192,7 +192,7 @@ def histograms(key,same_x = False):
             data = data['vector_' + key]
             m1 = max(m1,max(data))
             m2 = min(m2,min(data))
-            axes[i].hist(data)
+            axes[i].hist(data,bins = 30)
             axes[i].set_ylabel(name.upper())
             axes[i].axvline(np.mean(data), color='k', linestyle='dashed', linewidth=1)
     if same_x: 
