@@ -221,8 +221,13 @@ if __name__ == '__main__':
         os.remove(PATH + '/' + mes + '_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/' + mes + '_nn.json', 'results_ddpg/' + path)
-    for pngfile in glob.iglob(os.path.join(PATH, "*.png")): #Copiar todas las imagenes
-        shutil.copy(pngfile, 'results_ddpg/' + path)
+
+    shutil.copy(PATH + 'histograms_mass.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + 'histograms_number_of_fruit.png' + mes + '_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + 'histograms_reward.png' + mes + '_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + 'mean_actions.png' + mes + '_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + 'var_actions.png' + mes + '_nn.json', 'results_ddpg/' + path)
+
     os.remove(PATH + '/Reporte_agentes.pdf')
  
 
