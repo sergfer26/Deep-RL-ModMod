@@ -88,11 +88,11 @@ def train_agent(agent, env, noise):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -104,7 +104,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #pbar.update(step)
+        pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -116,7 +116,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    #pbar.finish()
+    pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
@@ -131,7 +131,7 @@ def main():
     PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     mpl.style.use('seaborn')
-
+    agent.load(PATH)
     if len(sys.argv) != 1:
     # Load trained model 
         old_path = sys.argv[1:].pop()
@@ -161,8 +161,9 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
+    
 
-
+    
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
     dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
     name = PATH + '/rewards.json'
@@ -174,7 +175,7 @@ def main():
     #Es necesario crear nuevos indices para las graficas, depende de STEP:
     for_indexes = int(STEP*24) 
     num_steps = int(1/STEP)*TIME_MAX
-    new_indexes = [env.i+(for_indexes*j) for j in range(num_steps)]
+    new_indexes = [start+(for_indexes*j) for j in range(num_steps)]
     final_indexes = [data_inputs['Date'][index] for index in new_indexes]
 
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
@@ -198,7 +199,7 @@ def main():
 
     df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
     df_data.index = final_indexes
-    ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Información extra diaria') 
+    ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Promedios diarios') 
     ax[0,0].set_ylabel('%')
     ax[0,1].set_ylabel('$W*m^{2}$')
     plt.gcf().autofmt_xdate()
@@ -222,9 +223,10 @@ def main():
         plt.close()
 
     dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
-    title= 'Controles' # $U$
+    title = 'Controles' # $U$
     dfa.index = final_indexes
-    dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
+    ax = dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
+    for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
     plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
@@ -247,7 +249,7 @@ def main():
         plt.close()
     t2 = time()
     if not(SHOW):
-        create_report(PATH,t2-t1)
+        create_report(PATH,73.98*(60**2))
         #send_correo(PATH + '/Reporte.pdf')
 
 if __name__=='__main__':
