@@ -22,6 +22,8 @@ from sympy import symbols
 from math import sqrt, exp, log, pi
 from scipy.stats import norm
 from numpy.random import seed
+import json
+from params_climate import PARAMS_CLIMATE
 
 ###########################
 ### Símbolos y funciones ##
@@ -559,7 +561,10 @@ I14 = 100.0  #Global radiation above the canopy
 
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
-theta = np.array([3000, 20, 2.3e5])
+psi2  = PARAMS_CLIMATE['psi2']
+lamb4 = PARAMS_CLIMATE['lamb4']
+alpha3 = PARAMS_CLIMATE['alpha3']
+theta = np.array([3000, 20, psi2])
 """
     Se resuelve el sistema de EDO en función de los parámetros
     contenidos en el vector theta.
@@ -620,7 +625,7 @@ class C1_rhs(StateRHS):
                     desc="Photorespiration during photosynthesis", units=1, val=I13)  # Falta valor y unidades
         # Constants
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
-                    desc="Heat capacity of direct air heater", units=W, val=1)  # Falta valor, aunque en los ejemplos del artículo no se considera
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4)  # Dr Antonio dio el valor 
         self.AddVar(typ='Cnts', varid='alpha6', prn=r'$\alpha_6$',
                     desc="Greenhouse floor surface area", units=m**2, val=1e4)  # ok
         self.AddVar(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
@@ -752,7 +757,7 @@ class V1_rhs(StateRHS):
                     desc="Global radiation above the canopy", units=W * m**-2, val=I14)
         # Constants
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
-                    desc="Heat capacity of direct air heater", units=W, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4) # Falta valor, aunque en los ejemplos del artículo no se considera
         self.AddVar(typ='Cnts', varid='alpha6', prn=r'$\alpha_6$',
                     desc="Greenhouse floor surface area", units=m**2, val=1e4) # ok
         self.AddVar(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
@@ -986,7 +991,7 @@ class T1_rhs(StateRHS):
         self.AddVar(typ='Cnts', varid='eta3', prn=r'$\eta_3$',
                     desc="Ratio between NIR radiation and global external radiation", units=1, val=0.5) # ok
         self.AddVar(typ='Cnts', varid='alpha3', prn=r'$\alpha_3$',
-                    desc="Surface of the heating pipe", units=m**2, val=1) # Falta valor
+                    desc="Surface of the heating pipe", units=m**2*m**-2, val=alpha3) # Valor proporcionado por Dr Antonio
         self.AddVar(typ='Cnts', varid='epsil1', prn=r'$\epsilon_1$',
                     desc="FIR emission coefficient of the heating pipe", units=1, val=0.88) # ok
         self.AddVar(typ='Cnts', varid='epsil2', prn=r'$\epsilon_2$',
@@ -1191,7 +1196,7 @@ class T2_rhs(StateRHS):
         self.AddVar(typ='Cnts', varid='lamb3', prn=r'$\lambda_3$',
                     desc="Convictive heat exchange coefficient between soil and greenhouse air", units=W * m**-2 * K**-1, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
-                    desc="Heat capacity of direct air heater", units=W, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4) # Falta valor, aunque en los ejemplos del artículo no se considera
         self.AddVar(typ='Cnts', varid='alpha2', prn=r'$\alpha_2$',
                     desc="Global NIR absorption coefficient of the canopy", units=1, val=0.35) # ok
         self.AddVar(typ='Cnts', varid='alpha7', prn=r'$\alpha_7$',

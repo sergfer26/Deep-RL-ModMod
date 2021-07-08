@@ -13,6 +13,7 @@ from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
 from get_indexes import Indexes
 from params import PARAMS_ENV
+from reward import G, Qgas, Qco2
 
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10 C1') # varibles de costo y clima
@@ -48,7 +49,14 @@ class GreenhouseEnv(gym.Env):
         self.dirGreenhouse = GreenHouse()
         self.i = 0
         self.indexes = Indexes(data_inputs[0:self.limit],MONTH) if MONTH != 'RANDOM' else None
+        self.daily_C1 = list()
+        self.daily_T2 = list()
         self._reset()
+
+    def reset_daily_lists(self):
+        '''Recrea las listas para promedios diarios '''
+        self.daily_C1 = list()
+        self.daily_T2 = list()
 
     def is_done(self):
         if self.i == self.time_max/self.dt -1:
@@ -74,6 +82,7 @@ class GreenhouseEnv(gym.Env):
             breakpoint()
         self.dirClimate.update_controls(action)
         C1 = list(); T = list()
+        Q_gas = list(); Q_co2 = list()
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
@@ -81,23 +90,26 @@ class GreenhouseEnv(gym.Env):
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
             T.append(self.dirClimate.OutVar('T2'))
-        
+            Q_gas.append(Qgas(self.dirClimate) * 60) # de minutos a segundos
+            Q_co2.append(Qco2(self.dirClimate) * 60)
+
+        self.daily_C1 += C1
+        self.daily_T2 += T
         reward = 0.0
         #old_h = self.dirGreenhouse.V('h')
         if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
-            C1M = float(np.mean(C1)) 
-            TM = float(np.mean(T))                    
+            C1M = float(np.mean(self.daily_C1)) 
+            TM = float(np.mean(self.daily_T2))
+            self.reset_daily_lists()
             PARM = self.get_mean_data(data_inputs['I2']) # PAR
             RHM = self.get_mean_data(data_inputs['RH'])
             self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
             self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
             h = self.dirGreenhouse.V('h')
-            n = self.dirGreenhouse.V('n')
-            reward += reward_function(h, n)
+            reward += G(h)
         self.state = self.update_state()
         done = self.is_done()
-        _, _, u3, u4, _, _, u7, _, u9, u10 = action
-        reward += penalty_function(u3, u4, u7, u9, u10,float(self.state['C1']))
+        reward -= np.sum(Q_gas) + np.sum(Q_co2)
         self.i += 1
         state = np.array(list(self.state.values()))
         return state, reward, done

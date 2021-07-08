@@ -19,6 +19,7 @@ import os
 from time import time
 import shutil
 import os
+import glob
 
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
@@ -26,15 +27,16 @@ month = mexico_now.month
 day = mexico_now.day
 hour = mexico_now.hour
 minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+PATH = 'results_ddpg/tournament/' + str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
 SHOW = False
 
-MONTHS = ['03']
-NAMES = ['nn','random','on','off']
-number_of_simulations = 10
-path = sys.argv[1]
 
+NAMES = ['nn','random','on','off']
+number_of_simulations = 100
+path = sys.argv[1]
+mes = sys.argv[2]
+MONTHS = [mes]
 
 def sim_(agent,env):
     print(os.getpid())
@@ -81,7 +83,7 @@ def get_score(month,agent,name):
     BIG_DATA = p.starmap(sim_, V)
     BIG_DATA = list(BIG_DATA)
     for s in BIG_DATA:
-        _, _, S_prod, A, _ = s
+        _, _, S_prod, A, _, _ = s
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
         aux = len(df_prod) - 1
         number_of_fruit =  df_prod['$N$'][aux]
@@ -123,7 +125,6 @@ def fig_production(string):
     X = np.arange(len(MONTHS))
     axes[0].set_ylabel('mean')
     axes[1].set_ylabel('var')
-    breakpoint()
     axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0] + ' = ' + str(float(np.round(PROMEDIOS[0],3))))
     axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label =  NAMES[0])
     axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1] + ' = '+ str(float(np.round(PROMEDIOS[1],3))))
@@ -166,7 +167,6 @@ def fig_actions(key):
         axes.bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label =  NAMES[1])
         axes.bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label =  NAMES[2])
         axes.bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label =  NAMES[3])
-
         axes.set_xticks(X)
         axes.set_xticklabels(names)
     axes.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
@@ -180,18 +180,21 @@ def fig_actions(key):
         plt.close()
 
 
-def histograms(key):
+def histograms(key,same_x = False):
     fig, axes = plt.subplots(4,sharey=True)
-    m = 0
+    m1 = 0
+    m2 = 0
     for i,name in enumerate(NAMES):
-        with open(PATH + '/03_' + name + '.json') as f:
+        with open(PATH + '/'+mes+'_' + name + '.json') as f:
             data = json.load(f)
             data = data['vector_' + key]
-            m = max(m,max(data))
+            m1 = max(m1,max(data))
+            m2 = min(m2,min(data))
             axes[i].hist(data)
             axes[i].set_ylabel(name.upper())
             axes[i].axvline(np.mean(data), color='k', linestyle='dashed', linewidth=1)
-    #for i in range(4): axes[i].set_xlim(0,m)
+    if same_x: 
+        for i in range(4): axes[i].set_xlim(m2,m1)
     fig.suptitle(key.upper(), fontsize=15)
     fig.set_size_inches(18.5, 10.5, forward=True)
     if SHOW:
@@ -203,20 +206,29 @@ def histograms(key):
 
 if __name__ == '__main__':
     for name in NAMES[1:]:
-        shutil.copy('results_ddpg/tournament/Month_03/03_' + name + '.json', PATH)
-    #for agente, nombre in zip(AGENTS,NAMES):
-    get_score('03',agent,'nn')
+        shutil.copy('results_ddpg/tournament/Month_' + mes + '/' + mes + '_' + name + '.json', PATH)
+    get_score(mes,agent,'nn')
+
     histograms('reward')
     fig_actions('mean_actions')
     fig_actions('var_actions')
-    histograms('mass')
-    histograms('number_of_fruit')
-    create_report(PATH)
+    histograms('mass',1)
+    histograms('number_of_fruit',1)
+    create_report(PATH,mes)
     for name in NAMES[1:]:
-        os.remove(PATH + '/03_' + name + '.json' )
+        os.remove(PATH + '/' + mes + '_' + name + '.json' )
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
-    shutil.copy(PATH + '/03_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/' + mes + '_nn.json', 'results_ddpg/' + path)
+
+    shutil.copy(PATH + '/histograms_mass.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/histograms_number_of_fruit.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/histograms_reward.png' , 'results_ddpg/' + path)
+    shutil.copy(PATH + '/mean_actions.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/var_actions.png', 'results_ddpg/' + path)
+
     os.remove(PATH + '/Reporte_agentes.pdf')
+    breakpoint()
+ 
 
 
 
