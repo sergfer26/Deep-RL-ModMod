@@ -131,14 +131,13 @@ def main():
     PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     mpl.style.use('seaborn')
-    agent.load(PATH)
     if len(sys.argv) != 1:
     # Load trained model 
         old_path = sys.argv[1:].pop()
-        #old_path = 'results_ddpg/5_14_145'
-        #print('Se cargo el modelo')
-        agent.load(old_path)
-    
+    old_path = 'results_ddpg/6_20_159'
+    print('Se cargo el modelo')
+    agent.load(old_path)
+    '''
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -161,14 +160,15 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
+    '''
     
 
     
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    name = PATH + '/rewards.json'
-    with open(name, 'w') as fp:
-        json.dump(dic_rewards, fp,  indent=4)
+    #dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    #name = PATH + '/rewards.json'
+    #with open(name, 'w') as fp:
+    #    json.dump(dic_rewards, fp,  indent=4)
 
     data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
     
@@ -249,7 +249,8 @@ def main():
         plt.close()
     t2 = time()
     if not(SHOW):
-        create_report(PATH,73.98*(60**2))
+        pass
+        #create_report(PATH,73.98*(60**2))
         #send_correo(PATH + '/Reporte.pdf')
 
 if __name__=='__main__':
