@@ -19,6 +19,7 @@ import json
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
+from reward import G
 
 EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
@@ -49,6 +50,7 @@ def train_agent(agent, env, noise):
     penalties = []
     abs_rewards = []
     for episode in range(EPISODES):
+        print(episode)
         #with tqdm(total=STEPS, position=0) as pbar:
         #pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
         state = env.reset()
@@ -57,20 +59,17 @@ def train_agent(agent, env, noise):
         abs_reward = 0
         episode_penalty = 0
         for step in range(STEPS):
+            print(step)
             action = agent.get_action(state)
             action = noise.get_action(action)
             new_state, reward, done = env.step(action) # modify
             agent.memory.push(state, action, reward, new_state, done)
             if len(agent.memory) > BATCH_SIZE:
-                agent.update(BATCH_SIZE)  
-            _, _, u3, u4, _, _, u7, _, u9, u10 = action # modify
-            p = -penalty_function(u3, u4, u7, u9, u10,float(env.state['C1']))
-            r = 0.0
-            #if (env.i + 1) % (1/env.dt) == 0:
-            #    h = new_state[-2]; n = new_state[-1]
+                agent.update(BATCH_SIZE)
+            g = G(state[4]) # ganacia por masa de pepino al tiempo t
             episode_reward += reward
-            abs_reward += reward - p
-            episode_penalty += p
+            abs_reward += g
+            episode_penalty += -(reward - g)
             #pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(NF), H='{:2f}'.format(H))
             #pbar.update(1)      
             state = new_state
@@ -134,10 +133,9 @@ def main():
     if len(sys.argv) != 1:
     # Load trained model 
         old_path = sys.argv[1:].pop()
-    old_path = 'results_ddpg/6_20_159'
-    print('Se cargo el modelo')
-    agent.load(old_path)
-    '''
+        print('Se cargo el modelo')
+        agent.load(old_path)
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -160,15 +158,15 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-    '''
+    
     
 
     
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    #dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    #name = PATH + '/rewards.json'
-    #with open(name, 'w') as fp:
-    #    json.dump(dic_rewards, fp,  indent=4)
+    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    name = PATH + '/rewards.json'
+    with open(name, 'w') as fp:
+        json.dump(dic_rewards, fp,  indent=4)
 
     data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
     
@@ -222,10 +220,10 @@ def main():
         plt.savefig(PATH + '/sim_prod.png')
         plt.close()
 
-    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
+    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
     title = 'Controles' # $U$
     dfa.index = final_indexes
-    ax = dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
+    ax = dfa.plot(subplots=True, layout=(int(np.ceil(action_dim / 2)), 2), figsize=(10, 7), title=title) 
     for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
     plt.gcf().autofmt_xdate()
     if SHOW:
