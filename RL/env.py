@@ -55,8 +55,8 @@ class GreenhouseEnv(gym.Env):
 
     def reset_daily_lists(self):
         '''Recrea las listas para promedios diarios '''
-        self.daily_C1 = list()
-        self.daily_T2 = list()
+        self.daily_C1 = list([0])
+        self.daily_T2 = list([0])
 
     def is_done(self):
         if self.i == self.time_max/self.dt -1:
