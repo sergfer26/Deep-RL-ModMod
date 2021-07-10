@@ -9,7 +9,7 @@ PARAMS_ENV = {'R': 'min(0.01 * h, 10)' , \
 #Para benchmark y tournament es recomendable que sea 'RANDOM', pero no absolutamente necesario.
 
 #El min de STEP  no es 1/24, pero el min de FRECUENCY SÍ es 60
-PARAMS_TRAIN = {'EPISODES': 1000, \
+PARAMS_TRAIN = {'EPISODES': 10, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
                 'BATCH_SIZE': 128, \
                 'SHOW': False, \

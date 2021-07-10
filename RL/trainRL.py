@@ -19,6 +19,7 @@ import json
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
+from reward import G
 
 EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
@@ -140,10 +141,9 @@ def main():
     if len(sys.argv) != 1:
     # Load trained model 
         old_path = sys.argv[1:].pop()
-    old_path = 'results_ddpg/6_20_159'
-    print('Se cargo el modelo')
-    agent.load(old_path)
-    '''
+        print('Se cargo el modelo')
+        agent.load(old_path)
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -166,15 +166,15 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-    '''
+    
     
 
     
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    #dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    #name = PATH + '/rewards.json'
-    #with open(name, 'w') as fp:
-    #    json.dump(dic_rewards, fp,  indent=4)
+    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    name = PATH + '/rewards.json'
+    with open(name, 'w') as fp:
+        json.dump(dic_rewards, fp,  indent=4)
 
     data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
     
@@ -228,10 +228,10 @@ def main():
         plt.savefig(PATH + '/sim_prod.png')
         plt.close()
 
-    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
+    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
     title = 'Controles' # $U$
     dfa.index = final_indexes
-    ax = dfa.plot(subplots=True, layout=(action_dim // 2, 2), figsize=(10, 7), title=title) 
+    ax = dfa.plot(subplots=True, layout=(int(np.ceil(action_dim / 2)), 2), figsize=(10, 7), title=title) 
     for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
     plt.gcf().autofmt_xdate()
     if SHOW:

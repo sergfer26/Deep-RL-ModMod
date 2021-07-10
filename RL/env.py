@@ -26,8 +26,8 @@ penalty_function = lambdify(CONTROLS, symP)
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(10); # LOW_ACTION[7] = 0.5
-HIGH_ACTION = np.ones(10)
+LOW_ACTION = np.zeros(11); # LOW_ACTION[7] = 0.5
+HIGH_ACTION = np.ones(11)
 STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
 TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
 data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
@@ -64,13 +64,6 @@ class GreenhouseEnv(gym.Env):
         else: 
             return False
 
-    def get_reward(self, h, nf, action):
-        _, _, u3, u4, _, _, u7, _, u9, u10 = action
-        out = 0.0
-        out += penalty_function(u3, u4, u7, u9, u10)
-        out += reward_function(h, nf)
-        return out
-
     def get_mean_data(self, data):
         end = int((self.i +1) * self.frec // FRECUENCY)
         start = int(end - 24 * 60/FRECUENCY) 
@@ -90,8 +83,8 @@ class GreenhouseEnv(gym.Env):
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
             T.append(self.dirClimate.OutVar('T2'))
-            Q_gas.append(Qgas(self.dirClimate) * 60) # de minutos a segundos
-            Q_co2.append(Qco2(self.dirClimate) * 60)
+            Q_gas.append(Qgas(self.dirClimate)) 
+            Q_co2.append(Qco2(self.dirClimate))
 
         self.daily_C1 += C1
         self.daily_T2 += T
@@ -109,7 +102,7 @@ class GreenhouseEnv(gym.Env):
             reward += G(h)
         self.state = self.update_state()
         done = self.is_done()
-        reward -= np.sum(Q_gas) + np.sum(Q_co2)
+        reward -= (np.sum(Q_gas) + np.sum(Q_co2))/24 # poner delta t general
         self.i += 1
         state = np.array(list(self.state.values()))
         return state, reward, done
