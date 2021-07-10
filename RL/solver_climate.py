@@ -1280,6 +1280,34 @@ class T2_rhs(StateRHS):
         return (kappa_2**-1)*(h_1 + h_2 + h_3 + h_4 + h_5 + h_6 + r_8 - h_7 - h_10 - l_2 - r_10 - h_11)
 
 
+class Qgas_rhs(StateRHS):
+    """Define a RHS, this is the rhs for Qgas, the gas cost per m^2"""
+    def __init__(self):
+        # uses the super class __init__
+        super().__init__()
+        self.SetSymbTimeUnits(mt)  # minuts
+        nrec = nmrec  # Number of outputs that will be record
+        ### Add variables ###
+        # State variables
+        self.AddVar(typ='State', varid='T2', prn=r'$T_2$',
+                    desc="Greenhouse air temperature", units=C, val=T2_in, rec=nrec) # falta valor inicial
+        self.AddVar(typ='State', varid='T1', prn=r'$T_1$',
+                    desc="Canopy temperature", units=C, val=T1_in, rec=nrec) # falta valor inicial
+        # Inputs
+        self.AddVar(typ='Cnts', varid='I1', prn=r'$I_1$',
+                    desc="Leaf area index", units=m**2 * m**-2, val=I1) # Valor tomado de internet
+        self.AddVar(typ='State', varid='I3', prn=r'$I_3$',
+                    desc="Heating pipe temperature", units=C, val=I3)
+
+    def RHS(self, Dt):
+        r_6 = 0
+        h_4 = 0
+        h_6 = 0
+        return max(r_6 + h_4, 0) + h_6 # falta multiplicar por constante
+
+
+
+
 ###########################
 ### Definición Director ###
 ###########################
