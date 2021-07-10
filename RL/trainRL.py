@@ -26,6 +26,7 @@ STEPS = PARAMS_TRAIN['STEPS']
 BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
 SHOW = PARAMS_TRAIN['SHOW']
 INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
+
 tz = pytz.timezone('America/Mexico_City')
 mexico_now = datetime.now(tz)
 month = mexico_now.month
@@ -44,38 +45,45 @@ state_dim = env.observation_space.shape[0]
 #writer_abs = SummaryWriter()
 #writer_penalty = SummaryWriter()
 
+if not SHOW:
+    from functools import partialmethod
+    tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
+
+
 def train_agent(agent, env, noise):
     rewards = []
     avg_rewards = []
     penalties = []
     abs_rewards = []
     for episode in range(EPISODES):
-        print(episode)
-        #with tqdm(total=STEPS, position=0) as pbar:
-        #pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
-        state = env.reset()
-        noise.reset()
-        episode_reward = 0
-        abs_reward = 0
-        episode_penalty = 0
-        for step in range(STEPS):
-            print(step)
-            action = agent.get_action(state)
-            action = noise.get_action(action)
-            new_state, reward, done = env.step(action) # modify
-            agent.memory.push(state, action, reward, new_state, done)
-            if len(agent.memory) > BATCH_SIZE:
-                agent.update(BATCH_SIZE)
-            g = G(state[4]) # ganacia por masa de pepino al tiempo t
-            episode_reward += reward
-            abs_reward += g
-            episode_penalty += -(reward - g)
-            #pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(NF), H='{:2f}'.format(H))
-            #pbar.update(1)      
-            state = new_state
-            if done:
-                #sys.stdout.write("episode: {}, reward: {}, average _reward: {} \n".format(episode, np.round(episode_reward, decimals=2), np.mean(rewards[-10:])))
-                break
+        with tqdm(total=STEPS, position=0) as pbar:
+            pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
+            state = env.reset()
+            noise.reset()
+            episode_reward = 0
+            abs_reward = 0
+            episode_penalty = 0
+            for step in range(STEPS):
+                action = agent.get_action(state)
+                action = noise.get_action(action)
+                new_state, reward, done = env.step(action) # modify
+                agent.memory.push(state, action, reward, new_state, done)
+                if len(agent.memory) > BATCH_SIZE:
+                    agent.update(BATCH_SIZE)  
+                _, _, u3, u4, _, _, u7, _, u9, u10 = action # modify
+                p = -penalty_function(u3, u4, u7, u9, u10,float(env.state['C1']))
+                r = 0.0
+                #if (env.i + 1) % (1/env.dt) == 0:
+                #   h = new_state[-2]; n = new_state[-1]
+                episode_reward += reward
+                abs_reward += reward - p
+                episode_penalty += p
+                pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(NF), H='{:2f}'.format(H))
+                pbar.update(1)      
+                state = new_state
+                if done:
+                    #sys.stdout.write("episode: {}, reward: {}, average _reward: {} \n".format(episode, np.round(episode_reward, decimals=2), np.mean(rewards[-10:])))
+                    break
         rewards.append(episode_reward)
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)

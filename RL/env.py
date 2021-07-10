@@ -75,7 +75,7 @@ class GreenhouseEnv(gym.Env):
             breakpoint()
         self.dirClimate.update_controls(action)
         C1 = list(); T = list()
-        Q_gas = list(); Q_co2 = list()
+        Q_var = 0
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
@@ -83,12 +83,16 @@ class GreenhouseEnv(gym.Env):
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
             T.append(self.dirClimate.OutVar('T2'))
-            Q_gas.append(Qgas(self.dirClimate)) 
-            Q_co2.append(Qco2(self.dirClimate))
+            Q_var += self.dirClimate.OutVar('Qgas') 
+            Q_var += self.dirClimate.OutVar('Qco2')
+        
+        reward = 0.0 
+        Qh = Q_var - self.old_Qvar # Qvar de este paso
+        reward -= Qh
+        self.old_Qvar = Qh # Actualizo Qvar del paso anterior
 
         self.daily_C1 += C1
         self.daily_T2 += T
-        reward = 0.0
         #old_h = self.dirGreenhouse.V('h')
         if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
             C1M = float(np.mean(self.daily_C1)) 
@@ -102,7 +106,6 @@ class GreenhouseEnv(gym.Env):
             reward += G(h)
         self.state = self.update_state()
         done = self.is_done()
-        reward -= (np.sum(Q_gas) + np.sum(Q_co2))/24 # poner delta t general
         self.i += 1
         state = np.array(list(self.state.values()))
         return state, reward, done
@@ -123,6 +126,8 @@ class GreenhouseEnv(gym.Env):
         RH = float(data_inputs['RH'].iloc[self.i * (self.frec//FRECUENCY)])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
+        self.old_Qvar = 0
+        self.Qvar = 0
     
     def set_index(self):
         if MONTH == 'RANDOM':
