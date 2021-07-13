@@ -7,34 +7,29 @@ from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
 #from progress.bar import Bar
-from solver_climate import Climate_model
+from climate_model.model import Climate_model
 from solver_prod import GreenHouse
-from sympy import symbols, lambdify
-from sympy.parsing.sympy_parser import parse_expr
 from get_indexes import Indexes
 from params import PARAMS_ENV
-from reward import G, Qgas, Qco2
 
-OUTPUTS = symbols('h nf') # variables de recompensa
-CONTROLS = symbols('u3 u4 u7 u9 u10 C1') # varibles de costo y clima
-R = PARAMS_ENV['R']   # función de recompensa
-P = PARAMS_ENV['P'] # función de penalización
-symR = parse_expr(R)
-symP = parse_expr(P)
-reward_function = lambdify(OUTPUTS, symR)
-penalty_function = lambdify(CONTROLS, symP)
 
-LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
-HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(11); # LOW_ACTION[7] = 0.5
+LOW_OBS     = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
+HIGH_OBS    = np.ones(6)
+LOW_ACTION  = np.zeros(11) # LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(11)
-STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
-TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
+STEP        = PARAMS_ENV['STEP']  # día / # de pasos por día
+TIME_MAX    = PARAMS_ENV['TIME_MAX'] # días  
 data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
-SAMPLES = len(data_inputs) 
-FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
-MONTH = PARAMS_ENV['MONTH'] # Puede ser 'RANDOM'
+SAMPLES     = len(data_inputs) 
+FRECUENCY   = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
+MONTH       = PARAMS_ENV['MONTH'] # Puede ser 'RANDOM'
+
+
+def G(H):
+    ''' Ganancia en pesos por el peso H '''
+    return 0.015341*H
+
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
