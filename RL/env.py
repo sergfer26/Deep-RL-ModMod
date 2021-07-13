@@ -13,7 +13,7 @@ from sympy import symbols, lambdify
 from sympy.parsing.sympy_parser import parse_expr
 from get_indexes import Indexes
 from params import PARAMS_ENV
-from reward import G, Qgas, Qco2
+#from reward import G, Qgas, Qco2
 
 OUTPUTS = symbols('h nf') # variables de recompensa
 CONTROLS = symbols('u3 u4 u7 u9 u10 C1') # varibles de costo y clima
@@ -50,8 +50,10 @@ class GreenhouseEnv(gym.Env):
         self.dirGreenhouse = GreenHouse()
         self.i = 0
         self.indexes = Indexes(data_inputs[0:self.limit],MONTH) if MONTH != 'RANDOM' else None
-        self.daily_C1 = list()
-        self.daily_T2 = list()
+        self.daily_C1  = list()
+        self.daily_T2  = list()
+        self.G_list    = list()
+        self.Qvar_list = list()
         self._reset()
 
 
@@ -71,6 +73,10 @@ class GreenhouseEnv(gym.Env):
         for name in vars:
             reward -= 60*self.dirClimate.OutVar(name) #De minutos a segundos 
         return reward
+
+    def G(self,h):
+        '''Precio de venta'''
+        return 0.015341*h
 
 
     def is_done(self):
@@ -98,6 +104,7 @@ class GreenhouseEnv(gym.Env):
             C1.append(self.dirClimate.OutVar('C1'))
             T.append(self.dirClimate.OutVar('T2')) 
         reward = self.reward_cost(self.vars_cost)
+        self.Qvar_list.append(float(reward))
         self.reset_cost(self.vars_cost)
         self.daily_C1 += C1
         self.daily_T2 += T
@@ -110,7 +117,7 @@ class GreenhouseEnv(gym.Env):
             self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
             self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
             h = self.dirGreenhouse.V('h')
-            reward += G(h)
+            reward += self.G(h)
         self.state = self.update_state()
         done = self.is_done()
         self.i += 1
@@ -133,11 +140,7 @@ class GreenhouseEnv(gym.Env):
         RH = float(data_inputs['RH'].iloc[self.i * (self.frec//FRECUENCY)])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
-        self.old_Qvar = 0
-        self.Qvar = 0
-        self.Qh_list = list()
-        #self.Qco2_list = list()
-        self.G_list = list()
+        
     
     def set_index(self):
         if MONTH == 'RANDOM':

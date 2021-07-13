@@ -20,7 +20,7 @@ import json
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
-from reward import G
+#from reward import G
 
 EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
@@ -176,7 +176,7 @@ def main():
     #name = PATH + '/rewards.json'
     #with open(name, 'w') as fp:
     #    json.dump(dic_rewards, fp,  indent=4)
-    dic_costos = {'Qh':env.Qh_list,'G': env.G_list}
+    dic_costos = {'Qvar':env.Qvar_list}
     name = PATH + '/costos.json'
     with open(name, 'w') as fp:
         json.dump(dic_costos, fp,  indent=4)
