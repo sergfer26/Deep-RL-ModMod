@@ -8,5 +8,6 @@ PARAMS_CLIMATE = {
     'alpha3':0.3,         # Superficie de la tuberia de calentamiento
     'psi2':  7.2*(10**4),  # Capacidad de la fuente externa de CO2. Tenia el valor de Texas
     'q_co2_ext' :3.5,
-    'T_cal': 95
+    'T_cal': 95,
+    'etadrain' : 30
 }
