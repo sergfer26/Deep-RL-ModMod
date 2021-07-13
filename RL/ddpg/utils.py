@@ -102,7 +102,7 @@ def test_noise(dim):
     noise = OUNoise(action_space)
     A = list()
     for _ in range(n):
-        A.append(noise.get_action(np.ones(dim)))
+        A.append(noise.get_action(0*np.ones(dim)))
     A = np.array(A)
     A.reshape((action_space.shape[0],n))
     A = pd.DataFrame(A,columns=['A'+ str(i) for i in range(action_space.shape[0])])
