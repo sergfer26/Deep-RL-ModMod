@@ -1469,8 +1469,6 @@ class Qh2o_rhs(StateRHS):
         h_3 = h3(T2=self.V('T2'), V1=self.V('V1'), U3=self.V('U3'), I6=self.V('I6'), lamb1=self.V(
             'lamb1'), lamb2=self.V('lamb2'), alpha6=self.V('alpha6'), gamma2=self.V('gamma2'), q6=q_6)
         #### Principal functions ####
-        kappa_3 = kappa3(T2=self.Vk('T2'), psi1=self.V(
-            'psi1'), phi2=self.V('phi2'), omega2=self.V('omega2'))
         p_1 = p1(V1=self.Vk('V1'), q1=q_1, q2=q_2)
         
         p_2 = p2(rho3=self.V('rho3'), eta5=self.V('eta5'),
