@@ -141,7 +141,7 @@ def main():
         old_path = sys.argv[1:].pop()
         print('Se cargo el modelo')
         agent.load(old_path)
-    
+    '''
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -164,19 +164,15 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-    
-    
-
-    
+    '''
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    name = PATH + '/rewards.json'
-    with open(name, 'w') as fp:
-        json.dump(dic_rewards, fp,  indent=4)
-    dic_costos = {'Qvar':env.Qvar_list}
+    #dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    #name = PATH + '/rewards.json'
+    #with open(name, 'w') as fp:
+    #    json.dump(dic_rewards, fp,  indent=4)
     name = PATH + '/costos.json'
     with open(name, 'w') as fp:
-        json.dump(dic_costos, fp,  indent=4)
+        json.dump(env.Qvar_dic, fp,  indent=4)
 
     data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
     

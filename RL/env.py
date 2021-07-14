@@ -53,7 +53,7 @@ class GreenhouseEnv(gym.Env):
         self.daily_C1  = list()
         self.daily_T2  = list()
         self.G_list    = list()
-        self.Qvar_list = list()
+        self.Qvar_dic = {key:list() for key in self.vars_cost}
         self._reset()
 
 
@@ -71,8 +71,11 @@ class GreenhouseEnv(gym.Env):
         '''Resta los costos de produccion al reward'''
         reward = 0.0
         for name in vars:
-            reward -= 60*self.dirClimate.OutVar(name) #De minutos a segundos 
-        return reward
+            r = float(60*self.dirClimate.OutVar(name)) #De minutos a segundos
+            reward -= r
+            self.Qvar_dic[name].append(r) #Guarda los costos en un dic
+        return reward    
+
 
     def G(self,h):
         '''Precio de venta'''
@@ -104,7 +107,6 @@ class GreenhouseEnv(gym.Env):
             C1.append(self.dirClimate.OutVar('C1'))
             T.append(self.dirClimate.OutVar('T2')) 
         reward = self.reward_cost(self.vars_cost)
-        self.Qvar_list.append(float(reward))
         self.reset_cost(self.vars_cost)
         self.daily_C1 += C1
         self.daily_T2 += T
