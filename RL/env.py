@@ -34,7 +34,7 @@ data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
 SAMPLES = len(data_inputs) 
 FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
-MONTH = PARAMS_ENV['MONTH'] # Puede ser 'RANDOM'
+SEASON = PARAMS_ENV['SEASON'] # Puede ser 'RANDOM'
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
@@ -43,13 +43,13 @@ class GreenhouseEnv(gym.Env):
         self.action_space = spaces.Box(low=LOW_ACTION, high=HIGH_ACTION)
         self.observation_space = spaces.Box(low=LOW_OBS, high=HIGH_OBS)
         self.state_names = ['C1', 'RH', 'T', 'PAR', 'h', 'n']
-        self.vars_cost = ['Qgas','Qco2']
+        self.vars_cost = ['Qgas','Qco2','Qh2o']
         self.time_max = TIME_MAX
         self.limit = int(((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt) 
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
         self.i = 0
-        self.indexes = Indexes(data_inputs[0:self.limit],MONTH) if MONTH != 'RANDOM' else None
+        self.indexes = Indexes(data_inputs[0:self.limit],SEASON) if SEASON != 'RANDOM' else None
         self.daily_C1  = list()
         self.daily_T2  = list()
         self.G_list    = list()
@@ -143,7 +143,7 @@ class GreenhouseEnv(gym.Env):
         
     
     def set_index(self):
-        if MONTH == 'RANDOM':
+        if SEASON == 'RANDOM':
             return np.random.RandomState().randint(0,self.limit)
         else:
             return np.random.RandomState().choice(self.indexes)
