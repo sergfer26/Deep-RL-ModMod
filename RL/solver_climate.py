@@ -1371,7 +1371,7 @@ class Qh2o_rhs(StateRHS):
         nrec = nmrec  # Number of outputs that will be record
         ### Add variables ###
         # State variables
-        self.AddVar(typ='State', varid='Qh20', prn=r'$Q_{H20}$',
+        self.AddVar(typ='State', varid='Qh2o', prn=r'$Q_{H20}$',
                     desc="Water cost ", units=mxn * kg, val=0, rec=nrec)
         self.AddVar(typ='State', varid='T2', prn=r'$T_2$',
                     desc="Greenhouse air temperature", units=C, val=T2_in, rec=nrec) # falta valor inicial
@@ -1521,18 +1521,18 @@ class Module1(Module):
 class Climate_model(Director):
     def __init__(self):
         super().__init__(t0=0.0, time_unit="", Vars={}, Modules={})
-        C1_rhs_ins   = C1_rhs()     # Make an instance of rhs
-        V1_rhs_ins   = V1_rhs()     # Make an instance of rhs
-        T1_rhs_ins   = T1_rhs()     # Make an instance of rhs
-        T2_rhs_ins   = T2_rhs()     # Make an instance of rhs
-        Qgas_rhs_ins = Qgas_rhs() # Make an instance of rhs
-        Qco2_rhs_ins = Qco2_rhs() # Make an instance of rhs
-
+        C1_rhs_ins    = C1_rhs()     # Make an instance of rhs
+        V1_rhs_ins    = V1_rhs()     # Make an instance of rhs
+        T1_rhs_ins    = T1_rhs()     # Make an instance of rhs
+        T2_rhs_ins    = T2_rhs()     # Make an instance of rhs
+        Qgas_rhs_ins  = Qgas_rhs()   # Make an instance of rhs
+        Qco2_rhs_ins  = Qco2_rhs()   # Make an instance of rhs
+        Q_h2o_rhs_ins = Qh2o_rhs()   # Make an instance of rhs
         symb_time_units = C1_rhs_ins.CheckSymbTimeUnits(C1_rhs_ins)
         # Genetare the director
-        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins, Qgas_rhs_ins, Qco2_rhs_ins]
+        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins, Qgas_rhs_ins, Qco2_rhs_ins,Q_h2o_rhs_ins]
         self.MergeVarsFromRHSs(RHS_list, call=__name__)
-        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins))
+        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins,Qh2o = Q_h2o_rhs_ins))
         self.sch = ['Module1']
 
 
@@ -1543,6 +1543,7 @@ class Climate_model(Director):
         self.Vars['C1'].val   = C1_in # np.random.RandomState().normal(500, 1)
         self.Vars['Qgas'].val = 0
         self.Vars['Qco2'].val = 0
+        self.Vars['Qh2o'].val = 0
 
     def update_controls(self, U=np.ones(11)):
         for i in range(len(U[0:10])):
