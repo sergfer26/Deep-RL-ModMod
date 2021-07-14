@@ -48,7 +48,7 @@ state_dim = env.observation_space.shape[0]
 
 if not SHOW:
     from functools import partialmethod
-    tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
+    tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
 
 
 def train_agent(agent, env, noise):
@@ -65,21 +65,18 @@ def train_agent(agent, env, noise):
             abs_reward = 0
             episode_penalty = 0
             for step in range(STEPS):
-                action = agent.get_action(state)
-                action = noise.get_action(action)
+                action                  = agent.get_action(state)
+                action                  = noise.get_action(action)
                 new_state, reward, done = env.step(action) # modify
                 agent.memory.push(state, action, reward, new_state, done)
                 if len(agent.memory) > BATCH_SIZE:
                     agent.update(BATCH_SIZE)  
-                _, _, u3, u4, _, _, u7, _, u9, u10 = action # modify
-                p = -penalty_function(u3, u4, u7, u9, u10,float(env.state['C1']))
-                r = 0.0
-                #if (env.i + 1) % (1/env.dt) == 0:
-                #   h = new_state[-2]; n = new_state[-1]
-                episode_reward += reward
-                abs_reward += reward - p
-                episode_penalty += p
-                pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(NF), H='{:2f}'.format(H))
+                episode_reward          += float(reward)
+                Ganancia                = float(env.G(env.state['h'])) if step % 24 == 0 else 0
+                abs_reward              += Ganancia
+                Costo                   = float(reward) if step % 24 == 0 else reward - Ganancia
+                episode_penalty         += float(Costo)
+                pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(float(env.dirGreenhouse.V('NF'))), H='{:2f}'.format(float(env.dirGreenhouse.V('H'))))
                 pbar.update(1)      
                 state = new_state
                 if done:
@@ -144,7 +141,7 @@ def main():
         old_path = sys.argv[1:].pop()
         print('Se cargo el modelo')
         agent.load(old_path)
-    '''
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise)
     agent.save(PATH)
 
@@ -167,15 +164,15 @@ def main():
     else:
         fig.savefig(PATH + '/reward.png')
         plt.close()
-    '''
+    
     
 
     
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    #dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    #name = PATH + '/rewards.json'
-    #with open(name, 'w') as fp:
-    #    json.dump(dic_rewards, fp,  indent=4)
+    dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
+    name = PATH + '/rewards.json'
+    with open(name, 'w') as fp:
+        json.dump(dic_rewards, fp,  indent=4)
     dic_costos = {'Qvar':env.Qvar_list}
     name = PATH + '/costos.json'
     with open(name, 'w') as fp:
