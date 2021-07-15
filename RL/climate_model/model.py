@@ -2,7 +2,9 @@ import numpy as np
 from ModMod import Module, Director
 from scipy.stats import norm
 from .constants import INIT_STATE, CONSTANTS
-from .q_rhs import Qco2_rhs, Qgas_rhs
+from .qh2o_rhs import Qh2o_rhs
+from . qco2_rhs import Qco2_rhs 
+from .qgas_rhs import Qgas_rhs
 from .t1_rhs import T1_rhs
 from .t2_rhs import T2_rhs
 from .v1_rhs import V1_rhs
@@ -56,12 +58,15 @@ class Climate_model(Director):
         T2_rhs_ins   = T2_rhs()     # Make an instance of rhs
         Qgas_rhs_ins = Qgas_rhs() # Make an instance of rhs
         Qco2_rhs_ins = Qco2_rhs() # Make an instance of rhs
+        Qh2o_rhs_ins = Qh2o_rhs() # Make an instance of rhs
 
         symb_time_units = C1_rhs_ins.CheckSymbTimeUnits(C1_rhs_ins)
         # Genetare the director
-        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins, Qgas_rhs_ins, Qco2_rhs_ins]
+        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins, Qgas_rhs_ins, 
+                        Qco2_rhs_ins, Qh2o_rhs_ins]
         self.MergeVarsFromRHSs(RHS_list, call=__name__)
-        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins))
+        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, 
+                        T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins), Qh2o=Qh2o_rhs_ins)
         self.sch = ['Module1']
 
     def reset(self):
@@ -71,6 +76,7 @@ class Climate_model(Director):
         self.Vars['C1'].val   = C1_in # np.random.RandomState().normal(500, 1)
         self.Vars['Qgas'].val = 0
         self.Vars['Qco2'].val = 0
+        self.Vars['Qh2o'].val = 0
 
     def update_controls(self, U=np.ones(11)):
         for i in range(len(U[0:10])):
