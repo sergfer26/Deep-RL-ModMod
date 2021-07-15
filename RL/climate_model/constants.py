@@ -1,5 +1,5 @@
-from struct_var import Struct
 from sympy import symbols
+from .struct_var import Struct
 
 mt, mg, m, C, s, W, mg_CO2, J, g, mol_CH2O = symbols('mt mg m C s W mg_CO2 J g mol_CH2O')
 
@@ -240,11 +240,13 @@ CONSTANTS = {
     'omega2': Struct(typ='Cnts', varid='omega2', prn=r'$\omega_2$',
                     desc="Molar gas constant", units=J * kmol**-1 * K**-1, val= 8.314e3, ok = ok), 
     'omega3': Struct(typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
-                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03,ok = 'Sin comentario'),
+                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03,ok = 'Sin comentario')
+}
 
 
 
-    ################## inputs ##################
+################## Inputs ##################
+INPUTS ={
     'I1' : Struct(typ='Cnts', varid='I1', prn=r'$I_1$',
                     desc="Leaf area index", units=m**2 * m**-2, val=3, ok = 'Valor tomado de internet'),
     'I2' : Struct(typ='State', varid='I2', prn=r'$I_2$',
@@ -271,11 +273,13 @@ CONSTANTS = {
     'I13' : Struct(typ='Cnts', varid='I13', prn=r'$I_{13}$',
                     desc="Photorespiration during photosynthesis", units=1, val=0,ok = 'Falta valor y unidades'),      # FALTA VALOE Photorespiration during photosynthesis
     'I14' : Struct(typ='State', varid='I14', prn=r'$\I_{14}$',
-                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario'), 
+                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario')
+}
 
 
 
-    ################## states ##################
+################## State variables ##################
+STATE_VARS = {
     'C1_in' : Struct(typ='State', varid='C1', prn=r'$C_1$',
                     desc="CO2 concentrartion in the greenhouse air", units=mg * m**-3, val=432, rec=nrec,ok='falta valor inicial'),
     'V1_in' : Struct(typ='State', varid='V1', prn=r'$V_1$',
@@ -283,11 +287,13 @@ CONSTANTS = {
     'T1_in' : Struct(typ='State', varid='T1', prn=r'$T_1$',
                     desc="Canopy temperature", units=C, val=20, rec=nrec, ok='falta valor inicial'),
     'T2_in' : Struct(typ='State', varid='T2', prn=r'$T_2$',
-                    desc="Greenhouse air temperature", units=C, val=20, rec=nrec, ok='falta valor inicial'),
+                    desc="Greenhouse air temperature", units=C, val=20, rec=nrec, ok='falta valor inicial')
+}
 
 
 
-    ################## controls ##################
+################## Controls ##################
+CONTROLS = {
     'U1': Struct(typ='Cnts', varid='U1', prn=r'$U_1$', desc="Thermal screen control", units=1, val=0, ok=ok),
     'U2': Struct(typ='Cnts', varid='U2', prn=r'$U_2$', desc="Fan and pad system control", units=1, val=0, ok=ok),
     'U3': Struct(typ='Cnts', varid='U3', prn=r'$U_3$', desc="Control of mechanical cooling system", units=1, val=0, ok=ok),
