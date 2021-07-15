@@ -10,7 +10,11 @@ def Dia(date):
     '''Regresa el dia'''
     return date[3:5] 
 
-def Indexes(data,season):
+def Indexes(data, season):
+    '''
+    Season 1: Jan - Apr
+    Season 2: Apr - Agu
+    '''
     if season == 1: #Primera semana de enero a primera de abril
         season = ['0'+str(i) for i in range(1,5)]
         week = ['0'+str(i) for i in range(1,8)]
