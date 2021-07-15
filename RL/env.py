@@ -13,7 +13,7 @@ from params import PARAMS_ENV
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(11); # LOW_ACTION[7] = 0.5
+LOW_ACTION = np.zeros(11) # LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(11)
 STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
 TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
