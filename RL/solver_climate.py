@@ -671,7 +671,7 @@ class C1_rhs(StateRHS):
                     desc="Capacity of the external CO2 source", units=mg * s**-1, val=theta[2])  # Falta valor, tomé el del ejemplo de Texas 4.3e5
         self.AddVar(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
                     desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031)  # ok
-        self.AddVar( typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
+        self.AddVar(typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
                         desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03)
                     
     def RHS(self, Dt):

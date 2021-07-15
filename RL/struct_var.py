@@ -1,5 +1,5 @@
 class Struct():
-    def __init__(self, typ, varid, prn, desc, units, val, rec, ok):
+    def __init__(self, typ = '', varid = '', prn = '', desc = '', units = 1, val = 0, rec = 0, ok='No existe'):
         self.typ   = typ
         self.varid = varid
         self.prn   = prn

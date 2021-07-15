@@ -2,14 +2,7 @@ from reportlab.platypus import Table
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import TableStyle
-
-from params import PARAMS_ENV, PARAMS_TRAIN
-from ddpg.params import PARAMS_UTILS, PARAMS_DDPG
-
-
-
-
-
+from constanst import RHO
 
 style = TableStyle([
     ('BACKGROUND', (0,0), (3,0), colors.blue),
@@ -78,53 +71,28 @@ def add_text(pdf,textLines,x,y):
         text.textLine(line)
     pdf.drawText(text)
 
-def add_image(PATH,pdf,name,x,y,width = 500,height=500):
-    pdf.drawInlineImage(PATH + name , x,y, width = width, height=height,preserveAspectRatio=True)
+def dic_to_list(data):
+    lista = [[k, str(v.val),v.units,v.ok] for k, v in list(data.items())]
+    lista.insert(0, ['Nombre', 'Valor','Unidades','Info'])
+    return lista
 
-def create_report(PATH, time = 0):
-    fileName = '/Reporte.pdf'
-    fileName = PATH + fileName
+
+
+def create_report():
+    fileName = 'Reporte_constantes.pdf'
     documentTitle = 'Document title!'
-    title = 'Reporte de Entrenamiento'
+    title = 'Reporte de constantes'
     subTitle = ''
     pdf = canvas.Canvas(fileName)
-
     pdf.setTitle(documentTitle)
     pdf.drawCentredString(300, 800, title)
-# RGB - Red Green and Blue
     pdf.setFillColorRGB(0, 0, 255)
     pdf.setFont("Courier-Bold", 26)
     pdf.drawCentredString(290,720, subTitle)
     #drawMyRuler(pdf)
-    add_text(pdf,['Parámetros del Entrenamiento'],100, 750)
-    add_table(pdf,PARAMS_TRAIN,100,610)
-    
-
-    add_text(pdf,['Parámetros del Ambiente'],100, 560)
-    add_table(pdf,PARAMS_ENV,100,410)
-    
-    
-    add_text(pdf,['Parámetros de DDPG'],100, 360)
-    add_table(pdf,PARAMS_DDPG,100,210)
-     
-
-    add_text(pdf,['Parámetros del Ruido'],100, 170)
-    add_table(pdf,PARAMS_UTILS,100,30)
-
+    add_text(pdf,['RHO'],100, 750)
+    add_table(pdf,RHO,100,610)
     pdf.showPage()
-    add_image(PATH,pdf,'/reward.png',10, 350,600,600)
-    add_image(PATH,pdf,'/sim_climate_inputs.png',30,10)
-    pdf.showPage()
-    #Siguiente pagina
-    add_image(PATH,pdf,'/sim_rh_par.png',30, 350,550,550)
-    add_image(PATH,pdf,'/sim_climate.png',30,0,550,550)
+    pdf.save() 
 
-    pdf.showPage()
-    add_image(PATH,pdf,'/sim_prod.png',30, 350,550,550)
-    add_image(PATH,pdf,'/sim_actions.png',30,0,550,550)
-    cadena = 'Tiempo de ejecucion: '
-    cadena += str(round((time/(60**2)),2)) + ' Horas'
-    add_text(pdf,[cadena],30,60)
-    pdf.save()  
-
-    
+create_report()
