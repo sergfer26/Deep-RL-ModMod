@@ -15,7 +15,7 @@ from .functions import h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11
 mt = symbols('mt')
 
 state_names = ['T1', 'V1', 'T2']
-control_names = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6','U7', 'U8', 'U9']
+control_names = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6','U7', 'U8', 'U9', 'U11']
 input_names = ['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8']
 constant_names = ['tau3', 'phi7', 'alpha6', 'eta6', 'eta7', 'eta8', 'phi8', 'nu4', 'nu5', 
                     'omega1', 'nu6', 'beta3', 'gamma1', 'phi1', 'tau1','tau2', 'lam5', 'lamb7', 
