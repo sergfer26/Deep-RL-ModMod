@@ -540,26 +540,8 @@ def h11(T2, I7, nu7, nu8, phi2):
 def H_Boil_Pipe(r6,h4):
     return max(r6 + h4,0)
 
-C1_in = 432
-V1_in = 14
-T2_in = 20
-T1_in = 20
-nmrec = 1
 
-I1 = 3.0     #Leaf area index
-I2 = 100.0   #External global radiation
-I3 = 20      #Heating pipe temperature
-I4 = 0       #Sky temperature
-I5 = 18.0    #Outdoor temperature
-I6 = 20      #Mechanical cooling system temperature 
-I7 = 5.0     #Soil temperature
-I8 = 3.2     #Outdoor wind speed
-# I9
-I10 = 700    #Outdoor CO2 concentration
-I11 = 0      #FALTA VALOR Inhibition of the rate of photosynthesis by saturation of the leaves with carbohydrates 
-I12 = 0      #FALTA VALOR Crude canopy photosynthesis rate
-I13 = 0      #FALTA VALOE Photorespiration during photosynthesis
-I14 = 100.0  #Global radiation above the canopy
+
 
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
