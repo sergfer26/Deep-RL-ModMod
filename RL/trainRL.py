@@ -74,7 +74,7 @@ def train_agent(agent, env, noise):
                 episode_reward          += float(reward)
                 Ganancia                = float(env.G(env.state['h'])) if step % 24 == 0 else 0
                 abs_reward              += Ganancia
-                Costo                   = float(reward) if step % 24 == 0 else reward - Ganancia
+                Costo                   = -float(reward) if step % 24 == 0 else -(reward - Ganancia)
                 episode_penalty         += float(Costo)
                 pbar.set_postfix(reward='{:.2f}'.format(episode_reward/STEPS), NF='{:2f}'.format(float(env.dirGreenhouse.V('NF'))), H='{:2f}'.format(float(env.dirGreenhouse.V('H'))))
                 pbar.update(1)      
