@@ -2,7 +2,7 @@ from reportlab.platypus import Table
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import TableStyle
-from constanst import RHO
+from constanst import CONSTANTS
 
 style = TableStyle([
     ('BACKGROUND', (0,0), (3,0), colors.blue),
@@ -50,13 +50,16 @@ def drawMyRuler(pdf):
 
 
 
-def dic_to_list(data):
-    lista = [[v, str(k)] for v, k in list(data.items())]
-    lista.insert(0, ['Parámetro', 'Valor'])
+def dic_to_list(data,reg):
+    lista = list()
+    for k, v in data.items():   # iter on both keys and values
+        if k.startswith(reg):
+            lista.append([k, str(v.val),v.units,v.ok])
+    lista.insert(0, ['Nombre', 'Valor','Unidades','Info'])
     return lista
 
-def add_table(pdf,data,x,y):
-    data = dic_to_list(data)
+def add_table(pdf,data,reg,x,y):
+    data = dic_to_list(data,reg)
     table = Table(data)
     table.setStyle(style)
     table.setStyle(ts)
@@ -71,10 +74,10 @@ def add_text(pdf,textLines,x,y):
         text.textLine(line)
     pdf.drawText(text)
 
-def dic_to_list(data):
-    lista = [[k, str(v.val),v.units,v.ok] for k, v in list(data.items())]
-    lista.insert(0, ['Nombre', 'Valor','Unidades','Info'])
-    return lista
+#def dic_to_list(data):
+#    lista = [[k, str(v.val),v.units,v.ok] for k, v in list(data.items())]
+#    lista.insert(0, ['Nombre', 'Valor','Unidades','Info'])
+#    return lista
 
 
 
@@ -90,9 +93,41 @@ def create_report():
     pdf.setFont("Courier-Bold", 26)
     pdf.drawCentredString(290,720, subTitle)
     #drawMyRuler(pdf)
-    add_text(pdf,['RHO'],100, 750)
-    add_table(pdf,RHO,100,610)
+    x = 50
+    add_text(pdf,['Alpha'],x, 750)
+    add_table(pdf,CONSTANTS,'alpha',x,540)
+    add_text(pdf,['Beta'],x, 510)
+    add_table(pdf,CONSTANTS,'beta',x,405)
+    add_text(pdf,['Gamma'],x, 370)
+    add_table(pdf,CONSTANTS,'gamma',x,200)
     pdf.showPage()
+    add_text(pdf,['Delta'],x, 770)
+    add_table(pdf,CONSTANTS,'delta',x,590)
+    add_text(pdf,['Epsilon'],x, 545)
+    add_table(pdf,CONSTANTS,'epsi',x,390)
+    add_text(pdf,['Eta'],x, 350)
+    add_table(pdf,CONSTANTS,'eta',x,40)
+    pdf.showPage()
+    add_text(pdf,['Lambda'],x, 770)
+    add_table(pdf,CONSTANTS,'lamb',x,590)
+    add_text(pdf,['Rho'],x, 545)
+    add_table(pdf,CONSTANTS,'rho',x,420)
+    add_text(pdf,['Tau'],x, 390)
+    add_table(pdf,CONSTANTS,'tau',x,290)
+    add_text(pdf,['Nu'],x, 260)
+    add_table(pdf,CONSTANTS,'nu',x,60)
+    pdf.showPage()
+    add_text(pdf,['Phi'],x, 770)
+    add_table(pdf,CONSTANTS,'phi',x,570)
+    add_text(pdf,['Psi'],x, 535)
+    add_table(pdf,CONSTANTS,'psi',50,430)
+    add_text(pdf,['Omega'],x, 390)
+    add_table(pdf,CONSTANTS,'omega',x,290)
+    pdf.showPage()
+    add_text(pdf,['Inputs'],x, 780)
+    add_table(pdf,CONSTANTS,'I',x,490)
+    add_text(pdf,['Controles'],x, 450)
+    add_table(pdf,CONSTANTS,'U',x,215)
     pdf.save() 
 
 create_report()
