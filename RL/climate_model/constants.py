@@ -292,6 +292,17 @@ STATE_VARS = {
 
 
 
+COSTS = {
+    'Qh2o': Struct(typ='State', varid='Qh2o', prn=r'$Q_{H2O}$',
+                    desc="Water cost ", units=mxn * kg, val=0, rec=nrec, ok=ok),
+    'Qgas': Struct(typ='State', varid='Qgas', prn=r'$Q_{Gas}$',
+                    desc="Fuel cost (natural gas)", units=mxn * m**-2, val=0, rec=nrec, ok=ok), 
+    'Qco2': Struct(typ='State', varid='Qco2', prn=r'$Q_{CO2}$',
+                    desc="CO2 cost ", units=mxn * kg, val=0, rec=nrec, ok='revisar unidades')
+}
+
+
+
 ################## Controls ##################
 CONTROLS = {
     'U1': Struct(typ='Cnts', varid='U1', prn=r'$U_1$', desc="Thermal screen control", units=1, val=0, ok=ok),
