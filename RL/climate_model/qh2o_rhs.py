@@ -66,4 +66,4 @@ class Qh2o_rhs(StateRHS):
                     phi5=self.V('phi5'), phi6=self.V('phi6'), f1=f_1)
         p_3 = p3(U9=self.V('U9'), phi9=self.V(
             'phi9'), alpha6=self.V('alpha6'))
-        return (10**-3)*((1+ self.V('etadrain')/100.0)*p_1 + p_2 + p_3)
+        return (10**-3)*((1+ self.V('etadrain')/100.0)*max(p_1, 0) + p_2 + p_3)
