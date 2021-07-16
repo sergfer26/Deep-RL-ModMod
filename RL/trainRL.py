@@ -22,7 +22,7 @@ import json
 from get_report import create_report
 from params import PARAMS_TRAIN
 #from reward import G
-from graphics import save_Q,figure_reward,figure_state,figure_rh_par,figure_prod,figure_actions,figure_inputs,compute_indexes,create_path, save_rewards
+from graphics import save_Q,figure_reward,figure_state,figure_rh_par,figure_prod,figure_actions,figure_inputs,compute_indexes,create_path, save_rewards,figure_cost_gain
 EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
 BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
@@ -132,25 +132,26 @@ def main():
         agent.load(old_path)
 
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise,PATH)
+
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
 
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
     save_Q(env,PATH)
+    figure_cost_gain(env,PATH)
     
-    #Es necesario crear nuevos indices para las graficas, depende de STEP:
-    final_indexes = compute_indexes(start,STEP,TIME_MAX)
+    
+    final_indexes = compute_indexes(start,STEP,TIME_MAX) #Es necesario crear nuevos indices para las graficas, depende de STEP
     figure_state(S_climate,final_indexes,PATH)
     figure_rh_par(S_data,final_indexes,PATH)
     figure_prod(S_prod,final_indexes,PATH)
     figure_actions(A,final_indexes,action_dim,PATH)
     figure_inputs(df_inputs,final_indexes,PATH)
-
+    
     t2 = time.time()
     if not(SHOW):
-        pass
-        #create_report(PATH,t2-t1)
-        #send_correo(PATH + '/Reporte.pdf')
+        create_report(PATH,t2-t1)
+        send_correo(PATH + '/Reporte.pdf')
 
 if __name__=='__main__':
     main()
