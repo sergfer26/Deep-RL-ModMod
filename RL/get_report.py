@@ -1,4 +1,3 @@
-
 from reportlab.platypus import Table
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas

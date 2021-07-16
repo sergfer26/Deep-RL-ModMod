@@ -9,31 +9,22 @@ import matplotlib.pyplot as plt
 #from progress.bar import Bar
 from solver_climate import Climate_model
 from solver_prod import GreenHouse
-from sympy import symbols, lambdify
-from sympy.parsing.sympy_parser import parse_expr
 from get_indexes import Indexes
 from params import PARAMS_ENV
+#from reward import G, Qgas, Qco2
 
-OUTPUTS = symbols('h nf') # variables de recompensa
-CONTROLS = symbols('u3 u4 u7 u9 u10 C1') # varibles de costo y clima
-R = PARAMS_ENV['R']   # función de recompensa
-P = PARAMS_ENV['P'] # función de penalización
-symR = parse_expr(R)
-symP = parse_expr(P)
-reward_function = lambdify(OUTPUTS, symR)
-penalty_function = lambdify(CONTROLS, symP)
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(10); # LOW_ACTION[7] = 0.5
-HIGH_ACTION = np.ones(10)
+LOW_ACTION = np.zeros(11); # LOW_ACTION[7] = 0.5
+HIGH_ACTION = np.ones(11)
 STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
 TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
 data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
 INPUT_NAMES = list(data_inputs.columns)[0:-2]
 SAMPLES = len(data_inputs) 
 FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
-MONTH = PARAMS_ENV['MONTH'] # Puede ser 'RANDOM'
+SEASON = PARAMS_ENV['SEASON'] # Puede ser 'RANDOM'
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
@@ -42,26 +33,50 @@ class GreenhouseEnv(gym.Env):
         self.action_space = spaces.Box(low=LOW_ACTION, high=HIGH_ACTION)
         self.observation_space = spaces.Box(low=LOW_OBS, high=HIGH_OBS)
         self.state_names = ['C1', 'RH', 'T', 'PAR', 'h', 'n']
+        self.vars_cost = ['Qgas','Qco2','Qh2o']
         self.time_max = TIME_MAX
         self.limit = int(((SAMPLES -1) * FRECUENCY/(60) * 1/(24 * self.dt)) - self.time_max /self.dt) 
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
         self.i = 0
-        self.indexes = Indexes(data_inputs[0:self.limit],MONTH) if MONTH != 'RANDOM' else None
+        self.indexes = Indexes(data_inputs[0:self.limit],SEASON) if SEASON != 'RANDOM' else None
+        self.daily_C1  = list()
+        self.daily_T2  = list()
+        self.Qvar_dic = {key:list() for key in self.vars_cost}
+        self.Qvar_dic['G'] = list()
         self._reset()
+
+
+    def reset_daily_lists(self):
+        '''Recrea las listas para promedios diarios '''
+        self.daily_C1 = list([0])
+        self.daily_T2 = list([0])
+
+    def reset_cost(self,vars):
+        '''Regresa las variables de costo a 0'''
+        for name in vars:
+            self.dirClimate.Vars[name].val = 0
+    
+    def reward_cost(self,vars):
+        '''Resta los costos de produccion al reward'''
+        reward = 0.0
+        for name in vars:
+            r = float(60*self.dirClimate.OutVar(name)) #De minutos a segundos
+            reward -= r
+            self.Qvar_dic[name].append(r) #Guarda los costos en un dic
+        return reward    
+
+
+    def G(self,h):
+        '''Precio de venta'''
+        return 0.015341*h
+
 
     def is_done(self):
         if self.i == self.time_max/self.dt -1:
             return True
         else: 
             return False
-
-    def get_reward(self, h, nf, action):
-        _, _, u3, u4, _, _, u7, _, u9, u10 = action
-        out = 0.0
-        out += penalty_function(u3, u4, u7, u9, u10)
-        out += reward_function(h, nf)
-        return out
 
     def get_mean_data(self, data):
         end = int((self.i +1) * self.frec // FRECUENCY)
@@ -80,24 +95,27 @@ class GreenhouseEnv(gym.Env):
                 self.update_vars_climate(k + self.i*self.frec//FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
-            T.append(self.dirClimate.OutVar('T2'))
-        
-        reward = 0.0
-        #old_h = self.dirGreenhouse.V('h')
+            T.append(self.dirClimate.OutVar('T2')) 
+        reward = self.reward_cost(self.vars_cost) #Aqui tambien se actualizan las listas de costos
+        self.Qvar_dic['G'].append(0)
+        self.reset_cost(self.vars_cost)
+        self.daily_C1 += C1
+        self.daily_T2 += T
         if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
-            C1M = float(np.mean(C1)) 
-            TM = float(np.mean(T))                    
+            C1M = float(np.mean(self.daily_C1)) 
+            TM = float(np.mean(self.daily_T2))
+            self.reset_daily_lists()
             PARM = self.get_mean_data(data_inputs['I2']) # PAR
             RHM = self.get_mean_data(data_inputs['RH'])
             self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
             self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
             h = self.dirGreenhouse.V('h')
-            n = self.dirGreenhouse.V('n')
-            reward += reward_function(h, n)
+            G = self.G(h)
+            reward += G
+            self.Qvar_dic['G'].pop()
+            self.Qvar_dic['G'].append(G)
         self.state = self.update_state()
         done = self.is_done()
-        _, _, u3, u4, _, _, u7, _, u9, u10 = action
-        reward += penalty_function(u3, u4, u7, u9, u10,float(self.state['C1']))
         self.i += 1
         state = np.array(list(self.state.values()))
         return state, reward, done
@@ -118,9 +136,10 @@ class GreenhouseEnv(gym.Env):
         RH = float(data_inputs['RH'].iloc[self.i * (self.frec//FRECUENCY)])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
+        
     
     def set_index(self):
-        if MONTH == 'RANDOM':
+        if SEASON == 'RANDOM':
             return np.random.RandomState().randint(0,self.limit)
         else:
             return np.random.RandomState().choice(self.indexes)

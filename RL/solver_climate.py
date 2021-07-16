@@ -22,6 +22,8 @@ from sympy import symbols
 from math import sqrt, exp, log, pi
 from scipy.stats import norm
 from numpy.random import seed
+import json
+from params_climate import PARAMS_CLIMATE
 
 ###########################
 ### Símbolos y funciones ##
@@ -118,7 +120,7 @@ def o6 (C1, omega3):
 
 ######### V1 ##############
 # Symbols
-mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, kmol, kg_air, kg_vapour = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm kmol kg_air kg_vapour') # Symbolic use of base phisical units
+mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, kmol, kg_air, kg_vapour, mxn = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm kmol kg_air kg_vapour mxn') # Symbolic use of base phisical units
 
 ### previous functions ###
 
@@ -535,6 +537,8 @@ def r10(r11, r12, r13):
 def h11(T2, I7, nu7, nu8, phi2):
     return 2*nu7*(T2 - I7)/(phi2 + nu8)
 
+def H_Boil_Pipe(r6,h4):
+    return max(r6 + h4,0)
 
 C1_in = 432
 V1_in = 14
@@ -559,7 +563,15 @@ I14 = 100.0  #Global radiation above the canopy
 
 S = [C1_in, V1_in, T1_in, T2_in]
 U = np.ones(10)
-theta = np.array([3000, 20, 2.3e5])
+qgas = PARAMS_CLIMATE['qgas']
+etagas = PARAMS_CLIMATE['etagas']
+q_co2_ext = PARAMS_CLIMATE['q_co2_ext']
+psi2  = PARAMS_CLIMATE['psi2']
+lamb4 = PARAMS_CLIMATE['lamb4']
+alpha3 = PARAMS_CLIMATE['alpha3']
+theta = np.array([3000, 20, psi2])
+T_cal = PARAMS_CLIMATE['T_cal']
+etadrain = PARAMS_CLIMATE['etadrain']
 """
     Se resuelve el sistema de EDO en función de los parámetros
     contenidos en el vector theta.
@@ -620,7 +632,7 @@ class C1_rhs(StateRHS):
                     desc="Photorespiration during photosynthesis", units=1, val=I13)  # Falta valor y unidades
         # Constants
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
-                    desc="Heat capacity of direct air heater", units=W, val=1)  # Falta valor, aunque en los ejemplos del artículo no se considera
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4)  # Dr Antonio dio el valor 
         self.AddVar(typ='Cnts', varid='alpha6', prn=r'$\alpha_6$',
                     desc="Greenhouse floor surface area", units=m**2, val=1e4)  # ok
         self.AddVar(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
@@ -659,7 +671,7 @@ class C1_rhs(StateRHS):
                     desc="Capacity of the external CO2 source", units=mg * s**-1, val=theta[2])  # Falta valor, tomé el del ejemplo de Texas 4.3e5
         self.AddVar(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
                     desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031)  # ok
-        self.AddVar( typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
+        self.AddVar(typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
                         desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03)
                     
     def RHS(self, Dt):
@@ -752,7 +764,7 @@ class V1_rhs(StateRHS):
                     desc="Global radiation above the canopy", units=W * m**-2, val=I14)
         # Constants
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
-                    desc="Heat capacity of direct air heater", units=W, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4) # Falta valor, aunque en los ejemplos del artículo no se considera
         self.AddVar(typ='Cnts', varid='alpha6', prn=r'$\alpha_6$',
                     desc="Greenhouse floor surface area", units=m**2, val=1e4) # ok
         self.AddVar(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
@@ -986,7 +998,7 @@ class T1_rhs(StateRHS):
         self.AddVar(typ='Cnts', varid='eta3', prn=r'$\eta_3$',
                     desc="Ratio between NIR radiation and global external radiation", units=1, val=0.5) # ok
         self.AddVar(typ='Cnts', varid='alpha3', prn=r'$\alpha_3$',
-                    desc="Surface of the heating pipe", units=m**2, val=1) # Falta valor
+                    desc="Surface of the heating pipe", units=m**2*m**-2, val=alpha3) # Valor proporcionado por Dr Antonio
         self.AddVar(typ='Cnts', varid='epsil1', prn=r'$\epsilon_1$',
                     desc="FIR emission coefficient of the heating pipe", units=1, val=0.88) # ok
         self.AddVar(typ='Cnts', varid='epsil2', prn=r'$\epsilon_2$',
@@ -1191,7 +1203,7 @@ class T2_rhs(StateRHS):
         self.AddVar(typ='Cnts', varid='lamb3', prn=r'$\lambda_3$',
                     desc="Convictive heat exchange coefficient between soil and greenhouse air", units=W * m**-2 * K**-1, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
         self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
-                    desc="Heat capacity of direct air heater", units=W, val=1) # Falta valor, aunque en los ejemplos del artículo no se considera
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4) # Falta valor, aunque en los ejemplos del artículo no se considera
         self.AddVar(typ='Cnts', varid='alpha2', prn=r'$\alpha_2$',
                     desc="Global NIR absorption coefficient of the canopy", units=1, val=0.35) # ok
         self.AddVar(typ='Cnts', varid='alpha7', prn=r'$\alpha_7$',
@@ -1275,6 +1287,198 @@ class T2_rhs(StateRHS):
         return (kappa_2**-1)*(h_1 + h_2 + h_3 + h_4 + h_5 + h_6 + r_8 - h_7 - h_10 - l_2 - r_10 - h_11)
 
 
+class Qgas_rhs(StateRHS):
+    """Define a RHS, this is the rhs for Qgas, the gas cost per m^2"""
+    def __init__(self):
+        # uses the super class __init__
+        super().__init__()
+        self.SetSymbTimeUnits(mt)  # minuts
+        nrec = nmrec  # Number of outputs that will be record
+        ### Add variables ###
+        # State variables
+        self.AddVar(typ='State', varid='Qgas', prn=r'$Q_{Gas}$',
+                    desc="Fuel cost (natural gas)", units=mxn * m**-2, val=0, rec=nrec)
+        self.AddVar(typ='State', varid='T2', prn=r'$T_2$',
+                    desc="Greenhouse air temperature", units=C, val=T2_in, rec=nrec) # falta valor inicial
+        self.AddVar(typ='State', varid='T1', prn=r'$T_1$',
+                    desc="Canopy temperature", units=C, val=T1_in, rec=nrec) # falta valor inicial
+        # Inputs
+        self.AddVar(typ='Cnts', varid='I1', prn=r'$I_1$',
+                    desc="Leaf area index", units=m**2 * m**-2, val=I1) # Valor tomado de internet
+        self.AddVar(typ='State', varid='I3', prn=r'$I_3$',
+                    desc="Heating pipe temperature", units=C, val=I3)
+        # Constants 
+        self.AddVar(typ='Cnts', varid='beta3', prn=r'$\beta_3$',
+                    desc="Canopy extinction coefficient for NIR radiation", units=1, val=0.27) # ok
+        self.AddVar(typ='Cnts', varid='lamb4', prn=r'$\lambda_4$',
+                    desc="Heat capacity of direct air heater", units=W, val=lamb4)  # Dr Antonio dio el valor
+        self.AddVar(typ='Cnts', varid='alpha6', prn=r'$\alpha_6$',
+                    desc="Greenhouse floor surface area", units=m**2, val=1e4)  # ok
+        self.AddVar(typ='Cnts', varid='alpha3', prn=r'$\alpha_3$',
+                    desc="Surface of the heating pipe", units=m**2*m**-2, val=alpha3) # Valor proporcionado por Dr Antonio
+        self.AddVar(typ='Cnts', varid='lamb', prn=r'$\lambda$',
+                    desc="Boltzmann constant", units=W * m**-2 * K**-4, val=5.670e-8) # ok
+        self.AddVar(typ='Cnts', varid='epsil2', prn=r'$\epsilon_2$',
+                    desc="Canopy FIR emission coefficient", units=1, val=1) # ok
+        self.AddVar(typ='Cnts', varid='epsil1', prn=r'$\epsilon_1$',
+                    desc="FIR emission coefficient of the heating pipe", units=1, val=0.88) # ok
+        self.AddVar(typ='Cnts', varid='gamma1', prn=r'$\gamma_1$',
+                    desc="Length of the heating pipe", units=m * m**-2, val=1.25) # ok ---> Usé el valor de Texas
+        self.AddVar(typ='Cnts', varid='phi1', prn=r'$\phi_1$',
+                    desc="External diameter of the heating pipe", units=m, val=51e-3) # ok
+        # falta agregar constantes qgas, etagas
+
+    def RHS(self, Dt):
+        h_6 = h6(U4=self.V('U4'), lamb4=self.V('lamb4'), alpha6=self.V('alpha6')) #H blow air 
+        a_1 = a1(I1=self.V('I1'), beta3=self.V('beta3')) #auxiliar para g1
+        g_1 = g1(a1=a_1)                                   #auxiliar para r6
+        r_6 = r6(T1=self.V('T1'), I3=self.V('I3'), alpha3=self.V('alpha3'), epsil1=self.V('epsil1'), epsil2=self.V('epsil2'), lamb=self.V('lamb'), g1=g_1)
+        h_4 = h4(T2=self.V('T2'), I3=self.V('I3'),gamma1=self.V('gamma1'), phi1=self.V('phi1'))
+        H_boil_pipe = H_Boil_Pipe(r_6, h_4)
+        return (qgas/etagas)*(H_boil_pipe + h_6)/(10**9)
+
+
+class Qco2_rhs(StateRHS):
+    """Define a RHS, this is the rhs for Qco2, the co2 cost per m^2"""
+    def __init__(self):
+        # uses the super class __init__
+        super().__init__()
+        self.SetSymbTimeUnits(mt)  # minuts
+        nrec = nmrec  # Number of outputs that will be record
+        ### Add variables ###
+        # State variables
+        self.AddVar(typ='State', varid='Qco2', prn=r'$Q_{Gas}$',
+                    desc="Fuel cost from external source", units=mxn * m**-2, val=0, rec=nrec)
+        # control variables  ---> Parece que estas variables no tienen unidades, falta valores iniciales
+        self.AddVar(typ='Cnts', varid='U10', prn=r'$U_{10}$',
+                    desc="Control of external CO2 source", units=1, val=u10)
+        # Constants 
+        self.AddVar(typ='Cnts', varid='psi2', prn=r'$\psi_2$',
+                    desc="Capacity of the external CO2 source", units=mg * s**-1, val=theta[2])  # Falta valor, tomé el del ejemplo de Texas 4.3e5
+    
+    def RHS(self, Dt):
+        '''Costo del CO_2'''
+        o_2 = o2(U10=self.V('U10'), psi2=self.V('psi2'), alpha6=self.V('alpha6')) #MC_ext_air
+        return (10**-6)*q_co2_ext*o_2
+
+
+class Qh2o_rhs(StateRHS):
+    """Define a RHS, this is the rhs for Qh20, the water cost per kg"""
+    def __init__(self):
+        # uses the super class __init__
+        super().__init__()
+        self.SetSymbTimeUnits(mt)  # minuts
+        nrec = nmrec  # Number of outputs that will be record
+        ### Add variables ###
+        # State variables
+        self.AddVar(typ='State', varid='Qh2o', prn=r'$Q_{H20}$',
+                    desc="Water cost ", units=mxn * kg, val=0, rec=nrec)
+        self.AddVar(typ='State', varid='T2', prn=r'$T_2$',
+                    desc="Greenhouse air temperature", units=C, val=T2_in, rec=nrec) # falta valor inicial
+        self.AddVar(typ='State', varid='T1', prn=r'$T_1$',
+                    desc="Canopy temperature", units=C, val=T1_in, rec=nrec) # falta valor inicial
+        self.AddVar(typ='State', varid='C1', prn=r'$C_1$',
+                    desc="CO2 concentrartion in the greenhouse air", units=mg * m**-3, val=C1_in, rec=nrec) # falta valor inicial
+        self.AddVar(typ='State', varid='V1', prn=r'$V_1$',
+                    desc="Greenhouse air vapor pressure", units=Pa, val=V1_in, rec=nrec)
+        # control variables 
+        self.AddVar(typ='Cnts', varid='U2', prn=r'$U_2$',
+                    desc="Fan and pad system control", units=1, val=u2)
+        self.AddVar(typ='Cnts', varid='U3', prn=r'$U_3$',
+                    desc="Control of mechanical cooling system", units=1, val=u3)
+        self.AddVar(typ='Cnts', varid='U9', prn=r'$U_9$',
+                    desc="Fog system control", units=1, val=u9)
+        # Inputs
+        self.AddVar(typ='Cnts', varid='I1', prn=r'$I_1$',
+                    desc="Leaf area index", units=m**2 * m**-2, val=I1)
+        self.AddVar(typ='State', varid='I6', prn=r'$I_6$',
+                    desc="Mechanical cooling system temperature", units=C, val=I6)
+        
+        self.AddVar(typ='State', varid='I14', prn=r'$\I_{14}$',
+                    desc="Global radiation above the canopy", units=W * m**-2, val=I14)
+        # Constants
+        self.AddVar(typ='Cnts', varid='alpha6', prn=r'$\alpha_6$',
+                    desc="Greenhouse floor surface area", units=m**2, val=1e4) # ok
+        self.AddVar(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
+                    desc="Capacity of air flow through the pad", units=m**3 * s**-1, val=16.7) # ok
+        self.AddVar(typ='Cnts', varid='lamb1', prn=r'$\lambda_1$',
+                    desc="Performance coefficient of the mechanical acceleration system", units=1, val=0) # Falta valor, aunque en los ejemplos del artículo no se considera
+        self.AddVar(typ='Cnts', varid='lamb2', prn=r'$\lambda_2$',
+                    desc="Electrical capacity of the mechanical cooling system", units=W, val=0) # Falta valor, aunque en los ejemplos del artículo no se considera
+        self.AddVar(typ='Cnts', varid='gamma2', prn=r'$\gamma_2$',
+                    desc="Latent heat of water evaporation", units=J * kg_water**-1, val=2.45e6) # ok
+        self.AddVar(typ='Cnts', varid='rho3', prn=r'$\rho_3$',
+                    desc="Air density", units=kg * m**-3, val= 1.2) # El valor es el de la densidad del aire al nivel del mar
+        self.AddVar(typ='Cnts', varid='alpha5', prn=r'$\alpha_5$',
+                    desc="Specific heat capacity of greenhouse air", units=J * K**-1 * kg**-1, val=1e3) # ok
+        self.AddVar(typ='Cnts', varid='gamma', prn=r'$\gamma$',
+                    desc="Psychometric constan", units=Pa * K**-1, val=65.8) # ok
+        self.AddVar(typ='Cnts', varid='gamma3', prn=r'$\gamma_3$',
+                    desc="Strength of boundary layer of canopy for vapor transport", units=s * m**-1, val=275) # ok
+        self.AddVar(typ='Cnts', varid='delta1', prn=r'$\delta_2$',
+                    desc="Radiation above the canopy that defines sunrise and sunset", units=W * m**-2, val=5) # ok
+        self.AddVar(typ='Cnts', varid='delta2', prn=r'$\delta_3$',
+                    desc="Empirically determined parameter", units=W * m**-2, val=4.3) # ok
+        self.AddVar(typ='Cnts', varid='delta3', prn=r'$\delta_4$',
+                    desc="Empirically determined parameter", units=W * m**-2, val=0.54) # ok
+        self.AddVar(typ='Cnts', varid='gamma4', prn=r'$\gamma_4$',
+                    desc="Minimum stomatal resistance of the canopy", units=s * m**-1, val=82.0) # ok
+        self.AddVar(typ='Cnts', varid='gamma5', prn=r'$\gamma_5$',
+                    desc="Slope of the differentiable switch for the stomatal resistance model", units=m * W**-2, val=-1) # ok
+        self.AddVar(typ='Cnts', varid='delta4', prn=r'$\delta_5$',
+                    desc="Coefficient of the CO2 transpiration in the day", units=ppm**-2, val=6.1e-7) # ok
+        self.AddVar(typ='Cnts', varid='delta5', prn=r'$\delta_6$',
+                    desc="Coefficient of the CO2 transpiration in the night", units=ppm**-2, val=1.1e-11) # ok
+        self.AddVar(typ='Cnts', varid='delta6', prn=r'$\delta_7$',
+                    desc="Coefficient of the vapour pressure in the day", units=Pa**-2, val=4.3e-6) # ok
+        self.AddVar(typ='Cnts', varid='delta7', prn=r'$\delta_8$',
+                    desc="Coefficient of the vapour pressure in the night", units=Pa**-2, val=5.2e-6) # ok
+        self.AddVar(typ='Cnts', varid='eta4', prn=r'$\eta_4$',
+                    desc="Conversion factor for CO2 of mg*m**−3 to ppm", units=ppm * mg**-1 * m**3, val=0.554) # ok
+        self.AddVar(typ='Cnts', varid='psi1', prn=r'$\psi_1$',
+                    desc="Molar mass of water", units=kg * kmol**-1, val=18) # ok
+        self.AddVar(typ='Cnts', varid='phi2', prn=r'$\phi_2$',
+                    desc="Average height of greenhouse air", units=m, val=theta[1]) # Valor original 4
+        self.AddVar(typ='Cnts', varid='omega2', prn=r'$\omega_2$',
+                    desc="Molar gas constant", units=J * kmol**-1 * K**-1, val= 8.314e3) # ok
+        self.AddVar(typ='Cnts', varid='eta5', prn=r'$\eta_5$',
+                    desc="Fan-pad system efficiency", units=1, val=0) # Falta valor
+        self.AddVar(typ='Cnts', varid='phi5', prn=r'$\phi_5$',
+                    desc="Water vapor contained in the fan-pad system", units=kg_water * kg_air**-1, val=0) # Falta valor --> En realaidad es un input
+        self.AddVar(typ='Cnts', varid='phi6', prn=r'$\phi_6$',
+                    desc="Water vapor contained in the outside air", units=kg_water * kg_air**-1, val=0) # Falta valor --> En realaidad es un input
+        self.AddVar(typ='Cnts', varid='phi9', prn=r'$\phi_9$',
+                    desc="Fog system capacity", units=kg_water * s**-1, val=0) # Falta valor
+    def RHS(self, Dt):
+        f_1 = f1(U2=self.V('U2'), phi7=self.V(
+            'phi7'), alpha6=self.V('alpha6'))
+        q_2 = q2(T1=self.Vk('T1'))
+        q_7 = q7(I14=self.V('I14'), delta1=self.V(
+            'delta1'), gamma5=self.V('gamma5'))
+        q_8 = q8(delta4=self.V('delta4'), delta5=self.V('delta5'), q7=q_7)
+        q_9 = q9(delta6=self.V('delta6'), delta7=self.V('delta7'), q7=q_7)
+        q_4 = q4(C1=self.V('C1'), eta4=self.V('eta4'), q8=q_8)
+        q_5 = q5(V1=self.V('V1'), q2=q_2, q9=q_9)
+        q_6 = q6(I6=self.V('I6'))
+        q_10 = q10(I14=self.V('I14'), delta2=self.V(
+            'delta2'), delta3=self.V('delta3'))
+        q_3 = q3(I14=self.V('I14'), gamma4=self.V(
+            'gamma4'), q4=q_4, q5=q_5, q10=q_10)
+        q_1 = q1(I1=self.V('I1'), rho3=self.V('rho3'), alpha5=self.V('alpha5'), gamma=self.V(
+            'gamma'), gamma2=self.V('gamma2'), gamma3=self.V('gamma3'), q3=q_3)
+        h_3 = h3(T2=self.V('T2'), V1=self.V('V1'), U3=self.V('U3'), I6=self.V('I6'), lamb1=self.V(
+            'lamb1'), lamb2=self.V('lamb2'), alpha6=self.V('alpha6'), gamma2=self.V('gamma2'), q6=q_6)
+        #### Principal functions ####
+        p_1 = p1(V1=self.Vk('V1'), q1=q_1, q2=q_2)
+        
+        p_2 = p2(rho3=self.V('rho3'), eta5=self.V('eta5'),
+                    phi5=self.V('phi5'), phi6=self.V('phi6'), f1=f_1)
+        p_3 = p3(U9=self.V('U9'), phi9=self.V(
+            'phi9'), alpha6=self.V('alpha6'))
+        return (10**-3)*((1+ etadrain/100.0)*max(p_1,0) + p_2 + p_3)
+
+    
+
 ###########################
 ### Definición Director ###
 ###########################
@@ -1315,28 +1519,35 @@ class Module1(Module):
 class Climate_model(Director):
     def __init__(self):
         super().__init__(t0=0.0, time_unit="", Vars={}, Modules={})
-        C1_rhs_ins = C1_rhs()  # Make an instance of rhs
-        V1_rhs_ins = V1_rhs()  # Make an instance of rhs
-        T1_rhs_ins = T1_rhs()  # Make an instance of rhs
-        T2_rhs_ins = T2_rhs()  # Make an instance of rhs
-
+        C1_rhs_ins    = C1_rhs()     # Make an instance of rhs
+        V1_rhs_ins    = V1_rhs()     # Make an instance of rhs
+        T1_rhs_ins    = T1_rhs()     # Make an instance of rhs
+        T2_rhs_ins    = T2_rhs()     # Make an instance of rhs
+        Qgas_rhs_ins  = Qgas_rhs()   # Make an instance of rhs
+        Qco2_rhs_ins  = Qco2_rhs()   # Make an instance of rhs
+        Q_h2o_rhs_ins = Qh2o_rhs()   # Make an instance of rhs
         symb_time_units = C1_rhs_ins.CheckSymbTimeUnits(C1_rhs_ins)
         # Genetare the director
-        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins]
+        RHS_list = [C1_rhs_ins, V1_rhs_ins, T1_rhs_ins, T2_rhs_ins, Qgas_rhs_ins, Qco2_rhs_ins,Q_h2o_rhs_ins]
         self.MergeVarsFromRHSs(RHS_list, call=__name__)
-        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins))
+        self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins,Qh2o = Q_h2o_rhs_ins))
         self.sch = ['Module1']
 
 
     def reset(self):
-        self.Vars['T1'].val = T1_in # np.random.RandomState().normal(21, 2)
-        self.Vars['T2'].val = T2_in #np.random.RandomState().normal(21, 2)
-        self.Vars['V1'].val = V1_in
-        self.Vars['C1'].val = C1_in #np.random.RandomState().normal(500, 1)
+        self.Vars['T1'].val   = T1_in # np.random.RandomState().normal(21, 2)
+        self.Vars['T2'].val   = T2_in # np.random.RandomState().normal(21, 2)
+        self.Vars['V1'].val   = V1_in
+        self.Vars['C1'].val   = C1_in # np.random.RandomState().normal(500, 1)
+        self.Vars['Qgas'].val = 0
+        self.Vars['Qco2'].val = 0
+        self.Vars['Qh2o'].val = 0
 
-    def update_controls(self, U=np.ones(10)):
-        for i in range(len(U)):
+    def update_controls(self, U=np.ones(11)):
+        for i in range(len(U[0:10])):
             self.Vars['U'+str(i+1)].val = U[i]
+        T1 = self.V('T1')
+        self.Vars['I3'].val = T1 + U[10]*(T_cal-T1) 
 
     
 

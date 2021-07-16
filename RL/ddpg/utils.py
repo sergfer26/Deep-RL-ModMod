@@ -2,8 +2,10 @@ import numpy as np
 import gym
 from collections import deque
 import random
+import matplotlib.pyplot as plt
 from .params import PARAMS_UTILS
-
+from gym import spaces
+import pandas as pd 
 # Ornstein-Ulhenbeck Process
 # Taken from #https://github.com/vitchyr/rlkit/blob/master/rlkit/exploration_strategies/ou_strategy.py
 class OUNoise(object):
@@ -30,6 +32,7 @@ class OUNoise(object):
         x  = self.state
         dx = self.theta * (self.mu - x) + self.sigma * np.random.randn(self.action_dim)
         self.state = np.clip(x + dx,self.low, self.high) if self.on else np.ones(self.action_dim) * self.mu 
+        self.state = x + dx
         return self.state
     
     def get_action(self, action):
@@ -87,3 +90,26 @@ class Memory:
 
     def __len__(self):
         return len(self.buffer)
+
+def test_noise(dim):
+    n = PARAMS_UTILS['decay_period']
+    LOW_ACTION = np.zeros(dim)
+    HIGH_ACTION = np.ones(dim)
+    action_space = spaces.Box(low=LOW_ACTION, high=HIGH_ACTION)
+    '''
+    Grafica n acciones
+    '''
+    noise = OUNoise(action_space)
+    A = list()
+    for _ in range(n):
+        A.append(noise.get_action(0*np.ones(dim)))
+    A = np.array(A)
+    A.reshape((action_space.shape[0],n))
+    A = pd.DataFrame(A,columns=['A'+ str(i) for i in range(action_space.shape[0])])
+    ax = A.plot(subplots=True, layout=(int(np.ceil(action_space.shape[0]/2)), 2), figsize=(10, 7),title = 'Ruido') 
+    plt.show()
+    
+
+    
+
+
