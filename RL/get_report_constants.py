@@ -2,7 +2,7 @@ from reportlab.platypus import Table
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import TableStyle
-from constanst import CONSTANTS
+from constanst import CONSTANTS,INPUTS,CONTROLS,OTHER_CONSTANTS
 
 style = TableStyle([
     ('BACKGROUND', (0,0), (3,0), colors.blue),
@@ -53,7 +53,10 @@ def drawMyRuler(pdf):
 def dic_to_list(data,reg):
     lista = list()
     for k, v in data.items():   # iter on both keys and values
-        if k.startswith(reg):
+        if reg != None:
+            if k.startswith(reg):
+                lista.append([k, str(v.val),v.units,v.ok])
+        else:
             lista.append([k, str(v.val),v.units,v.ok])
     lista.insert(0, ['Nombre', 'Valor','Unidades','Info'])
     return lista
@@ -125,9 +128,11 @@ def create_report():
     add_table(pdf,CONSTANTS,'omega',x,290)
     pdf.showPage()
     add_text(pdf,['Inputs'],x, 780)
-    add_table(pdf,CONSTANTS,'I',x,490)
+    add_table(pdf,INPUTS,None,x,490)
     add_text(pdf,['Controles'],x, 450)
-    add_table(pdf,CONSTANTS,'U',x,215)
+    add_table(pdf,CONTROLS,None,x,215)
+    add_text(pdf,['Otras'],x, 180)
+    add_table(pdf,OTHER_CONSTANTS,None,x,40)
     pdf.save() 
 
 create_report()
