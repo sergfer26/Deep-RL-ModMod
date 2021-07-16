@@ -42,8 +42,8 @@ class GreenhouseEnv(gym.Env):
         self.indexes = Indexes(data_inputs[0:self.limit],SEASON) if SEASON != 'RANDOM' else None
         self.daily_C1  = list()
         self.daily_T2  = list()
-        self.G_list    = list()
         self.Qvar_dic = {key:list() for key in self.vars_cost}
+        self.Qvar_dic['G'] = list()
         self._reset()
 
 
@@ -96,7 +96,8 @@ class GreenhouseEnv(gym.Env):
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
             T.append(self.dirClimate.OutVar('T2')) 
-        reward = self.reward_cost(self.vars_cost)
+        reward = self.reward_cost(self.vars_cost) #Aqui tambien se actualizan las listas de costos
+        self.Qvar_dic['G'].append(0)
         self.reset_cost(self.vars_cost)
         self.daily_C1 += C1
         self.daily_T2 += T
@@ -109,7 +110,10 @@ class GreenhouseEnv(gym.Env):
             self.dirGreenhouse.update_state(C1M, TM, PARM, RHM)
             self.dirGreenhouse.Run(Dt=1, n=1, sch=self.dirGreenhouse.sch)
             h = self.dirGreenhouse.V('h')
-            reward += self.G(h)
+            G = self.G(h)
+            reward += G
+            self.Qvar_dic['G'].pop()
+            self.Qvar_dic['G'].append(G)
         self.state = self.update_state()
         done = self.is_done()
         self.i += 1
