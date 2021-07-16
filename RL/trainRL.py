@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from time import time
 from correo import send_correo
 import json
+from time import time
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
@@ -41,7 +42,7 @@ state_dim = env.observation_space.shape[0]
 
 if not SHOW:
     from functools import partialmethod
-    tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
+    tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
 
 def train_agent(agent, env, noise,PATH):
@@ -87,11 +88,11 @@ def train_agent(agent, env, noise,PATH):
 
 
 ###### Simulation ######
-from progressbar import*
+#from progressbar import*
 
 def sim(agent, env, indice = 0):
-    pbar = ProgressBar(maxval=STEPS)
-    pbar.start()
+    #pbar = ProgressBar(maxval=STEPS)
+    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -103,7 +104,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        pbar.update(step)
+        #pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -115,14 +116,14 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    pbar.finish()
+    #pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
 
 
 def main():
-    t1 = time.time()
+    t1 = time()
     mpl.style.use('seaborn')
     PATH = create_path()
     if len(sys.argv) != 1:
@@ -148,7 +149,7 @@ def main():
     figure_actions(A,final_indexes,action_dim,PATH)
     figure_inputs(df_inputs,final_indexes,PATH)
     
-    t2 = time.time()
+    t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
         send_correo(PATH + '/Reporte.pdf')
