@@ -1,5 +1,5 @@
-from struct_var import Struct
 from sympy import symbols
+from struct_var import Struct
 
 mt, mg, m, C, s, W, mg_CO2, J, g, mol_CH2O = symbols('mt mg m C s W mg_CO2 J g mol_CH2O')
 
@@ -13,7 +13,7 @@ nrec = 1
 
 
 ################## Constants ##################
-CONSTANTS = {     
+OTHER_CONSTANTS = {     
     ################## other constants ################## 
     'etagas':      Struct(typ='Cnts', varid='etagas', prn=r'$\eta_{gas}$',
                     desc="Energy efficiency of natural gas", units=1, val=35.26, ok='checar unidades'),  
@@ -26,10 +26,11 @@ CONSTANTS = {
     'sigma':     Struct(typ='Cnts', varid='sigma', prn=r'$\sigma$',
                     desc="Stefan-Boltzmann constant", units=W * m**-2 * K**-4, val=5.670e-8, ok=ok), # Constante de Stefan-Boltzmann (W m−2)
     'etadrain':  Struct(typ='Cnts', varid='etadrain', prn=r'$\eta_{drain}$',
-                    desc="Missing", units=1, val=30, ok='falta descripción y unidades'),
+                    desc="Missing", units=1, val=30, ok='falta descripción y unidades')
+}
 
 
-
+ALPHA ={
     ################## alpha ##################
     'alpha1': Struct(typ='Cnts', varid='alpha1', prn=r'$\alpha_1$',
                     desc="Heat capacity of one square meter of the canopy", units=J * K**-1 * m**-2, val=3000, ok='el valor original 1.2e3'), # Capacidad calórifica de un m^2 de dosel (theta[0])
@@ -48,21 +49,22 @@ CONSTANTS = {
     'alpha8': Struct(typ='Cnts', varid='alpha8', prn=r'$\alpha_8$',
                     desc="PAR absorption coefficient of the cover", units=1, val=1, ok='no dan el valor'), # Coeficiente de absorci ́on PAR de la cubierta # En el artículo no dan el valor
     'alpha9': Struct(typ='Cnts', varid='alpha9', prn=r'$\alpha_9$',
-                    desc="NIR absorption coefficient of the cover", units=1, val=1, ok='no dan el valor'),  # Coeficiente de absorci ́on NIR de la cubierta # En el artículo no dan el valor
+                    desc="NIR absorption coefficient of the cover", units=1, val=1, ok='no dan el valor')
+}
 
 
-
-
+BETA = {
     ################## beta ##################
     'beta1': Struct(typ='Cnts', varid='beta1', prn=r'$\beta_1$',
                     desc="Canopy extinction coefficient for PAR radiation", units=1, val=0.7, ok=ok),
     'beta2': Struct(typ='Cnts', varid='beta2', prn=r'$\beta_2$',
                     desc="Extinction coefficient for PAR radiation reflected from the floor to the canopy", units=1, val=0.7, ok=ok), 
     'beta3': Struct(typ='Cnts', varid='beta3', prn=r'$\beta_3$',
-                    desc="Canopy extinction coefficient for NIR radiation", units=1, val=0.27, ok=ok), # Coeficiente de extinci ́on para radiaci ́on PAR que se refleja desde el piso hasta el dosel # ok
+                    desc="Canopy extinction coefficient for NIR radiation", units=1, val=0.27, ok=ok)
+}
 
 
-
+GAMMA = {
     ################## gamma ##################
     'gamma':  Struct(typ='Cnts', varid='gamma', prn=r'$\gamma$',
                     desc="Psychometric constan", units=Pa * K**-1, val=65.8, ok=ok),  # Constante psicrom ́etrica #ok 
@@ -75,10 +77,11 @@ CONSTANTS = {
     'gamma4': Struct(typ='Cnts', varid='gamma4', prn=r'$\gamma_4$',
                     desc="Minimum stomatal resistance of the canopy", units=s * m**-1, val=82.0, ok=ok), # Resistenciaestom ́aticam ́ınimadeldosel # ok
     'gamma5': Struct(typ='Cnts', varid='gamma5', prn=r'$\gamma_5$',
-                    desc="Slope of the differentiable switch for the stomatal resistance model", units=m * W**-2, val=-1, ok=ok), # Pendiente del intercambio diferenciable para el modelo de resistencia estom ́atica #ok
+                    desc="Slope of the differentiable switch for the stomatal resistance model", units=m * W**-2, val=-1, ok=ok)
+}
 
 
-
+DELTA = {
     ################## delta ##################
     'delta1': Struct(typ='Cnts', varid='delta1', prn=r'$\delta_1$',
                     desc="Radiation above the canopy that defines sunrise and sunset", units=W * m**-2, val=5, ok=ok), # Radiación por encima del dosel que define el amanecer y la puesta de sol # ok
@@ -93,10 +96,11 @@ CONSTANTS = {
     'delta6': Struct(typ='Cnts', varid='delta6', prn=r'$\delta_6$',
                     desc="Coefficient of the vapour pressure in the day", units=Pa**-2, val=4.3e-6, ok=ok),   
     'delta7': Struct(typ='Cnts', varid='delta7', prn=r'$\delta_7$',
-                    desc="Coefficient of the vapour pressure in the night", units=Pa**-2, val=5.2e-6, ok=ok),
+                    desc="Coefficient of the vapour pressure in the night", units=Pa**-2, val=5.2e-6, ok=ok)
+}
 
 
-
+EPSIL = {
     ################## epsilon ##################
     'epsil1': Struct(typ='Cnts', varid='epsil1', prn=r'$\epsilon_1$',
                     desc="FIR emission coefficient of the heating pipe", units=1, val=0.88, ok=ok), # Coeficiente de emisión FIR de la tubería de calentamiento # ok 
@@ -109,10 +113,11 @@ CONSTANTS = {
     'epsil5': Struct(typ='Cnts', varid='epsil5', prn=r'$\epsilon_5$',
                     desc="Thermal screen FIR emission coefficient", units=1, val=1, ok='?'), # Coeficiente de emisión FIR de la pantalla térmica
     'epsil6': Struct(typ='Cnts', varid='epsil6', prn=r'$\epsilon_6$',
-                    desc="External cover FIR emission coefficient", units=1, val=0.44, ok='ok,usé el valor de Texas'),  # Coeficiente de emisión FIR de la cubierta externa #ok ---> use el valor de Texas
+                    desc="External cover FIR emission coefficient", units=1, val=0.44, ok='ok,usé el valor de Texas')
+}
 
 
-
+ETA = {
     ################## eta ##################
     'eta1':  Struct(typ='Cnts', varid='eta10', prn=r'$\eta_{10}$',
                     desc="Shadow effect on the discharge coefficient", units=1, val=0, ok='falta valor'),  # Proporción de la radiación global que es absorbida por los elementos de construcción del invernadero # ok
@@ -139,10 +144,10 @@ CONSTANTS = {
     'eta12': Struct(typ='Cnts', varid='eta12', prn=r'$\eta_{12}$',
                     desc="Amount of vapor that is released when a joule of sensible energy is produced by the direct air heater", units=kg_vapour * J**-1, val=4.43e-8, ok=ok), # Cantidad de vapor que es liberado cuando un joule de energía sensible es producido por el calentador de aire directo # ok
     'eta13': Struct(typ='Cnts', varid='eta13', prn=r'$\eta_{13}$',
-                    desc="Amount of CO2 that is released when a joule of sensible energy is produced by the direct air heater", units=mg_CO2 * J**-1, val=0.057, ok=ok),  # Cantidad de CO2 que es liberado cuando un joule de energía sensible es producido por el calentador de aire directo # ok
+                    desc="Amount of CO2 that is released when a joule of sensible energy is produced by the direct air heater", units=mg_CO2 * J**-1, val=0.057, ok=ok)
+}
 
-
-
+LAMB = {
     ################## lamb ##################
     'lamb1': Struct(typ='Cnts', varid='lamb1', prn=r'$\lambda_1$',
                     desc="Performance coefficient of the mechanical acceleration system", units=1, val=0, ok='Falta valor, en los ejemplos del artículo no se considera'), # Coeficiente de desempen ̃o del sistema de enfriamiento meca ́nico # Falta valor, aunque en los ejemplos del artículo no se considera
@@ -159,10 +164,11 @@ CONSTANTS = {
     'lamb7': Struct(typ='Cnts', varid='lamb7', prn=r'$\lambda_7$',
                     desc="Variable of heat exchange by convection between the roof and the outside air", units=J * m**-3 * K**-1, val=1.2, ok='ok, usé el valor de Texas'), # Variable de intercambio de calor por convecci ́on entre la cubierta y el aire exterior # ok ---> usé el valor de Texas
     'lamb8': Struct(typ='Cnts', varid='lamb8', prn=r'$\lambda_8$',
-                    desc="Variable of heat exchange by convection between the roof and the outside air", units=1, val=1, ok='ok,usé el valor de Texas'), # Variable de intercambio de calor por convecci ́on entre la cubierta y el aire exterior # ok ---> usé el valor de Texas
+                    desc="Variable of heat exchange by convection between the roof and the outside air", units=1, val=1, ok='ok,usé el valor de Texas')
+}
 
 
-
+RHO = {
     ################## rho ##################
     'rho1':Struct(typ='Cnts', varid='rho1', prn=r'$\rho_1$',
                     desc="PAR reflection coefficient", units=1, val=0.07,ok=ok),
@@ -170,21 +176,21 @@ CONSTANTS = {
                     desc="Floor reflection coefficient PAR", units=1, val=0.65,ok = ok), 
     'rho3': Struct(typ='Cnts', varid='rho3', prn=r'$\rho_3$',
                     desc="Air density", units=kg * m**-3, val= 1.2,ok = 'El valor es el de la densidad del aire al nivel del mar'),
-    'rho4': Struct(desc='Densidad del aire a nivel del mar'),
+    'rho4': Struct(desc='Densidad del aire a nivel del mar')
+}
 
 
-
-    ################## tau ##################
+TAU = {
     'tau1': Struct(typ='Cnts', varid='tau1', prn=r'$\tau_1$',
                     desc="PAR transmission coefficient of the Cover", units=1, val=1,ok = 'En el artículo no dan su valor'),
     'tau2': Struct(typ='Cnts', varid='tau2', prn=r'$\tau_2$',
                     desc="FIR transmission coefficient of the Cover", units=1, val=1, ok ='En el artículo no dan su valor'),
     'tau3': Struct(typ='Cnts', varid='tau3', prn=r'$\tau_3$',
-                    desc="FIR transmission coefficient of the thermal screen", units=1, val=0.11,ok = 'ok --> usé el valor de Texas'),
+                    desc="FIR transmission coefficient of the thermal screen", units=1, val=0.11,ok = 'ok --> usé el valor de Texas')
+}
 
 
-
-    ################## nu ##################
+NU ={
     'nu1': Struct(typ='Cnts', varid='nu1', prn=r'$\nu_1$',
                     desc="Shadowless discharge coefficient", units=1, val=0.65,ok = ok), 
     'nu2': Struct(typ='Cnts', varid='nu2', prn=r'$\nu_2$',
@@ -200,10 +206,11 @@ CONSTANTS = {
     'nu7': Struct(typ='Cnts', varid='nu7', prn=r'$\nu_7$',
                     desc="Soil thermal conductivity", units=W * m**-1 * K**-1, val=0.85, ok=ok), 
     'nu8': Struct(typ='Cnts', varid='nu8', prn=r'$\nu_8$',
-                    desc="Floor to ground distance", units=m, val=0.64,ok=ok),
+                    desc="Floor to ground distance", units=m, val=0.64,ok=ok)
+}
 
 
-
+PHI = {
     ################## phi ##################
     'phi1': Struct(typ='Cnts', varid='phi1', prn=r'$\phi_1$',
                     desc="External diameter of the heating pipe", units=m, val=51e-3,ok = ok),
@@ -220,31 +227,38 @@ CONSTANTS = {
     'phi8': Struct(typ='Cnts', varid='phi8', prn=r'$\phi_8$',
                     desc="Air flow capacity of forced ventilation system", units=m**3 * s**-1, val=0, ok = 'Falta valor, aunque en los ejemplos del artículo no se considera'),
     'phi9': Struct(typ='Cnts', varid='phi9', prn=r'$\phi_9$',
-                    desc="Fog system capacity", units=kg_water * s**-1, val=0,ok = 'Falta valor'), 
+                    desc="Fog system capacity", units=kg_water * s**-1, val=0,ok = 'Falta valor')
+}
 
 
-
+PSI = {
     ################## psi ##################
     'psi1':Struct(typ='Cnts', varid='psi1', prn=r'$\psi_1$',
                     desc="Molar mass of water", units=kg * kmol**-1, val=18,ok = ok), 
     'psi2': Struct(typ='Cnts', varid='psi2', prn=r'$\psi_2$',
                     desc="Capacity of the external CO2 source", units=mg * s**-1, val=7.2*(10**4),ok = 'Tenia el valor de Texas'),
     'psi3': Struct(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
-                    desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031,ok = ok),
+                    desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031,ok = ok)
+}
 
 
-
+OMEGA = {
     ################## omega ##################
     'omega1': Struct(typ='Cnts', varid='omega1', prn=r'$\omega_1$',
                     desc="Gravity acceleration constant", units=m * s**-2, val=9.81, ok = ok), 
     'omega2': Struct(typ='Cnts', varid='omega2', prn=r'$\omega_2$',
                     desc="Molar gas constant", units=J * kmol**-1 * K**-1, val= 8.314e3, ok = ok), 
     'omega3': Struct(typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
-                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03,ok = 'Sin comentario'),
+                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03,ok = 'Sin comentario')
+}
 
 
+CONSTANTS = {**OTHER_CONSTANTS, **ALPHA, **BETA, ** GAMMA, **DELTA, **EPSIL, **ETA, **LAMB, **RHO, **TAU, 
+                **NU, **PHI, **PSI, **OMEGA} # Merge dictionaries Python 3.5<=*
 
-    ################## inputs ##################
+
+################## Inputs ##################
+INPUTS = {
     'I1' : Struct(typ='Cnts', varid='I1', prn=r'$I_1$',
                     desc="Leaf area index", units=m**2 * m**-2, val=3, ok = 'Valor tomado de internet'),
     'I2' : Struct(typ='State', varid='I2', prn=r'$I_2$',
@@ -271,11 +285,13 @@ CONSTANTS = {
     'I13' : Struct(typ='Cnts', varid='I13', prn=r'$I_{13}$',
                     desc="Photorespiration during photosynthesis", units=1, val=0,ok = 'Falta valor y unidades'),      # FALTA VALOE Photorespiration during photosynthesis
     'I14' : Struct(typ='State', varid='I14', prn=r'$\I_{14}$',
-                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario'), 
+                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario')
+}
 
 
 
-    ################## states ##################
+################## State variables ##################
+STATE_VARS = {
     'C1_in' : Struct(typ='State', varid='C1', prn=r'$C_1$',
                     desc="CO2 concentrartion in the greenhouse air", units=mg * m**-3, val=432, rec=nrec,ok='falta valor inicial'),
     'V1_in' : Struct(typ='State', varid='V1', prn=r'$V_1$',
@@ -283,11 +299,24 @@ CONSTANTS = {
     'T1_in' : Struct(typ='State', varid='T1', prn=r'$T_1$',
                     desc="Canopy temperature", units=C, val=20, rec=nrec, ok='falta valor inicial'),
     'T2_in' : Struct(typ='State', varid='T2', prn=r'$T_2$',
-                    desc="Greenhouse air temperature", units=C, val=20, rec=nrec, ok='falta valor inicial'),
+                    desc="Greenhouse air temperature", units=C, val=20, rec=nrec, ok='falta valor inicial')
+}
 
 
 
-    ################## controls ##################
+COSTS = {
+    'Qh2o': Struct(typ='State', varid='Qh2o', prn=r'$Q_{H2O}$',
+                    desc="Water cost ", units=mxn * kg, val=0, rec=nrec, ok=ok),
+    'Qgas': Struct(typ='State', varid='Qgas', prn=r'$Q_{Gas}$',
+                    desc="Fuel cost (natural gas)", units=mxn * m**-2, val=0, rec=nrec, ok=ok), 
+    'Qco2': Struct(typ='State', varid='Qco2', prn=r'$Q_{CO2}$',
+                    desc="CO2 cost ", units=mxn * kg, val=0, rec=nrec, ok='revisar unidades')
+}
+
+
+
+################## Controls ##################
+CONTROLS = {
     'U1': Struct(typ='Cnts', varid='U1', prn=r'$U_1$', desc="Thermal screen control", units=1, val=0, ok=ok),
     'U2': Struct(typ='Cnts', varid='U2', prn=r'$U_2$', desc="Fan and pad system control", units=1, val=0, ok=ok),
     'U3': Struct(typ='Cnts', varid='U3', prn=r'$U_3$', desc="Control of mechanical cooling system", units=1, val=0, ok=ok),
