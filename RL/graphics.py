@@ -139,3 +139,19 @@ def compute_indexes(inicio,step,time_max):
     new_indexes = [inicio+(for_indexes*j) for j in range(num_steps)]
     final_indexes = [data_inputs['Date'][index] for index in new_indexes]
     return final_indexes
+
+def figure_cost_gain(env,PATH):
+    columns = env.vars_cost
+    columns.append('G')
+    data = [env.Qvar_dic[name] for name  in env.vars_cost]
+    data = np.array(data)
+    data = data.T
+    data_cost = pd.DataFrame(data,columns = columns)
+    ax = data_cost.plot(subplots=True, layout=(2, 2), figsize=(10, 7), title='Ganancia y costos en $(mxn)m^{-2}min^{-1}$') 
+    plt.gcf().autofmt_xdate()
+    if SHOW:
+        plt.show()
+        plt.close()
+    else:
+        plt.savefig(PATH + '/sim_cost.png')
+        plt.close()
