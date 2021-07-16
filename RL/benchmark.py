@@ -33,7 +33,7 @@ SHOW = False
 
 
 NAMES = ['nn','random','on','off']
-number_of_simulations = 5
+number_of_simulations = 100
 path = sys.argv[1]
 mes = sys.argv[2]
 MONTHS = [mes]
@@ -83,7 +83,7 @@ def get_score(month,agent,name):
     BIG_DATA = p.starmap(sim_, V)
     BIG_DATA = list(BIG_DATA)
     for s in BIG_DATA:
-        _, _, S_prod, A, _ = s
+        _, _, S_prod, A, _ , _= s
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
         aux = len(df_prod) - 1
         number_of_fruit =  df_prod['$N$'][aux]
@@ -222,11 +222,11 @@ if __name__ == '__main__':
     shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
     shutil.copy(PATH + '/' + mes + '_nn.json', 'results_ddpg/' + path)
 
-    shutil.copy(PATH + 'histograms_mass.png', 'results_ddpg/' + path)
-    shutil.copy(PATH + 'histograms_number_of_fruit.png' + mes + '_nn.json', 'results_ddpg/' + path)
-    shutil.copy(PATH + 'histograms_reward.png' + mes + '_nn.json', 'results_ddpg/' + path)
-    shutil.copy(PATH + 'mean_actions.png' + mes + '_nn.json', 'results_ddpg/' + path)
-    shutil.copy(PATH + 'var_actions.png' + mes + '_nn.json', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/histograms_mass.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/histograms_number_of_fruit.png' , 'results_ddpg/' + path)
+    shutil.copy(PATH + '/histograms_reward.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/mean_actions.png', 'results_ddpg/' + path)
+    shutil.copy(PATH + '/var_actions.png', 'results_ddpg/' + path)
 
     os.remove(PATH + '/Reporte_agentes.pdf')
  
