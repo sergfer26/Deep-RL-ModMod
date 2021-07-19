@@ -22,7 +22,7 @@ from time import time
 #from torch.utils.tensorboard import SummaryWriter
 from get_report import create_report
 from params import PARAMS_TRAIN
-#from reward import G
+from get_report_constants import constants
 from graphics import save_Q,figure_reward,figure_state,figure_rh_par,figure_prod,figure_actions,figure_inputs,compute_indexes,create_path, save_rewards,figure_cost_gain
 EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
@@ -123,15 +123,17 @@ def sim(agent, env, indice = 0):
 
 
 def main():
+
     t1 = time()
     mpl.style.use('seaborn')
     PATH = create_path()
+    constants(PATH)
     if len(sys.argv) != 1:
     # Load trained model 
         old_path = sys.argv[1:].pop()
         print('Se cargo el modelo')
         agent.load(old_path)
-
+    '''
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise,PATH)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
@@ -152,7 +154,8 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/Reporte.pdf')
+        send_correo(PATH + '/Reporte.pdf'
+    '''
 
 if __name__=='__main__':
     main()
