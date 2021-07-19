@@ -20,7 +20,7 @@ OTHER_CONSTANTS = {
     'qgas':    Struct(typ='Cnts', varid='qgas', prn=r'$q_{gas}$',
                     desc="Cost of natural gas", units=1, val=2.45, ok='checar unidades'),      
     'q_co2_ext': Struct(typ='Cnts', varid='q_co2_ext', prn=r'$\q_{CO_2}_{ext}$',
-                    desc="", units=1, val=3.5, ok='checar unidades'),     # Costo del gas de la fuente externa lo tomamos al precio de la tesis 
+                    desc="", units=mxn * kg**-1, val=3.5, ok=ok),     # Costo del gas de la fuente externa lo tomamos al precio de la tesis 
     'T_cal':     Struct(typ='Cnts', varid='T_cal', prn=r'$T_{cal}$',
                     desc="Missing", units=1, val=95, ok='falta descripción y unidades'),          # Temperatura máxima de la caldera  
     'sigma':     Struct(typ='Cnts', varid='sigma', prn=r'$\sigma$',
@@ -128,7 +128,7 @@ ETA = {
     'eta4':  Struct(typ='Cnts', varid='eta4', prn=r'$\eta_4$',
                     desc="Conversion factor for CO2 of mg*m**−3 to ppm", units=ppm * mg**-1 * m**3, val=0.554, ok=ok),  # Factor de conversión de mg m−3 CO2 a ppm # ok 
     'eta5':  Struct(typ='Cnts', varid='eta5', prn=r'$\eta_5$',
-                    desc="Fan-pad system efficiency", units=1, val=0, ok='Falta valor'),  # Eficiencia del sistema de ventilador-almohadilla # no da el valor en el articulo
+                    desc="Fan-pad system efficiency", units=1, val=0.5, ok=ok),  # Eficiencia del sistema de ventilador-almohadilla # no da el valor en el articulo
     'eta6':  Struct(typ='Cnts', varid='eta6', prn=r'$\eta_6$',
                     desc="Ventilation power reduction factor", units=m**3 * m**-2 * s**-1, val=1, ok='Falta valor'),  # Factor de reduccio ́n de la potencia de ventilación # Falta valor
     'eta7':  Struct(typ='Cnts', varid='eta7', prn=r'$\eta_7$',
@@ -219,15 +219,15 @@ PHI = {
     'phi3': Struct(desc='Masa molar del aire'), 
     'phi4': Struct('Altitud del invernadero'),
     'phi5': Struct(typ='Cnts', varid='phi5', prn=r'$\phi_5$',
-                    desc="Water vapor contained in the fan-pad system", units=kg_water * kg_air**-1, val=0,ok = 'Falta valor --> En realaidad es un input'), 
+                    desc="Water vapor contained in the fan-pad system", units=kg_water * kg_air**-1, val=0.014, ok=ok), 
     'phi6': Struct(typ='Cnts', varid='phi6', prn=r'$\phi_6$',
-                    desc="Water vapor contained in the outside air", units=kg_water * kg_air**-1, val=0, ok = 'Falta valor --> En realaidad es un input'), # Vapor de agua contenido en el aire exterior
+                    desc="Water vapor contained in the outside air", units=kg_water * kg_air**-1, val=0.0079, ok='este es el valor correcto a 21 grados C y 50 % de HR'), # Vapor de agua contenido en el aire exterior
     'phi7': Struct(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
                     desc="Capacity of air flow through the pad", units=m**3 * s**-1, val=16.7,ok = ok), 
     'phi8': Struct(typ='Cnts', varid='phi8', prn=r'$\phi_8$',
                     desc="Air flow capacity of forced ventilation system", units=m**3 * s**-1, val=0, ok = 'Falta valor, aunque en los ejemplos del artículo no se considera'),
     'phi9': Struct(typ='Cnts', varid='phi9', prn=r'$\phi_9$',
-                    desc="Fog system capacity", units=kg_water * s**-1, val=0,ok = 'Falta valor')
+                    desc="Fog system capacity", units=kg_water * s**-1, val=1.83, ok=ok)
 }
 
 
@@ -236,7 +236,7 @@ PSI = {
     'psi1':Struct(typ='Cnts', varid='psi1', prn=r'$\psi_1$',
                     desc="Molar mass of water", units=kg * kmol**-1, val=18,ok = ok), 
     'psi2': Struct(typ='Cnts', varid='psi2', prn=r'$\psi_2$',
-                    desc="Capacity of the external CO2 source", units=mg * s**-1, val=7.2*(10**4),ok = 'Tenia el valor de Texas'),
+                    desc="Capacity of the external CO2 source", units=mg * s**-1, val=4.3*(10**5),ok=ok),
     'psi3': Struct(typ='Cnts', varid='psi3', prn=r'$\psi_3$',
                     desc="Molar mass of the CH2O", units=g * mol_CH2O**-1, val=30.031,ok = ok)
 }
