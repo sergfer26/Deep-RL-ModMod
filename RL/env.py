@@ -2,21 +2,18 @@ import gym
 import numpy as np
 import pandas as pd
 import numpy as np
-import math
 from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
-#from progress.bar import Bar
-from solver_climate import Climate_model
+from climate_model.model import Climate_model
 from solver_prod import GreenHouse
 from get_indexes import Indexes
 from params import PARAMS_ENV
-#from reward import G, Qgas, Qco2
 
 
 LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
 HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(11); # LOW_ACTION[7] = 0.5
+LOW_ACTION = np.zeros(11) # LOW_ACTION[7] = 0.5
 HIGH_ACTION = np.ones(11)
 STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
 TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
@@ -25,6 +22,7 @@ INPUT_NAMES = list(data_inputs.columns)[0:-2]
 SAMPLES = len(data_inputs) 
 FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
 SEASON = PARAMS_ENV['SEASON'] # Puede ser 'RANDOM'
+
 
 class GreenhouseEnv(gym.Env):
     def __init__(self):
@@ -189,5 +187,5 @@ class GreenhouseEnv(gym.Env):
 
 if __name__ == '__main__':
     env = GreenhouseEnv()
-    env.n_random_actions(240) #30 días
+    env.n_random_actions(240) #30 díasas
 

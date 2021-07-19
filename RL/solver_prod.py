@@ -499,6 +499,7 @@ class Ci_rhs(StateRHS):
     #################################################################
     ############ Módulo de crecimiento para una planta ##############
     #################################################################
+
 class Plant(Module):
     def __init__( self, beta, Q_rhs_ins, Ci_rhs_ins, Dt_f=0.1, Dt_g=1):  # Dt_f=0.1, Dt_g=0.25
         """Models one plant growth, with a variable number of fruits."""

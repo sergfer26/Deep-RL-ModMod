@@ -32,4 +32,3 @@ def Indexes(data, season):
                 indexes.append(i)
     return indexes
 
-
