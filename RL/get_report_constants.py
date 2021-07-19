@@ -3,6 +3,7 @@ from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import TableStyle
 from constanst import CONSTANTS,INPUTS,CONTROLS,OTHER_CONSTANTS
+from graphics import date
 
 style = TableStyle([
     ('BACKGROUND', (0,0), (3,0), colors.blue),
@@ -87,7 +88,7 @@ def add_text(pdf,textLines,x,y):
 def create_report():
     fileName = 'Reporte_constantes.pdf'
     documentTitle = 'Document title!'
-    title = 'Reporte de constantes'
+    title = 'Reporte de constantes ' + date() 
     subTitle = ''
     pdf = canvas.Canvas(fileName)
     pdf.setTitle(documentTitle)

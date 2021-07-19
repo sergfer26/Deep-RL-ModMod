@@ -8,14 +8,18 @@ from datetime import datetime, timezone
 from time import time
 import pathlib
 SHOW = PARAMS_TRAIN['SHOW']
-def create_path():
+
+def date():
     tz = pytz.timezone('America/Mexico_City')
     mexico_now = datetime.now(tz)
     month = mexico_now.month
     day = mexico_now.day
     hour = mexico_now.hour
     minute = mexico_now.minute
-    PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+    return str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+
+def create_path():
+    PATH = 'results_ddpg/'+ date()
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     return PATH
     
