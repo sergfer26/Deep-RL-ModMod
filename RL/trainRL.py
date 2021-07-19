@@ -1,3 +1,4 @@
+from __future__ import barry_as_FLUFL
 import sys
 import numpy as np
 import matplotlib as mpl
@@ -12,7 +13,6 @@ from time import time
 # from typing_extensions import final
 from get_report import create_report
 from params import PARAMS_TRAIN
-from __future__ import barry_as_FLUFL
 from graphics import save_Q, figure_reward, figure_state
 from graphics import figure_rh_par, figure_prod, figure_actions 
 from graphics import figure_inputs, compute_indexes, create_path
