@@ -85,8 +85,9 @@ def add_text(pdf,textLines,x,y):
 
 
 
-def create_report():
-    fileName = 'Reporte_constantes.pdf'
+def constants(PATH=''):
+    fileName = '/Reporte_constantes.pdf'
+    fileName = PATH + fileName
     documentTitle = 'Document title!'
     title = 'Reporte de constantes ' + date() 
     subTitle = ''
@@ -135,5 +136,3 @@ def create_report():
     add_text(pdf,['Otras'],x, 180)
     add_table(pdf,OTHER_CONSTANTS,None,x,40)
     pdf.save() 
-
-create_report()
