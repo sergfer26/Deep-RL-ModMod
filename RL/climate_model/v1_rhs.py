@@ -14,12 +14,11 @@ mt = symbols('mt')
 state_names = ['T1', 'V1', 'T2', 'C1']
 control_names = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7', 'U8', 'U9']
 input_names = ['I8', 'I5', 'I6', 'I1', 'I14']
-constant_names = ['lamb4', 'alpha6', 'phi7', 'eta6', 'eta7', 'eta8', 'phi8', 'nu4', 'nu5'
+constant_names = ['lamb4', 'alpha6', 'phi7', 'eta6', 'eta7', 'eta8', 'phi8', 'nu4', 'nu5',
                             'omega1', 'nu6', 'lamb1', 'lamb3', 'gamma2', 'nu1', 'eta10', 'nu3', 
                             'nu2', 'eta11', 'rho3', 'alpha5', 'gamma', 'gamma3', 'delta1', 'delta2', 
                             'delta3', 'delta4', 'gamma4', 'gamma5', 'delta5', 'delta6', 'delta7', 
-                            'delta8', 'eta4', 'psi1', 'phi2', 'omega2', 'eta5', 'phi5', 'phi6'
-                            'phi9', 'eta12']
+                            'eta4', 'psi1', 'phi2', 'omega2', 'eta5', 'phi5', 'phi6', 'phi9', 'eta12']
 
 
 class V1_rhs(StateRHS):

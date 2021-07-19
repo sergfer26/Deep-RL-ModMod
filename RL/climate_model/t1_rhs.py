@@ -81,10 +81,10 @@ class T1_rhs(StateRHS):
         r_5 = r5(I2=self.V('I2'), alpha2=self.V('alpha2'),
                  eta1=self.V('eta1'), eta3=self.V('eta3'))
         r_6 = r6(T1=self.Vk('T1'), I3=self.V('I3'), alpha3=self.V('alpha3'), epsil1=self.V(
-            'epsil1'), epsil2=self.V('epsil2'), lamb=self.V('lamb'), g1=g_1)
+            'epsil1'), epsil2=self.V('epsil2'), lamb=self.V('sigma'), g1=g_1)
         h_1 = h1(T1=self.Vk('T1'), T2=self.Vk('T2'),
                  I1=self.V('I1'), alpha4=self.V('alpha4'))
         l_1 = l1(gamma2=self.V('gamma2'), p1=p_1)
         r_7 = r7(T1=self.Vk('T1'), I4=self.V('I4'), epsil2=self.V(
-            'epsil2'), epsil3=self.V('epsil3'), lamb=self.V('lamb'), a1=a_1, g2=g_2)
+            'epsil2'), epsil3=self.V('epsil3'), lamb=self.V('sigma'), a1=a_1, g2=g_2)
         return (kappa_1**-1)*(r_1 + r_5 + r_6 - h_1 - l_1 - r_7)

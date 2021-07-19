@@ -1,4 +1,4 @@
-from numpy import sqrt, exp 
+from numpy import sqrt, exp , pi
 
 def h6(U4, lamb4, alpha6):
     return U4*lamb4/alpha6
@@ -234,8 +234,7 @@ def p7(V1, h3, q6):
 
 
 ######### T1 ##############
-#### Symbols
-mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm')  # Symbolic use of base phisical units
+
 
 ### previous functions ###
 
@@ -345,8 +344,6 @@ def r7(T1, I4, epsil2, epsil3, lamb, a1, g2):
 
 
 ######### T2 ##############
-#### Symbols ########
-mt, mg, m, C, s, W, mg_CO2, J, Pa, kg_water, kg, K, ppm, m_cover, kg_air = symbols('mt mg m C s W mg_CO2 J Pa kg_water kg K ppm m_cover kg_air')  # Symbolic use of base phisical units
 
 ### previous functions ###
 

@@ -18,11 +18,11 @@ state_names = ['T1', 'V1', 'T2']
 control_names = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6','U7', 'U8', 'U9', 'U11']
 input_names = ['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8']
 constant_names = ['tau3', 'phi7', 'alpha6', 'eta6', 'eta7', 'eta8', 'phi8', 'nu4', 'nu5', 
-                    'omega1', 'nu6', 'beta3', 'gamma1', 'phi1', 'tau1','tau2', 'lam5', 'lamb7', 
-                    'lamb8', 'alpha5', 'rho5', 'nu1', 'eta10', 'nu3', 'nu2', 'eta11', 'alpha8', 
+                    'omega1', 'nu6', 'beta3', 'gamma1', 'phi1', 'tau1','tau2', 'lamb5', 'lamb7', 
+                    'lamb8', 'alpha5', 'nu1', 'eta10', 'nu3', 'nu2', 'eta11', 'alpha8', 
                     'alpha9', 'eta2', 'eta3', 'sigma', 'epsil3', 'epsil4', 'epsil5', 'epsil6', 
-                    'phi2', 'alpha4', 'gamma2', 'eta5', 'phi5', 'phi6', 'lambda1', 'lambda2', 
-                    'lambda3', 'lambda4', 'alpha2', 'alpha7', 'eta1', 'phi9', 'nu7', 'nu8']
+                    'phi2', 'alpha4', 'gamma2', 'eta5', 'phi5', 'phi6', 'lamb1', 'lamb2', 
+                    'lamb3', 'lamb4', 'alpha2', 'alpha7', 'eta1', 'phi9', 'nu7', 'nu8', 'lamb6']
   
 
 ########### T2 ############
@@ -84,11 +84,11 @@ class T2_rhs(StateRHS):
         r_9 = r9(I2=self.V('I2'), alpha8=self.V('alpha8'), alpha9=self.V(
             'alpha9'), eta2=self.V('eta2'), eta3=self.V('eta3'))
         r_11 = r11(T2=self.Vk('T2'), I4=self.V('I4'), lamb=self.V(
-            'lamb'), epsil3=self.V('epsil3'), epsil4=self.V('epsil4'), g3=g_3)
+            'sigma'), epsil3=self.V('epsil3'), epsil4=self.V('epsil4'), g3=g_3)
         r_12 = r12(T2=self.Vk('T2'), I4=self.V('I4'), lamb=self.V(
-            'lamb'), epsil3=self.V('epsil3'), epsil5=self.V('epsil5'), g4=g_4)
+            'sigma'), epsil3=self.V('epsil3'), epsil5=self.V('epsil5'), g4=g_4)
         r_13 = r13(T2=self.Vk('T2'), I4=self.V('I4'), lamb=self.V(
-            'lamb'), epsil3=self.V('epsil3'), epsil6=self.V('epsil6'))
+            'sigma'), epsil3=self.V('epsil3'), epsil6=self.V('epsil6'))
         #### Principal functions ####
         kappa_2 = kappa2(alpha5=self.V('alpha5'),
                          rho3=self.V('rho3'), phi2=self.V('phi2'))

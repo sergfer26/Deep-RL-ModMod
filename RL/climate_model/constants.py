@@ -19,7 +19,7 @@ OTHER_CONSTANTS = {
                     desc="Energy efficiency of natural gas", units=1, val=35.26, ok='checar unidades'),  
     'qgas':    Struct(typ='Cnts', varid='qgas', prn=r'$q_{gas}$',
                     desc="Cost of natural gas", units=1, val=2.45, ok='checar unidades'),      
-    'q_co2_ext': Struct(yp='Cnts', varid='q_co2_ext', prn=r'$\q_{CO_2}_{ext}$',
+    'q_co2_ext': Struct(typ='Cnts', varid='q_co2_ext', prn=r'$\q_{CO_2}_{ext}$',
                     desc="", units=1, val=3.5, ok='checar unidades'),     # Costo del gas de la fuente externa lo tomamos al precio de la tesis 
     'T_cal':     Struct(typ='Cnts', varid='T_cal', prn=r'$T_{cal}$',
                     desc="Missing", units=1, val=95, ok='falta descripción y unidades'),          # Temperatura máxima de la caldera  
@@ -119,8 +119,8 @@ EPSIL = {
 
 ETA = {
     ################## eta ##################
-    'eta1':  Struct(typ='Cnts', varid='eta10', prn=r'$\eta_{10}$',
-                    desc="Shadow effect on the discharge coefficient", units=1, val=0, ok='falta valor'),  # Proporción de la radiación global que es absorbida por los elementos de construcción del invernadero # ok
+    'eta1':  Struct(typ='Cnts', varid='eta1', prn=r'$\eta_1$',
+                    desc="Proportion of global radiation that is absorbed by greenhouse building elements", units=1, val=0.1, ok=ok),  # Proporción de la radiación global que es absorbida por los elementos de construcción del invernadero # ok
     'eta2':  Struct(typ='Cnts', varid='eta2', prn=r'$\eta_2$',
                     desc="Ratio between PAR radiation and external global radiation", units=1, val=0.5, ok=ok),  # Razón entre la radiación PAR y la radiación global externa ¿0.5?
     'eta3':  Struct(typ='Cnts', varid='eta3', prn=r'$\eta_3$',
@@ -289,16 +289,15 @@ INPUTS ={
 }
 
 
-
 ################## State variables ##################
 STATE_VARS = {
-    'C1_in' : Struct(typ='State', varid='C1', prn=r'$C_1$',
+    'C1' : Struct(typ='State', varid='C1', prn=r'$C_1$',
                     desc="CO2 concentrartion in the greenhouse air", units=mg * m**-3, val=432, rec=nrec,ok='falta valor inicial'),
-    'V1_in' : Struct(typ='State', varid='V1', prn=r'$V_1$',
+    'V1' : Struct(typ='State', varid='V1', prn=r'$V_1$',
                     desc="Greenhouse air vapor pressure", units=Pa, val=14, rec=nrec, ok='falta valor inicial'), 
-    'T1_in' : Struct(typ='State', varid='T1', prn=r'$T_1$',
+    'T1' : Struct(typ='State', varid='T1', prn=r'$T_1$',
                     desc="Canopy temperature", units=C, val=20, rec=nrec, ok='falta valor inicial'),
-    'T2_in' : Struct(typ='State', varid='T2', prn=r'$T_2$',
+    'T2' : Struct(typ='State', varid='T2', prn=r'$T_2$',
                     desc="Greenhouse air temperature", units=C, val=20, rec=nrec, ok='falta valor inicial')
 }
 

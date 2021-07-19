@@ -1,9 +1,9 @@
 import numpy as np
 from ModMod import Module, Director
 from scipy.stats import norm
-from .constants import INIT_STATE, CONSTANTS
+from .constants import STATE_VARS, CONSTANTS
 from .qh2o_rhs import Qh2o_rhs
-from . qco2_rhs import Qco2_rhs 
+from .qco2_rhs import Qco2_rhs 
 from .qgas_rhs import Qgas_rhs
 from .t1_rhs import T1_rhs
 from .t2_rhs import T2_rhs
@@ -11,8 +11,8 @@ from .v1_rhs import V1_rhs
 from .c1_rhs import C1_rhs
 
 
-C1_in, V1_in, T2_in, T1_in = INIT_STATE.values()
-T_cal = CONSTANTS['T_cal']
+C1, V1, T2, T1 = [struct.val for struct in STATE_VARS.values()]
+T_cal = CONSTANTS['T_cal'].val
 
 
 class Module1(Module):
@@ -66,14 +66,14 @@ class Climate_model(Director):
                         Qco2_rhs_ins, Qh2o_rhs_ins]
         self.MergeVarsFromRHSs(RHS_list, call=__name__)
         self.AddModule('Module1', Module1(C1=C1_rhs_ins, V1=V1_rhs_ins, T1=T1_rhs_ins, 
-                        T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins), Qh2o=Qh2o_rhs_ins)
+                        T2=T2_rhs_ins, Qgas=Qgas_rhs_ins, Qco2=Qco2_rhs_ins, Qh2o=Qh2o_rhs_ins))
         self.sch = ['Module1']
 
     def reset(self):
-        self.Vars['T1'].val   = T1_in # np.random.RandomState().normal(21, 2)
-        self.Vars['T2'].val   = T2_in # np.random.RandomState().normal(21, 2)
-        self.Vars['V1'].val   = V1_in
-        self.Vars['C1'].val   = C1_in # np.random.RandomState().normal(500, 1)
+        self.Vars['T1'].val   = T1 # np.random.RandomState().normal(21, 2)
+        self.Vars['T2'].val   = T2 # np.random.RandomState().normal(21, 2)
+        self.Vars['V1'].val   = V1
+        self.Vars['C1'].val   = C1 # np.random.RandomState().normal(500, 1)
         self.Vars['Qgas'].val = 0
         self.Vars['Qco2'].val = 0
         self.Vars['Qh2o'].val = 0

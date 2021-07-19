@@ -22,4 +22,4 @@ class Qco2_rhs(StateRHS):
     def RHS(self, Dt):
         '''Costo del CO_2'''
         o_2 = o2(U10=self.V('U10'), psi2=self.V('psi2'), alpha6=self.V('alpha6')) #MC_ext_air
-        return (10**6)*self.V('q_co2_ext')*o_2
+        return (10**-6)*self.V('q_co2_ext')*o_2
