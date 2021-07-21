@@ -21,8 +21,11 @@ def date():
 def create_path():
     PATH = 'results_ddpg/'+ date()
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+    folders = ['/images','/output','/reports','/nets']
+    for folder_name in folders:
+        pathlib.Path(folder_name).mkdir(parents=True, exist_ok=True)
     return PATH
-    
+
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
@@ -49,7 +52,7 @@ def figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH):
         plt.show()
         plt.close()
     else:
-        fig.savefig(PATH + '/reward.png')
+        fig.savefig(PATH + '/images/reward.png')
         plt.close()
 
 def figure_state(S_climate,indexes,PATH):
@@ -65,7 +68,7 @@ def figure_state(S_climate,indexes,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_climate.png')
+        plt.savefig(PATH + '/images/sim_climate.png')
         plt.close()
     
 def figure_rh_par(S_data,final_indexes,PATH):
@@ -78,7 +81,7 @@ def figure_rh_par(S_data,final_indexes,PATH):
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/sim_rh_par.png')
+        plt.savefig(PATH + '/images/sim_rh_par.png')
         plt.close()
 
 def figure_prod(S_prod,final_indexes,PATH):
@@ -92,7 +95,7 @@ def figure_prod(S_prod,final_indexes,PATH):
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/sim_prod.png')
+        plt.savefig(PATH + '/images/sim_prod.png')
         plt.close()
 
 def figure_actions(A,final_indexes,dim,PATH):
@@ -106,7 +109,7 @@ def figure_actions(A,final_indexes,dim,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_actions.png')
+        plt.savefig(PATH + '/images/sim_actions.png')
         plt.close()
 
 def figure_inputs(df_inputs,final_indexes,PATH):
@@ -122,17 +125,17 @@ def figure_inputs(df_inputs,final_indexes,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_climate_inputs.png')
+        plt.savefig(PATH + '/images/sim_climate_inputs.png')
         plt.close()
     
 def save_Q(env,PATH):
-    name = PATH + '/costos.json'
+    name = PATH + '/output/costos.json'
     with open(name, 'w') as fp:
         json.dump(env.Qvar_dic, fp,  indent=4)
 
 def save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH):
     dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    name = PATH + '/rewards.json'
+    name = PATH + '/output/rewards.json'
     with open(name, 'w') as fp:
         json.dump(dic_rewards, fp,  indent=4)
 
@@ -157,5 +160,5 @@ def figure_cost_gain(env,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_cost.png')
+        plt.savefig(PATH + '/images/sim_cost.png')
         plt.close()

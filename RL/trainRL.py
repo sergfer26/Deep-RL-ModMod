@@ -39,7 +39,7 @@ state_dim = env.observation_space.shape[0]
 
 if not SHOW:
     from functools import partialmethod
-    tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
+    tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
 
 
 def train_agent(agent, env, noise,PATH):
@@ -80,7 +80,7 @@ def train_agent(agent, env, noise,PATH):
         #writer_reward.add_scalar("Reward", episode_reward, episode)
         #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
         #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
-    agent.save(PATH)
+    agent.save(PATH+'/nets')
     return rewards, avg_rewards, penalties, abs_rewards
 
 
@@ -150,7 +150,7 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/Reporte.pdf')
+        send_correo(PATH + '/reports/Reporte.pdf')
     
 
 

@@ -86,7 +86,7 @@ def add_text(pdf,textLines,x,y):
 
 
 def constants(PATH=''):
-    fileName = '/Reporte_constantes.pdf'
+    fileName = '/reports/Reporte_constantes.pdf'
     fileName = PATH + fileName
     documentTitle = 'Document title!'
     title = 'Reporte de constantes ' + date() 
