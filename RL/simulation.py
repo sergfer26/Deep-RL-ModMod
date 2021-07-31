@@ -55,10 +55,10 @@ def sim(agent, env, indice = 0):
 
 S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = 0)
 
-for_indexes = int(STEP*24) 
-num_steps = int(1/STEP)*TIME_MAX
-new_indexes = [start+(for_indexes*j) for j in range(num_steps)]
-final_indexes = [data['Date'][index] for index in new_indexes]
+#for_indexes = int(STEP*24) 
+#num_steps = int(1/STEP)*TIME_MAX
+#new_indexes = [start+(for_indexes*j) for j in range(num_steps)]
+#final_indexes = [data['Date'][index] for index in new_indexes]
 
 df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
 
@@ -79,7 +79,7 @@ else:
 
 
 df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
-df_data.index = final_indexes
+#df_data.index = final_indexes
 ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Promedios diarios') 
 ax[0,0].set_ylabel('%')
 ax[0,1].set_ylabel('$W*m^{2}$')
@@ -91,7 +91,7 @@ else:
     plt.close()
 
 df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-df_prod.index = final_indexes
+#df_prod.index = final_indexes
 title= 'Produccion y recompensas'
 ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
 ax[0,0].set_ylabel('g')
@@ -105,7 +105,7 @@ else:
 
 dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
 title = 'Controles' # $U$
-dfa.index = final_indexes
+#dfa.index = final_indexes
 ax = dfa.plot(subplots=True, layout=(int(np.ceil(action_dim / 2)), 2), figsize=(10, 7), title=title) 
 for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
 plt.gcf().autofmt_xdate()
@@ -115,7 +115,7 @@ else:
     plt.savefig(PATH + '/sim_actions.png')
     plt.close()
 
-df_inputs.index = final_indexes
+#df_inputs.index = final_indexes
 ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
 ax[0].set_ylabel('$W*m^{2}$')
 ax[1].set_ylabel('C')
@@ -128,3 +128,5 @@ if SHOW:
 else:
     plt.savefig(PATH + '/sim_climate_inputs.png')
     plt.close()
+
+    

@@ -86,7 +86,7 @@ def figure_rh_par(S_data,final_indexes,PATH):
 
 def figure_prod(S_prod,final_indexes,PATH):
     df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-    df_prod.index = final_indexes
+    #df_prod.index = final_indexes
     title= 'Produccion y recompensas'
     ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
     ax[0,0].set_ylabel('g')
@@ -101,7 +101,7 @@ def figure_prod(S_prod,final_indexes,PATH):
 def figure_actions(A,final_indexes,dim,PATH):
     dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
     title = 'Controles' # $U$
-    dfa.index = final_indexes
+    #dfa.index = final_indexes
     ax = dfa.plot(subplots=True, layout=(int(np.ceil(dim / 2)), 2), figsize=(10, 7), title=title) 
     for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
     plt.gcf().autofmt_xdate()
@@ -139,13 +139,10 @@ def save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH):
     with open(name, 'w') as fp:
         json.dump(dic_rewards, fp,  indent=4)
 
-def compute_indexes(inicio,step,time_max):
-    data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
-    for_indexes = int(step*24) 
-    num_steps = int(1/step)*time_max
-    new_indexes = [inicio+(for_indexes*j) for j in range(num_steps)]
-    final_indexes = [data_inputs['Date'][index] for index in new_indexes]
-    return final_indexes
+def compute_indexes(inicio,fin,frec):
+    freq = str(frec)+'min'
+    indexes = pd.date_range(inicio, fin, freq=freq)
+    return indexes
 
 def figure_cost_gain(env,PATH):
     columns = env.vars_cost

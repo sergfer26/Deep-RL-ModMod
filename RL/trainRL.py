@@ -85,11 +85,11 @@ def train_agent(agent, env, noise,PATH):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -101,7 +101,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #pbar.update(step)
+        pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -113,7 +113,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    #pbar.finish()
+    pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
@@ -139,8 +139,11 @@ def main():
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
     
-    
-    final_indexes = compute_indexes(start,STEP,TIME_MAX) #Es necesario crear nuevos indices para las graficas, depende de STEP
+    #Necesita la fecha no los indices!!!!!
+    start = df_inputs['Date'].iloc[0]
+    end   = df_inputs['Date'].iloc[-1]
+    final_indexes = compute_indexes(start,end,env.frec) #Es necesario crear nuevos indices para las graficas, depende de STEP
+    final_indexes = []
     figure_state(S_climate,final_indexes,PATH)
     figure_rh_par(S_data,final_indexes,PATH)
     figure_prod(S_prod,final_indexes,PATH)
@@ -152,6 +155,16 @@ def main():
         create_report(PATH,t2-t1)
         send_correo(PATH + '/reports/Reporte.pdf')
     
+
+def main():
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
+    PATH = 'results_ddpg/Redes_Sergio'
+    start = df_inputs['Date'].iloc[0]
+    end   = df_inputs['Date'].iloc[-1]
+    final_indexes = compute_indexes(start,end,env.frec)
+    breakpoint()
+    figure_actions(A,final_indexes,action_dim,PATH)
+    figure_prod(S_prod,final_indexes,PATH)
 
 
 if __name__=='__main__':
