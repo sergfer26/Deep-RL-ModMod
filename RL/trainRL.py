@@ -41,12 +41,12 @@ if not SHOW:
     tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
 
-def train_agent(agent, env, noise,PATH):
+def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
     rewards = []
     avg_rewards = []
     penalties = []
     abs_rewards = []
-    for episode in range(EPISODES):
+    for episode in range(episodes):
         with tqdm(total=STEPS, position=0) as pbar:
             pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
             state = env.reset()
@@ -72,14 +72,18 @@ def train_agent(agent, env, noise,PATH):
                 if done:
                     #sys.stdout.write("episode: {}, reward: {}, average _reward: {} \n".format(episode, np.round(episode_reward, decimals=2), np.mean(rewards[-10:])))
                     break
+            
+        if episode % save_freq == 0:
+            agent.save(path+'/nets', name="_{}".format(episode))
+
         rewards.append(episode_reward)
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
+        agent.save(path+'/nets')
         #writer_reward.add_scalar("Reward", episode_reward, episode)
         #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
         #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
-    agent.save(PATH)
     return rewards, avg_rewards, penalties, abs_rewards
 
 
@@ -127,12 +131,12 @@ def main():
         print('Se cargo el modelo')
         agent.load(old_path)
 
-    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise,PATH)
+    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
 
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
     
