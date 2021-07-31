@@ -124,16 +124,17 @@ def sim(agent, env, indice = 0):
 
 
 def main():
-
     t1 = time()
     mpl.style.use('seaborn')
-    PATH = create_path()
-    constants(PATH)
     if len(sys.argv) != 1:
     # Load trained model 
-        old_path = sys.argv[1:].pop()
+        PATH = sys.argv[1:].pop()
         print('Se cargo el modelo')
-        agent.load(old_path)
+        agent.load(PATH + '/nets')
+    else:
+        PATH = create_path()
+
+    constants(PATH)
 
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
@@ -158,7 +159,7 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        #send_correo(PATH + '/reports/Reporte.pdf')
+        send_correo(PATH + '/reports/Reporte.pdf')
     
 
 def main1():
