@@ -57,7 +57,7 @@ def figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH):
 
 def figure_state(S_climate,indexes,PATH):
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-    df_climate.index = indexes
+    #df_climate.index = indexes
     ax = df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7),title = 'Variables de estado') 
     ax[0,0].set_ylabel('$ ^{\circ} C$')
     ax[0,1].set_ylabel('$ ^{\circ} C$')
@@ -73,7 +73,7 @@ def figure_state(S_climate,indexes,PATH):
     
 def figure_rh_par(S_data,final_indexes,PATH):
     df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
-    df_data.index = final_indexes
+    #df_data.index = final_indexes
     ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Promedios diarios') 
     ax[0,0].set_ylabel('%')
     ax[0,1].set_ylabel('$W*m^{2}$')
@@ -113,7 +113,7 @@ def figure_actions(A,final_indexes,dim,PATH):
         plt.close()
 
 def figure_inputs(df_inputs,final_indexes,PATH):
-    df_inputs.index = final_indexes
+    #df_inputs.index = final_indexes
     ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
     ax[0].set_ylabel('$W*m^{2}$')
     ax[1].set_ylabel('C')
