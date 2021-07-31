@@ -25,6 +25,7 @@ STEPS = PARAMS_TRAIN['STEPS']
 BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
 SHOW = PARAMS_TRAIN['SHOW']
 INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
+SAVE_FREQ = PARAMS_TRAIN['SAVE_FREQ']
 
 
 env = GreenhouseEnv()
@@ -89,11 +90,11 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 
 ###### Simulation ######
-from progressbar import*
+#from progressbar import*
 
 def sim(agent, env, indice = 0):
-    pbar = ProgressBar(maxval=STEPS)
-    pbar.start()
+    #pbar = ProgressBar(maxval=STEPS)
+    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -105,7 +106,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        pbar.update(step)
+        #pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -117,7 +118,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    pbar.finish()
+    #pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
@@ -134,7 +135,7 @@ def main():
         print('Se cargo el modelo')
         agent.load(old_path)
 
-    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH)
+    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
@@ -157,10 +158,10 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/reports/Reporte.pdf')
+        #send_correo(PATH + '/reports/Reporte.pdf')
     
 
-def main():
+def main1():
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
     PATH = 'results_ddpg/Redes_Sergio'
     start = df_inputs['Date'].iloc[0]
