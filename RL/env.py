@@ -134,6 +134,8 @@ class GreenhouseEnv(gym.Env):
         RH = float(data_inputs['RH'].iloc[self.i * (self.frec//FRECUENCY)])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
         self.state = self.update_state()
+        self.Qvar_dic = {key:list() for key in self.vars_cost}
+        self.Qvar_dic['G'] = list()
         
     
     def set_index(self):

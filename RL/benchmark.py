@@ -25,7 +25,8 @@ from params import PARAMS_ENV
 
 number_of_simulations = 100
 number_of_process     = 16
-path = sys.argv[1]
+path = 'results_ddpg/' + sys.argv[1]
+
 SEASON  =  PARAMS_ENV['SEASON']
 
 
@@ -45,7 +46,8 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-agent.load('results_ddpg/' + path + '/nets')
+
+agent.load(path + '/nets')
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 
@@ -216,9 +218,61 @@ def season2():
     score = get_score(2,agent_random)
     save_score('results_ddpg/tournament/Season2',score,'random')
 
+<<<<<<< HEAD
 def season1_nn():
     score = get_score(1,agent)
     save_score(path,score,'nn')
 
 if __name__ == '__main__':
     season1_nn()
+=======
+def set_axis_style(ax, labels):
+    ax.get_xaxis().set_tick_params(direction='out')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.set_xticks(np.arange(1, len(labels) + 1))
+    ax.set_xticklabels(labels)
+    ax.set_xlim(0.25, len(labels) + 0.75)
+    ax.set_xlabel('')
+
+def violin_actions():
+    f = open(path + '/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data = list()
+    for i in range(1,12):
+        new_data.append(data['u_' + str(i)])
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data)
+    axis.set_title('Controles')
+    labels = ['$u_{}$'.format(str(i+1)) for i in range(1,9)]
+    labels.append('$u_{10}$')
+    labels.append('$u_{11}$')
+    set_axis_style(axis, labels)
+    plt.savefig(path + '/images/violin_actions.png')
+    plt.close()
+
+def violin_reward():
+    f = open(path + '/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data = list()
+    new_data.append(data['episode_rewards'])
+    '''
+    f = open('results_ddpg/tournament/Season1/simulations_on.json','r') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+
+    f = open('results_ddpg/tournament/Season1/simulations_random.json','r') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+    '''
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data)
+    axis.set_title('Rentabilidad $mxn/m^2$')
+    labels = ['nn']#['nn','on','random']
+    set_axis_style(axis, labels)
+    plt.savefig(path + '/images/violin_rewards1.png')
+    plt.close()
+
+if __name__ == '__main__':
+    #season1()
+    #violin_reward()
+    violin_actions()

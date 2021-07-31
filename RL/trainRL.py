@@ -25,6 +25,7 @@ STEPS = PARAMS_TRAIN['STEPS']
 BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
 SHOW = PARAMS_TRAIN['SHOW']
 INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
+SAVE_FREQ = PARAMS_TRAIN['SAVE_FREQ']
 
 
 env = GreenhouseEnv()
@@ -42,12 +43,12 @@ if not SHOW:
     tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
 
 
-def train_agent(agent, env, noise,PATH):
+def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
     rewards = []
     avg_rewards = []
     penalties = []
     abs_rewards = []
-    for episode in range(EPISODES):
+    for episode in range(episodes):
         with tqdm(total=STEPS, position=0) as pbar:
             pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
             state = env.reset()
@@ -73,14 +74,18 @@ def train_agent(agent, env, noise,PATH):
                 if done:
                     #sys.stdout.write("episode: {}, reward: {}, average _reward: {} \n".format(episode, np.round(episode_reward, decimals=2), np.mean(rewards[-10:])))
                     break
+            
+        if episode % save_freq == 0:
+            agent.save(path+'/nets', name="_{}".format(episode))
+
         rewards.append(episode_reward)
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
+        agent.save(path+'/nets')
         #writer_reward.add_scalar("Reward", episode_reward, episode)
         #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
         #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
-    agent.save(PATH+'/nets')
     return rewards, avg_rewards, penalties, abs_rewards
 
 
@@ -129,18 +134,21 @@ def main():
         old_path = sys.argv[1:].pop()
         print('Se cargo el modelo')
         agent.load(old_path)
-    
-    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise,PATH)
+
+    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
 
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
     
-    
-    final_indexes = compute_indexes(start,STEP,TIME_MAX) #Es necesario crear nuevos indices para las graficas, depende de STEP
+    #Necesita la fecha no los indices!!!!!
+    start = df_inputs['Date'].iloc[0]
+    end   = df_inputs['Date'].iloc[-1]
+    final_indexes = compute_indexes(start,end,env.frec) #Es necesario crear nuevos indices para las graficas, depende de STEP
+    final_indexes = []
     figure_state(S_climate,final_indexes,PATH)
     figure_rh_par(S_data,final_indexes,PATH)
     figure_prod(S_prod,final_indexes,PATH)
@@ -150,8 +158,18 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/reports/Reporte.pdf')
+        #send_correo(PATH + '/reports/Reporte.pdf')
     
+
+def main1():
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
+    PATH = 'results_ddpg/Redes_Sergio'
+    start = df_inputs['Date'].iloc[0]
+    end   = df_inputs['Date'].iloc[-1]
+    final_indexes = compute_indexes(start,end,env.frec)
+    breakpoint()
+    figure_actions(A,final_indexes,action_dim,PATH)
+    figure_prod(S_prod,final_indexes,PATH)
 
 
 if __name__=='__main__':
