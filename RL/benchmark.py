@@ -25,7 +25,7 @@ from params import PARAMS_ENV
 
 number_of_simulations = 100
 number_of_process     = 16
-#path = sys.argv[1]
+path = sys.argv[1]
 SEASON  =  PARAMS_ENV['SEASON']
 
 
@@ -45,7 +45,7 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-#agent.load('results_ddpg/' + path + '/nets')
+agent.load('results_ddpg/' + path + '/nets')
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 
@@ -74,13 +74,9 @@ def get_score(month,agent):
     return result
 
 def save_score(PATH,result,name):
-    name = PATH + '/simulations_' + name + '.json'
-    if name != 'nn':
-        result1 = {'episode_rewards':result['episode_rewards']}
-    else:
-        result1 = result
+    name = 'results_ddpg/' + PATH + '/simulations_' + name + '.json'
     with open(name, 'w') as fp:
-        json.dump(result1, fp,  indent=4)
+        json.dump(result, fp,  indent=4)
 
 '''
 def fig_production(string):
@@ -220,5 +216,9 @@ def season2():
     score = get_score(2,agent_random)
     save_score('results_ddpg/tournament/Season2',score,'random')
 
+def season1_nn():
+    score = get_score(1,agent)
+    save_score(path,score,'nn')
+
 if __name__ == '__main__':
-    season1()
+    season1_nn()
