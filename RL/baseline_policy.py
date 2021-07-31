@@ -22,20 +22,20 @@ def control(error, kp, ki, kd, I, d):
     return 0.001 * max(min(PID, 100), 0)
 
 
-def control_u4(x):
+def control_u4(x,set_):
     '''Control de la temperatura del aire (T2)'''
-    I = integral(x)
+    I = integral(x-set_)
     try:
-        error = x[-1] - x[-2]
+        error = x[-1] - set_
     except:
         breakpoint()
     d = 0
     return control(error, KP4, KI4, KD4, I, d)
 
-def control_u10(x):
+def control_u10(x, set_):
     '''Control del CO2 (C1)'''
-    I = integral(x)
-    error = x[-1] - x[-2]
+    I = integral(x - set_)
+    error = x[-1] - set_
     if control_u10.old_error is None:
         control_u10.old_error = error
     d = error - control_u10.old_error
@@ -45,19 +45,23 @@ def control_u10(x):
 
 
 
-
 class agent_baseline():
     def __init__(self, env):
-        self.env = env
+        self.env     = env
+        self.heatset = 0
+        self.co2     = 0
         self.reset()
 
     def get_action(self, state, T_out):
-        U    = 0.5*np.ones(11)
+        U    = np.zeros(11)
         U[0] = self.u1(state,T_out) #U1
-        self.T2_list += self.env.daily_T2[-5:]
-        self.C1_list += self.env.daily_C1[-5:]
-        U[3] = control_u4(self.T2_list[-5:]) #Ultimos 5 min        #U4
-        U[9] = control_u10(self.C1_list[-5:]) #Ultimos 5 min        #U10
+        T2_list = np.array([float(y) for y in self.env.daily_T2[-5:]])
+        C1_list = np.array([float(y) for y in self.env.daily_C1[-5:]])
+        self.set_point_t2(state)
+        self.set_point_co2(state)
+        U[10] = control_u4(T2_list,self.heatset) #Ultimos 5 min        U4
+        U[9] = control_u10(C1_list,self.co2)    #Ultimos 5 min        U10
+        self.reset()
         return U
 
     def set_point_t2(self,state):
@@ -82,7 +86,5 @@ class agent_baseline():
             return 0
 
     def reset(self):
-        self.T2_list = list()
-        self.C1_list = list()
         control_u10.old_error = None
         

@@ -10,6 +10,14 @@ def Dia(date):
     '''Regresa el dia'''
     return date[3:5] 
 
+def Year(date):
+    '''Regresa el año'''
+    return date[6:8]
+
+def Hour(date):
+    '''Regresa la hora'''
+    return date[9:11]
+
 def Indexes(data, season):
     '''
     Season 1: Jan - Apr

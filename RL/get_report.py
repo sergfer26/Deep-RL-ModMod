@@ -82,7 +82,7 @@ def add_image(PATH,pdf,name,x,y,width = 500,height=500):
     pdf.drawInlineImage(PATH + name , x,y, width = width, height=height,preserveAspectRatio=True)
 
 def create_report(PATH, time = 0):
-    fileName = '/Reporte.pdf'
+    fileName = '/reports/Reporte.pdf'
     fileName = PATH + fileName
     documentTitle = 'Document title!'
     title = 'Reporte de Entrenamiento'
@@ -112,16 +112,16 @@ def create_report(PATH, time = 0):
     add_table(pdf,PARAMS_UTILS,100,30)
 
     pdf.showPage()
-    add_image(PATH,pdf,'/reward.png',10, 350,600,600)
-    add_image(PATH,pdf,'/sim_climate_inputs.png',30,10)
+    add_image(PATH,pdf,'/images/reward.png',10, 350,600,600)
+    add_image(PATH,pdf,'/images/sim_climate_inputs.png',30,10)
     pdf.showPage()
     #Siguiente pagina
-    add_image(PATH,pdf,'/sim_rh_par.png',30, 350,550,550)
-    add_image(PATH,pdf,'/sim_climate.png',30,0,550,550)
+    add_image(PATH,pdf,'/images/sim_rh_par.png',30, 350,550,550)
+    add_image(PATH,pdf,'/images/sim_climate.png',30,0,550,550)
 
     pdf.showPage()
-    add_image(PATH,pdf,'/sim_prod.png',30, 350,550,550)
-    add_image(PATH,pdf,'/sim_actions.png',30,0,550,550)
+    add_image(PATH,pdf,'/images/sim_prod.png',30, 350,550,550)
+    add_image(PATH,pdf,'/images/sim_actions.png',30,0,550,550)
     cadena = 'Tiempo de ejecucion: '
     cadena += str(round((time/(60**2)),2)) + ' Horas'
     add_text(pdf,[cadena],30,60)

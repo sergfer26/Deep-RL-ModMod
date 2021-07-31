@@ -1,4 +1,5 @@
 from numpy.lib.histograms import histogram
+from sympy.utilities.iterables import bracelets
 from trainRL import sim, noise
 import numpy as np
 import pandas as pd
@@ -20,27 +21,13 @@ from time import time
 import shutil
 import os
 import glob
+from params import PARAMS_ENV
 
-tz = pytz.timezone('America/Mexico_City')
-mexico_now = datetime.now(tz)
-month = mexico_now.month
-day = mexico_now.day
-hour = mexico_now.hour
-minute = mexico_now.minute
-PATH = 'results_ddpg/tournament/' + str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
-pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
-SHOW = False
-
-
-NAMES = ['nn','random','on','off']
 number_of_simulations = 100
-path = sys.argv[1]
-mes = sys.argv[2]
-MONTHS = [mes]
+number_of_process     = 16
+path = 'results_ddpg/' + sys.argv[1]
+SEASON  =  PARAMS_ENV['SEASON']
 
-def sim_(agent,env):
-    print(os.getpid())
-    return sim(agent, env)
 
 class OtherAgent(object):
     def __init__(self, env, type_):
@@ -58,22 +45,15 @@ class OtherAgent(object):
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
-agent.load('results_ddpg/' + path)
+agent.load(path + '/nets')
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
-agent_off = OtherAgent(env, 'off')
-#AGENTS = [agent, agent_random, agent_on, agent_off]
 
 
+def sim_(agent,env): return sim(agent, env)
 
-def get_score(month,agent,name):                             
-    production = []
-    mass = []
-    reward = []
-    promedios = np.zeros(10)
-    varianzas = np.zeros(10)
-    number_of_process = 16
-    p = multiprocessing.Pool(number_of_process)
+def get_score(month,agent):                             
+    p = multiprocessing.Pool(number_of_process) #Numero de procesadores
     indexes = Indexes(data_inputs[0:LIMIT],month)
     V = list()
     for _ in range(number_of_simulations):
@@ -82,32 +62,27 @@ def get_score(month,agent,name):
         V.append([agent,env])
     BIG_DATA = p.starmap(sim_, V)
     BIG_DATA = list(BIG_DATA)
-    for s in BIG_DATA:
-        _, _, S_prod, A, _, _ = s
+    result = {'episode_rewards':list()}
+    for i in range(1,12):result['u_'+str(i)] = list()
+    for simulation in BIG_DATA:
+        _, _, S_prod, A, _, _ = simulation
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-        aux = len(df_prod) - 1
-        number_of_fruit =  df_prod['$N$'][aux]
-        dry_mass =  df_prod['$H$'][aux]
-        accumulated_reward = df_prod['$Cr_t$'][aux]
-        production.append(number_of_fruit)
-        mass.append(dry_mass)
-        reward.append(accumulated_reward)
-        dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$'))
-        vector_aux2 = [] # para promedio de acciones
-        vector_aux3 = [] # para varianza de acciones
-        for c in dfa.columns:
-            vector_aux2.append(np.mean(dfa[c]))
-            vector_aux3.append(np.var(dfa[c]))
-        promedios += vector_aux2
-        varianzas += vector_aux3
-    promedios /= number_of_simulations
-    varianzas /= number_of_simulations
-    dic = {'mean_number_of_fruit':np.mean(production), 'var_number_of_fruit':np.var(production), 'mean_actions': list(promedios),'var_actions': list(varianzas),'mean_mass': np.mean(mass), 'var_mass': np.var(mass),'mean_reward':np.mean(reward),'var_reward':np.var(reward),'vector_mass': mass,'vector_number_of_fruit':production,'vector_reward':reward}
-    name = PATH + '/'+month+'_'+name+'.json'
+        dfa = pd.DataFrame(A, columns=['u_' + str(i) for i in range(1,12)])
+        episode_reward = df_prod['$Cr_t$'].iloc[-1]
+        result['episode_rewards'].append(episode_reward)
+        for i in range(1,12): result['u_'+str(i)] += list(dfa['u_'+str(i)])
+    return result
+
+def save_score(PATH,result,name):
+    name = PATH + '/simulations_' + name + '.json'
+    if name != 'nn':
+        result1 = {'episode_rewards':result['episode_rewards']}
+    else:
+        result1 = result
     with open(name, 'w') as fp:
-        json.dump(dic, fp,  indent=4)
+        json.dump(result1, fp,  indent=4)
 
-
+'''
 def fig_production(string):
     PROMEDIOS = list()
     VARIANZAS = list()
@@ -204,7 +179,7 @@ def histograms(key,same_x = False):
         plt.close()  
 
 
-if __name__ == '__main__':
+def main1():
     for name in NAMES[1:]:
         shutil.copy('results_ddpg/tournament/Month_' + mes + '/' + mes + '_' + name + '.json', PATH)
     get_score(mes,agent,'nn')
@@ -228,14 +203,70 @@ if __name__ == '__main__':
 
     os.remove(PATH + '/Reporte_agentes.pdf')
     breakpoint()
- 
+'''
+def season1():
+    '''Solo debe ejecutar una vez'''
+    pathlib.Path('results_ddpg/tournament/Season1').mkdir(parents=True, exist_ok=True)
+    score = get_score(1,agent_on)
+    save_score('results_ddpg/tournament/Season1',score,'on')
+    score = get_score(1,agent_random)
+    save_score('results_ddpg/tournament/Season1',score,'random')
 
+def season2():
+    '''Solo debe ejecutar una vez'''
+    pathlib.Path('results_ddpg/tournament/Season2').mkdir(parents=True, exist_ok=True)
+    score = get_score(2,agent_on)
+    save_score('results_ddpg/tournament/Season2',score,'on')
+    score = get_score(2,agent_random)
+    save_score('results_ddpg/tournament/Season2',score,'random')
 
+def set_axis_style(ax, labels):
+    ax.get_xaxis().set_tick_params(direction='out')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.set_xticks(np.arange(1, len(labels) + 1))
+    ax.set_xticklabels(labels)
+    ax.set_xlim(0.25, len(labels) + 0.75)
+    ax.set_xlabel('')
 
+def violin_actions():
+    f = open(path + '/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data = list()
+    for i in range(1,12):
+        new_data.append(data['u_' + str(i)])
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data)
+    axis.set_title('Controles')
+    labels = ['$u_{}$'.format(str(i+1)) for i in range(1,9)]
+    labels.append('$u_{10}$')
+    labels.append('$u_{11}$')
+    set_axis_style(axis, labels)
+    plt.savefig(path + '/images/violin_actions.png')
+    plt.close()
 
+def violin_reward():
+    f = open(path + '/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data = list()
+    new_data.append(data['episode_rewards'])
+    '''
+    f = open('results_ddpg/tournament/Season1/simulations_on.json','r') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
 
+    f = open('results_ddpg/tournament/Season1/simulations_random.json','r') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+    '''
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data)
+    axis.set_title('Rentabilidad $mxn/m^2$')
+    labels = ['nn']#['nn','on','random']
+    set_axis_style(axis, labels)
+    plt.savefig(path + '/images/violin_rewards1.png')
+    plt.close()
 
-
-
-
-
+if __name__ == '__main__':
+    #season1()
+    #violin_reward()
+    violin_actions()

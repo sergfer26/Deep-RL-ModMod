@@ -8,17 +8,24 @@ from datetime import datetime, timezone
 from time import time
 import pathlib
 SHOW = PARAMS_TRAIN['SHOW']
-def create_path():
+
+def date():
     tz = pytz.timezone('America/Mexico_City')
     mexico_now = datetime.now(tz)
     month = mexico_now.month
     day = mexico_now.day
     hour = mexico_now.hour
     minute = mexico_now.minute
-    PATH = 'results_ddpg/'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+    return str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+
+def create_path():
+    PATH = 'results_ddpg/'+ date()
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
+    folders = ['/images','/output','/reports','/nets']
+    for folder_name in folders:
+        pathlib.Path(folder_name).mkdir(parents=True, exist_ok=True)
     return PATH
-    
+
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
@@ -45,7 +52,7 @@ def figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH):
         plt.show()
         plt.close()
     else:
-        fig.savefig(PATH + '/reward.png')
+        fig.savefig(PATH + '/images/reward.png')
         plt.close()
 
 def figure_state(S_climate,indexes,PATH):
@@ -61,7 +68,7 @@ def figure_state(S_climate,indexes,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_climate.png')
+        plt.savefig(PATH + '/images/sim_climate.png')
         plt.close()
     
 def figure_rh_par(S_data,final_indexes,PATH):
@@ -74,12 +81,12 @@ def figure_rh_par(S_data,final_indexes,PATH):
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/sim_rh_par.png')
+        plt.savefig(PATH + '/images/sim_rh_par.png')
         plt.close()
 
 def figure_prod(S_prod,final_indexes,PATH):
     df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-    df_prod.index = final_indexes
+    #df_prod.index = final_indexes
     title= 'Produccion y recompensas'
     ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
     ax[0,0].set_ylabel('g')
@@ -88,13 +95,13 @@ def figure_prod(S_prod,final_indexes,PATH):
     if SHOW:
         plt.show()
     else:
-        plt.savefig(PATH + '/sim_prod.png')
+        plt.savefig(PATH + '/images/sim_prod.png')
         plt.close()
 
 def figure_actions(A,final_indexes,dim,PATH):
     dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
     title = 'Controles' # $U$
-    dfa.index = final_indexes
+    #dfa.index = final_indexes
     ax = dfa.plot(subplots=True, layout=(int(np.ceil(dim / 2)), 2), figsize=(10, 7), title=title) 
     for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
     plt.gcf().autofmt_xdate()
@@ -102,7 +109,7 @@ def figure_actions(A,final_indexes,dim,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_actions.png')
+        plt.savefig(PATH + '/images/sim_actions.png')
         plt.close()
 
 def figure_inputs(df_inputs,final_indexes,PATH):
@@ -118,27 +125,24 @@ def figure_inputs(df_inputs,final_indexes,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_climate_inputs.png')
+        plt.savefig(PATH + '/images/sim_climate_inputs.png')
         plt.close()
     
 def save_Q(env,PATH):
-    name = PATH + '/costos.json'
+    name = PATH + '/output/costos.json'
     with open(name, 'w') as fp:
         json.dump(env.Qvar_dic, fp,  indent=4)
 
 def save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH):
     dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
-    name = PATH + '/rewards.json'
+    name = PATH + '/output/rewards.json'
     with open(name, 'w') as fp:
         json.dump(dic_rewards, fp,  indent=4)
 
-def compute_indexes(inicio,step,time_max):
-    data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
-    for_indexes = int(step*24) 
-    num_steps = int(1/step)*time_max
-    new_indexes = [inicio+(for_indexes*j) for j in range(num_steps)]
-    final_indexes = [data_inputs['Date'][index] for index in new_indexes]
-    return final_indexes
+def compute_indexes(inicio,fin,frec):
+    freq = str(frec)+'min'
+    indexes = pd.date_range(inicio, fin, freq=freq)
+    return indexes
 
 def figure_cost_gain(env,PATH):
     columns = env.vars_cost
@@ -153,5 +157,5 @@ def figure_cost_gain(env,PATH):
         plt.show()
         plt.close()
     else:
-        plt.savefig(PATH + '/sim_cost.png')
+        plt.savefig(PATH + '/images/sim_cost.png')
         plt.close()
