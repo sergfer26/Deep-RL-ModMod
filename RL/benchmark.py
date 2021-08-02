@@ -47,7 +47,6 @@ env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
 
-agent.load(path + '/nets')
 agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 
@@ -64,144 +63,24 @@ def get_score(month,agent):
         V.append([agent,env])
     BIG_DATA = p.starmap(sim_, V)
     BIG_DATA = list(BIG_DATA)
-    result = {'episode_rewards':list()}
+    result = {'episode_rewards':list(),'mass':list()}
     for i in range(1,12):result['u_'+str(i)] = list()
     for simulation in BIG_DATA:
         _, _, S_prod, A, _, _ = simulation
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
         dfa = pd.DataFrame(A, columns=['u_' + str(i) for i in range(1,12)])
         episode_reward = df_prod['$Cr_t$'].iloc[-1]
+        mass_reward    = df_prod['$H$'].iloc[-1] 
         result['episode_rewards'].append(episode_reward)
+        result['mass'].append(mass_reward)
         for i in range(1,12): result['u_'+str(i)] += list(dfa['u_'+str(i)])
     return result
 
 def save_score(PATH,result,name):
-    name = 'results_ddpg/' + PATH + '/simulations_' + name + '.json'
+    name = PATH + '/output/simulations_' + name + '.json'
     with open(name, 'w') as fp:
         json.dump(result, fp,  indent=4)
 
-'''
-def fig_production(string):
-    PROMEDIOS = list()
-    VARIANZAS = list()
-    for name in NAMES:
-        promedios = list()
-        varianzas = list()
-        for month in MONTHS:
-            with open(PATH + '/'+month+'_'+name+'.json') as f:
-                data = json.load(f)
-            promedios.append(data['mean_' + string ])
-            varianzas.append(data['var_' + string ])
-        PROMEDIOS.append(promedios)
-        VARIANZAS.append(varianzas)
-    fig, axes = plt.subplots(nrows=2)
-    X = np.arange(len(MONTHS))
-    axes[0].set_ylabel('mean')
-    axes[1].set_ylabel('var')
-    axes[0].bar(X + 0.0, PROMEDIOS[0],  color = 'b', width = 0.15,label = NAMES[0] + ' = ' + str(float(np.round(PROMEDIOS[0],3))))
-    axes[1].bar(X + 0.0, VARIANZAS[0],  color = 'b', width = 0.15, label =  NAMES[0])
-    axes[0].bar(X + 0.15, PROMEDIOS[1],  color = 'g', width = 0.15, label =  NAMES[1] + ' = '+ str(float(np.round(PROMEDIOS[1],3))))
-    axes[1].bar(X + 0.15, VARIANZAS[1],  color = 'g', width = 0.15, label =  NAMES[1])
-    axes[0].bar(X + 0.30, PROMEDIOS[2],  color = 'r', width = 0.15, label =  NAMES[2] + ' = '+ str(float(np.round(PROMEDIOS[2],3))))
-    axes[1].bar(X + 0.30, VARIANZAS[2],  color = 'r', width = 0.15, label =  NAMES[2])
-    axes[0].bar(X + 0.45, PROMEDIOS[3],  color = 'c', width = 0.15, label =  NAMES[3] + ' = '+ str(float(np.round(PROMEDIOS[3],3))))
-    axes[1].bar(X + 0.45, VARIANZAS[3],  color = 'c', width = 0.15, label =  NAMES[3])
-    axes[1].set_xticks(X)
-    axes[1].set_xticklabels(MONTHS)
-    axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-        ncol=4, fancybox=True, shadow=True)
-    axes[0].set_xticks(X)
-    axes[0].set_xticklabels(MONTHS)
-    axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-        ncol=4, fancybox=True, shadow=True)
-    fig.set_size_inches(18.5, 10.5, forward=True)
-    fig.suptitle( string + ' (mean/var)', fontsize=15)
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/scores_'+ string +'.png')
-        plt.close()
-
-
-def fig_actions(key):
-    fig, axes = plt.subplots()
-    names = ['$u_' + str(x + 1) + '$' for x in range(9)]
-    names.append('$u_{10}$')
-    X = np.arange(len(names))
-    for i,month in enumerate(MONTHS):
-        LISTA = list()
-        for name in NAMES:
-            with open(PATH + '/'+month+'_' + name + '.json') as f:
-                data = json.load(f)
-                #dic[month].append(data[key])
-                LISTA.append(data[key])
-        axes.set_ylabel(datetime(2018, int(month), 1).strftime("%b"))
-        axes.bar(X + 0.0, LISTA[0],  color = 'b', width = 0.15,label =  NAMES[0])
-        axes.bar(X + 0.15, LISTA[1],  color = 'g', width = 0.15, label =  NAMES[1])
-        axes.bar(X + 0.30, LISTA[2],  color = 'r', width = 0.15, label =  NAMES[2])
-        axes.bar(X + 0.45, LISTA[3],  color = 'c', width = 0.15, label =  NAMES[3])
-        axes.set_xticks(X)
-        axes.set_xticklabels(names)
-    axes.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-            ncol=4, fancybox=True, shadow=True)
-    fig.suptitle(key.upper(), fontsize=15)
-    fig.set_size_inches(18.5, 10.5, forward=True)
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/'+key+'.png')
-        plt.close()
-
-
-def histograms(key,same_x = False):
-    fig, axes = plt.subplots(4,sharey=True)
-    m1 = 0
-    m2 = 0
-    for i,name in enumerate(NAMES):
-        with open(PATH + '/'+mes+'_' + name + '.json') as f:
-            data = json.load(f)
-            data = data['vector_' + key]
-            m1 = max(m1,max(data))
-            m2 = min(m2,min(data))
-            axes[i].hist(data,bins = 30)
-            axes[i].set_ylabel(name.upper())
-            axes[i].axvline(np.mean(data), color='k', linestyle='dashed', linewidth=1)
-    if same_x: 
-        for i in range(4): axes[i].set_xlim(m2,m1)
-    fig.suptitle(key.upper(), fontsize=15)
-    fig.set_size_inches(18.5, 10.5, forward=True)
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/'+'histograms_' + key + '.png')
-        plt.close()  
-
-
-def main1():
-    for name in NAMES[1:]:
-        shutil.copy('results_ddpg/tournament/Month_' + mes + '/' + mes + '_' + name + '.json', PATH)
-    get_score(mes,agent,'nn')
-
-    histograms('reward')
-    fig_actions('mean_actions')
-    fig_actions('var_actions')
-    histograms('mass',1)
-    histograms('number_of_fruit',1)
-    create_report(PATH,mes)
-    for name in NAMES[1:]:
-        os.remove(PATH + '/' + mes + '_' + name + '.json' )
-    shutil.copy(PATH + '/Reporte_agentes.pdf', 'results_ddpg/' + path)
-    shutil.copy(PATH + '/' + mes + '_nn.json', 'results_ddpg/' + path)
-
-    shutil.copy(PATH + '/histograms_mass.png', 'results_ddpg/' + path)
-    shutil.copy(PATH + '/histograms_number_of_fruit.png', 'results_ddpg/' + path)
-    shutil.copy(PATH + '/histograms_reward.png' , 'results_ddpg/' + path)
-    shutil.copy(PATH + '/mean_actions.png', 'results_ddpg/' + path)
-    shutil.copy(PATH + '/var_actions.png', 'results_ddpg/' + path)
-
-    os.remove(PATH + '/Reporte_agentes.pdf')
-    breakpoint()
-'''
 def season1():
     '''Solo debe ejecutar una vez'''
     pathlib.Path('results_ddpg/tournament/Season1').mkdir(parents=True, exist_ok=True)
@@ -218,14 +97,11 @@ def season2():
     score = get_score(2,agent_random)
     save_score('results_ddpg/tournament/Season2',score,'random')
 
-<<<<<<< HEAD
-def season1_nn():
+def season1_nn(name = ''):
+    agent.load(path + '/nets' + name)
     score = get_score(1,agent)
-    save_score(path,score,'nn')
+    save_score(path,score,'nn' + name)
 
-if __name__ == '__main__':
-    season1_nn()
-=======
 def set_axis_style(ax, labels):
     ax.get_xaxis().set_tick_params(direction='out')
     ax.xaxis.set_ticks_position('bottom')
@@ -273,6 +149,6 @@ def violin_reward():
     plt.close()
 
 if __name__ == '__main__':
-    #season1()
+    season1_nn()
     #violin_reward()
-    violin_actions()
+    #violin_actions()
