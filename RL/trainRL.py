@@ -40,7 +40,7 @@ state_dim = env.observation_space.shape[0]
 
 if not SHOW:
     from functools import partialmethod
-    tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
+    tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
 
 def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
@@ -124,14 +124,13 @@ def sim(agent, env, indice = 0):
 
 
 def main():
-
     t1 = time()
     mpl.style.use('seaborn')
     if len(sys.argv) != 1:
     # Load trained model 
         PATH = sys.argv[1:].pop()
         print('Se cargo el modelo')
-        agent.load(PATH)
+        agent.load(PATH + '/nets')
     else:
         PATH = create_path()
 
@@ -160,7 +159,7 @@ def main():
     t2 = time()
     if not(SHOW):
         create_report(PATH,t2-t1)
-        #send_correo(PATH + '/reports/Reporte.pdf')
+        send_correo(PATH + '/reports/Reporte.pdf')
     
 
 def main1():
