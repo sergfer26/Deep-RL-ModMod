@@ -48,7 +48,7 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
     avg_rewards = []
     penalties = []
     abs_rewards = []
-    for episode in range(episodes):
+    for episode in range(1, episodes + 1):
         with tqdm(total=STEPS, position=0) as pbar:
             pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
             state = env.reset()
@@ -82,10 +82,10 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
         abs_rewards.append(abs_reward)
         penalties.append(episode_penalty)
         avg_rewards.append(np.mean(rewards[-10:]))
-        agent.save(path+'/nets')
         #writer_reward.add_scalar("Reward", episode_reward, episode)
         #writer_abs.add_scalar("Absolute reward", abs_reward, episode)
         #writer_penalty.add_scalar("Penalty", episode_penalty, episode)
+    agent.save(path+'/nets')
     return rewards, avg_rewards, penalties, abs_rewards
 
 
