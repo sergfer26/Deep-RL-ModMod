@@ -111,6 +111,6 @@ class DDPGagent:
         self.critic.load_state_dict(torch.load(path + "/critic"+name, map_location=device))
         self.critic_optimizer.load_state_dict(torch.load(path + "/critic_optimizer",  map_location=device))
         self.critic_target = copy.deepcopy(self.critic)
-        self.actor.load_state_dict(torch.load(path + "/actor",  map_location=device))
+        self.actor.load_state_dict(torch.load(path + "/actor"+name,  map_location=device))
         self.actor_optimizer.load_state_dict(torch.load(path + "/actor_optimizer",  map_location=device))
         self.actor_target = copy.deepcopy(self.actor)

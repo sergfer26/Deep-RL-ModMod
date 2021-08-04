@@ -98,7 +98,7 @@ def season2():
     save_score('results_ddpg/tournament/Season2',score,'random')
 
 def season1_nn(name = ''):
-    agent.load(path + '/nets' + name)
+    agent.load(path + '/nets',name)
     score = get_score(1,agent)
     save_score(path,score,'nn' + name)
 
@@ -149,6 +149,6 @@ def violin_reward():
     plt.close()
 
 if __name__ == '__main__':
-    season1_nn()
+    season1_nn('_1000')
     #violin_reward()
     #violin_actions()
