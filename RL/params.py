@@ -14,3 +14,16 @@ PARAMS_TRAIN = {'EPISODES': 4000, \
                 'INDICE': 0, # Cuando es distinto de 0, fija un indice para simular
                 'SAVE_FREQ': 1000
                 } 
+
+CONTROLS = {'u_1': 1, 
+            'u_2': 1, 
+            'u_3': 1, 
+            'u_4': 1,   
+            'u_5': 1, 
+            'u_6': 1, 
+            'u_7': 1, 
+            'u_8': 1,  
+            'u_9': 1, 
+            'u_10': 1,
+            'u_11': 1, 
+            }

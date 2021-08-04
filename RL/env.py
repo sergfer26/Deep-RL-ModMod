@@ -8,20 +8,22 @@ import matplotlib.pyplot as plt
 from climate_model.model import Climate_model
 from solver_prod import GreenHouse
 from get_indexes import Indexes
-from params import PARAMS_ENV
+from params import PARAMS_ENV,CONTROLS
 
-
-LOW_OBS = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
-HIGH_OBS = np.ones(6)
-LOW_ACTION = np.zeros(11) # LOW_ACTION[7] = 0.5
-HIGH_ACTION = np.ones(11)
-STEP = PARAMS_ENV['STEP']  # día / # de pasos por día
-TIME_MAX = PARAMS_ENV['TIME_MAX'] # días  
-data_inputs = pd.read_csv('Inputs_Bleiswijk.csv')
-INPUT_NAMES = list(data_inputs.columns)[0:-2]
-SAMPLES = len(data_inputs) 
-FRECUENCY = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
-SEASON = PARAMS_ENV['SEASON'] # Puede ser 'RANDOM'
+ON_ACTIONS     = np.where(np.array(list(CONTROLS.values())) > 0)[0].tolist()
+DIM_ACTIONS    = len(CONTROLS)
+DIM_ACTIONS_ON = len(ON_ACTIONS)
+LOW_OBS        = np.zeros(6) # vars de estado de modelo clima + vars de estado de modelo prod (h, n)
+HIGH_OBS       = np.ones(6)
+LOW_ACTION     = np.zeros(DIM_ACTIONS_ON) 
+HIGH_ACTION    = np.ones(DIM_ACTIONS_ON)
+STEP           = PARAMS_ENV['STEP']  # día / # de pasos por día
+TIME_MAX       = PARAMS_ENV['TIME_MAX'] # días  
+data_inputs    = pd.read_csv('Inputs_Bleiswijk.csv')
+INPUT_NAMES    = list(data_inputs.columns)[0:-2]
+SAMPLES        = len(data_inputs) 
+FRECUENCY      = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
+SEASON         = PARAMS_ENV['SEASON'] # Puede ser 'RANDOM'
 
 
 class GreenhouseEnv(gym.Env):
@@ -43,6 +45,12 @@ class GreenhouseEnv(gym.Env):
         self.Qvar_dic = {key:list() for key in self.vars_cost}
         self.Qvar_dic['G'] = list()
         self._reset()
+    
+    def remap(self,action):
+        new_action = np.zeros(DIM_ACTIONS)
+        for i,a in zip(ON_ACTIONS,action):
+            new_action[i] = a
+        return new_action
 
 
     def reset_daily_lists(self):
@@ -83,6 +91,7 @@ class GreenhouseEnv(gym.Env):
         return mean
 
     def step(self, action):
+        action = self.remap(action)
         if np.isnan(list(self.state.values())).any():
             breakpoint()
         self.dirClimate.update_controls(action)

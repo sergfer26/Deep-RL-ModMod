@@ -148,7 +148,25 @@ def violin_reward():
     plt.savefig(path + '/images/violin_rewards1.png')
     plt.close()
 
+
+def violin_reward_nets(names):
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    new_data = list()
+    names= [str(name) for name in names]
+    for name in names:
+        f = open(path + '/output/simulations_nn_'+name+'.json') 
+        data = json.load(f)
+        new_data.append(data['episode_rewards'])    
+    axis.violinplot(new_data)
+    axis.set_title('Rentabilidad $mxn/m^2$')
+    labels = names
+    set_axis_style(axis, labels)
+    #plt.savefig(path + '/images/violin_rewards1.png')
+    plt.show()
+    plt.close()
+
 if __name__ == '__main__':
-    season1_nn()
+    #season1_nn()
     #violin_reward()
     #violin_actions()
+    violin_reward_nets([0,1000])
