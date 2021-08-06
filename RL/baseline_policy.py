@@ -7,6 +7,46 @@ KP10 = 0.019
 KI10 = 6033.599
 KD10 = 65.103
 
+VENTSET1 = 25
+VENTSET2 = 25
+PAR = 5
+
+PBAND1 = 4
+PBAND2 = 10 
+T_OUT1 = 5
+T_OUT2 = 18
+
+V = 6
+
+
+def set_ventSet(par):
+    return VENTSET1 if par < PAR else VENTSET2
+
+
+def set_pband(T_out, Vel):
+    Pband = 0
+    if T_out < T_OUT1:
+        Pband = PBAND1
+    elif T_out > T_OUT2:
+        Pband =  PBAND2
+    else:
+        m = (PBAND2 - PBAND1) / (T_OUT2 - T_OUT1)
+        Pband = PBAND2 - m * (T_out - T_OUT1)
+    
+    Pband_corr = 0.5 * (Vel - V) if Vel >= V else 0
+    return Pband - Pband_corr
+
+
+def control_u9(T_out, par):
+    VentSet = set_ventSet(par)
+    Pband = set_pband(T_out)
+    if T_out < VentSet:
+        return 0.0
+    elif T_out > VentSet + Pband:
+        return 1.0
+    else:
+        return (T_out - VentSet)/Pband
+
 
 def pid(error, kp, ki, kd, I, d):
     return kp * error + ki * I + kd * d
@@ -32,6 +72,7 @@ def control_u4(x,set_):
     d = 0
     return control(error, KP4, KI4, KD4, I, d)
 
+
 def control_u10(x, set_):
     '''Control del CO2 (C1)'''
     I = integral(x - set_)
@@ -42,6 +83,9 @@ def control_u10(x, set_):
     control_u10.old_error = error
     return control(error, KP10, KI10, KD10, I, d)
 
+
+def control_u8(x, VPD):
+    pass
 
 
 
@@ -54,7 +98,7 @@ class agent_baseline():
 
     def get_action(self, state, T_out):
         U    = np.zeros(11)
-        U[0] = self.u1(state,T_out) #U1
+        U[0] = self.u1(state, T_out) #U1
         T2_list = np.array([float(y) for y in self.env.daily_T2[-5:]])
         C1_list = np.array([float(y) for y in self.env.daily_C1[-5:]])
         self.set_point_t2(state)
