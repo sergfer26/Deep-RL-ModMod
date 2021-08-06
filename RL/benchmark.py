@@ -166,7 +166,8 @@ def violin_reward_nets(names):
     plt.close()
 
 if __name__ == '__main__':
-    season1_nn('_1000')
+    pass
+    #season1_nn('_1000')
     #violin_reward()
     #violin_actions()
     #violin_reward_nets([0,1000])
