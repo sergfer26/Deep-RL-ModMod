@@ -7,6 +7,7 @@ import pytz
 from datetime import datetime, timezone
 from time import time
 import pathlib
+from env import ON_ACTIONS
 SHOW = PARAMS_TRAIN['SHOW']
 
 def date():
@@ -23,7 +24,7 @@ def create_path():
     pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
     folders = ['/images','/output','/reports','/nets']
     for folder_name in folders:
-        pathlib.Path(folder_name).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(PATH + folder_name).mkdir(parents=True, exist_ok=True)
     return PATH
 
 def smooth(y, box_pts):
@@ -57,7 +58,7 @@ def figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH):
 
 def figure_state(S_climate,indexes,PATH):
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-    #df_climate.index = indexes
+    df_climate.index = indexes
     ax = df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7),title = 'Variables de estado') 
     ax[0,0].set_ylabel('$ ^{\circ} C$')
     ax[0,1].set_ylabel('$ ^{\circ} C$')
@@ -73,7 +74,7 @@ def figure_state(S_climate,indexes,PATH):
     
 def figure_rh_par(S_data,final_indexes,PATH):
     df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
-    #df_data.index = final_indexes
+    df_data.index = final_indexes
     ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Promedios diarios') 
     ax[0,0].set_ylabel('%')
     ax[0,1].set_ylabel('$W*m^{2}$')
@@ -86,7 +87,7 @@ def figure_rh_par(S_data,final_indexes,PATH):
 
 def figure_prod(S_prod,final_indexes,PATH):
     df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-    #df_prod.index = final_indexes
+    df_prod.index = final_indexes
     title= 'Produccion y recompensas'
     ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
     ax[0,0].set_ylabel('g')
@@ -98,11 +99,14 @@ def figure_prod(S_prod,final_indexes,PATH):
         plt.savefig(PATH + '/images/sim_prod.png')
         plt.close()
 
-def figure_actions(A,final_indexes,dim,PATH):
-    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
+def figure_actions(A,final_indexes,PATH):
+    columns = list()
+    for i in ON_ACTIONS:
+        columns.append('$U_{' + '{}'.format(i+1) + '}$' )
+    dfa = pd.DataFrame(A, columns=columns)
     title = 'Controles' # $U$
-    #dfa.index = final_indexes
-    ax = dfa.plot(subplots=True, layout=(int(np.ceil(dim / 2)), 2), figsize=(10, 7), title=title) 
+    dfa.index = final_indexes
+    ax = dfa.plot(subplots=True, layout=(int(np.ceil(len(ON_ACTIONS) / 2)), 2), figsize=(10, 7), title=title) 
     for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
     plt.gcf().autofmt_xdate()
     if SHOW:
@@ -112,8 +116,8 @@ def figure_actions(A,final_indexes,dim,PATH):
         plt.savefig(PATH + '/images/sim_actions.png')
         plt.close()
 
-def figure_inputs(df_inputs,final_indexes,PATH):
-    #df_inputs.index = final_indexes
+def figure_inputs(df_inputs,PATH):
+    df_inputs.index = df_inputs['Date']
     ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
     ax[0].set_ylabel('$W*m^{2}$')
     ax[1].set_ylabel('C')
@@ -139,9 +143,9 @@ def save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH):
     with open(name, 'w') as fp:
         json.dump(dic_rewards, fp,  indent=4)
 
-def compute_indexes(inicio,fin,frec):
+def compute_indexes(inicio,periods,frec):
     freq = str(frec)+'min'
-    indexes = pd.date_range(inicio, fin, freq=freq)
+    indexes = pd.date_range(inicio, periods=periods, freq=freq)
     return indexes
 
 def figure_cost_gain(env,PATH):

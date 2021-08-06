@@ -6,9 +6,9 @@ from env import GreenhouseEnv, STEP, TIME_MAX
 from ddpg.ddpg import DDPGagent
 from ddpg.utils import *
 from tqdm import tqdm
-from time import time
 from correo import send_correo
-from time import time
+import time
+import os
 # from torch.utils.tensorboard import SummaryWriter
 # from typing_extensions import final
 from get_report import create_report
@@ -40,7 +40,7 @@ state_dim = env.observation_space.shape[0]
 
 if not SHOW:
     from functools import partialmethod
-    tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
+    tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
 
 
 def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
@@ -90,11 +90,11 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -106,7 +106,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #pbar.update(step)
+        pbar.update(step)
         action = agent.get_action(state)
         new_state, reward, done = env.step(action)
         episode_reward += reward
@@ -118,13 +118,13 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    #pbar.finish()
+    pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
 
 def main():
-    t1 = time()
+    t1 = time.time()
     mpl.style.use('seaborn')
     if len(sys.argv) != 1:
     # Load trained model 
@@ -142,33 +142,31 @@ def main():
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
 
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
+    breakpoint()
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
-    
-    #Necesita la fecha no los indices!!!!!
+
     start = df_inputs['Date'].iloc[0]
-    end   = df_inputs['Date'].iloc[-1]
-    final_indexes = compute_indexes(start,end,env.frec) #Es necesario crear nuevos indices para las graficas, depende de STEP
-    final_indexes = []
+    final_indexes = compute_indexes(start,STEPS,env.frec) #Es necesario crear nuevos indices para las graficas, depende de STEP
     figure_state(S_climate,final_indexes,PATH)
     figure_rh_par(S_data,final_indexes,PATH)
     figure_prod(S_prod,final_indexes,PATH)
-    figure_actions(A,final_indexes,action_dim,PATH)
-    figure_inputs(df_inputs,final_indexes,PATH)
+    figure_actions(A,final_indexes,PATH)
+    figure_inputs(df_inputs,PATH)
     
-    t2 = time()
+    t2 = time.time()
     if not(SHOW):
         create_report(PATH,t2-t1)
         send_correo(PATH + '/reports/Reporte.pdf')
+    PATH = PATH[13:]
+    os.system('python3 benchmark.py ' + PATH)
     
 
 def main1():
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
     PATH = 'results_ddpg/Redes_Sergio'
     start = df_inputs['Date'].iloc[0]
-    end   = df_inputs['Date'].iloc[-1]
-    final_indexes = compute_indexes(start,end,env.frec)
-    breakpoint()
+    final_indexes = compute_indexes(start,STEPS,env.frec)
     figure_actions(A,final_indexes,action_dim,PATH)
     figure_prod(S_prod,final_indexes,PATH)
 
