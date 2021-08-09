@@ -142,7 +142,6 @@ def main():
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
 
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
-    breakpoint()
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
 
