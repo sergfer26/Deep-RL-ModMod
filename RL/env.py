@@ -41,7 +41,9 @@ class GreenhouseEnv(gym.Env):
         self.i = 0
         self.indexes = Indexes(data_inputs[0:self.limit],SEASON) if SEASON != 'RANDOM' else None
         self.daily_C1  = list()
+        self.daily_T1  = list()
         self.daily_T2  = list()
+        self.daily_V1 = list()
         self.Qvar_dic = {key:list() for key in self.vars_cost}
         self.Qvar_dic['G'] = list()
         self._reset()
@@ -57,6 +59,8 @@ class GreenhouseEnv(gym.Env):
         '''Recrea las listas para promedios diarios '''
         self.daily_C1 = list([0])
         self.daily_T2 = list([0])
+        self.daily_T1 = list([0])
+        self.daily_V1 = list([0])
 
     def reset_cost(self,vars):
         '''Regresa las variables de costo a 0'''
@@ -95,19 +99,24 @@ class GreenhouseEnv(gym.Env):
         if np.isnan(list(self.state.values())).any():
             breakpoint()
         self.dirClimate.update_controls(action)
-        C1 = list(); T = list()
+        C1 = list(); T2 = list(); T1 = list(); V1 = list()
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
                 k = minute // FRECUENCY - 1
                 self.update_vars_climate(k + self.i*self.frec//FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
-            T.append(self.dirClimate.OutVar('T2')) 
+            T2.append(self.dirClimate.OutVar('T2')) 
+            T1.append(self.dirClimate.OutVar('T1')) 
+            V1.append(self.dirClimate.OutVar('V1'))
+
         reward = self.reward_cost(self.vars_cost) #Aqui tambien se actualizan las listas de costos
         self.Qvar_dic['G'].append(0)
         self.reset_cost(self.vars_cost)
         self.daily_C1 += C1
-        self.daily_T2 += T
+        self.daily_T2 += T2
+        self.daily_T1 += T1
+        self.daily_V1 += V1
         if (self.i + 1) % (1/self.dt) == 0: #Paso un dia
             C1M = float(np.mean(self.daily_C1)) 
             TM = float(np.mean(self.daily_T2))
