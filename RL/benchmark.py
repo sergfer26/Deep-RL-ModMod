@@ -22,6 +22,7 @@ import shutil
 import os
 import glob
 from params import PARAMS_ENV
+from baseline_policy import agent_baseline
 
 number_of_simulations = 100
 number_of_process     = 16
@@ -51,9 +52,8 @@ agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 
 
-def sim_(agent,env): return sim(agent, env)
 
-def get_score(month,agent):                             
+def get_score(month,agent,sim):                             
     p = multiprocessing.Pool(number_of_process) #Numero de procesadores
     indexes = Indexes(data_inputs[0:LIMIT],month)
     V = list()
@@ -61,7 +61,7 @@ def get_score(month,agent):
         env = GreenhouseEnv() #Se crea el ambiente 
         env.indexes = indexes # Se crean indices
         V.append([agent,env])
-    BIG_DATA = p.starmap(sim_, V)
+    BIG_DATA = p.starmap(sim, V)
     BIG_DATA = list(BIG_DATA)
     result = {'episode_rewards':list(),'mass':list()}
     for i in range(1,12):result['u_'+str(i)] = list()
@@ -102,6 +102,17 @@ def season1_nn(name = ''):
     score = get_score(1,agent)
     save_score(path,score,'nn' + name)
 
+def expert_control():
+    '''
+    Solo deberia ejecutarse una vez
+    '''
+    agent = agent_baseline()
+    from simulation import sim
+    score = get_score(1,agent,sim)
+    save_score(path,score,'expert')
+
+
+
 def set_axis_style(ax, labels):
     ax.get_xaxis().set_tick_params(direction='out')
     ax.xaxis.set_ticks_position('bottom')
@@ -126,8 +137,8 @@ def violin_actions():
     plt.savefig(path + '/images/violin_actions.png')
     plt.close()
 
-def violin_reward():
-    f = open(path + '/output/simulations_nn.json') 
+def violin_reward(name):
+    f = open(path + '/output/simulations_'+name+'.json') 
     data = json.load(f)
     new_data = list()
     new_data.append(data['episode_rewards'])
@@ -145,7 +156,8 @@ def violin_reward():
     axis.set_title('Rentabilidad $mxn/m^2$')
     labels = ['nn']#['nn','on','random']
     set_axis_style(axis, labels)
-    plt.savefig(path + '/images/violin_rewards1.png')
+    #plt.savefig(path + '/images/violin_rewards1.png')
+    plt.show()
     plt.close()
 
 
@@ -167,7 +179,8 @@ def violin_reward_nets(names):
 
 if __name__ == '__main__':
     pass
+    #expert_control()
     #season1_nn('_1000')
-    #violin_reward()
+    violin_reward('expert') ##puede ser nn ó expert
     #violin_actions()
     #violin_reward_nets([0,1000])
