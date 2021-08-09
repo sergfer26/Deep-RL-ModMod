@@ -1,4 +1,5 @@
-PARAMS_ENV = {'STEP': 1/(24), \
+minutes = 5
+PARAMS_ENV = {'STEP': minutes/(24*60), \
               'TIME_MAX': 90, #Dias simulados\ 
               'FRECUENCY': 60, 
               'SEASON':1}
