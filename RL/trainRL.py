@@ -13,7 +13,7 @@ import os
 # from typing_extensions import final
 from get_report import create_report
 from params import PARAMS_TRAIN
-from get_report_constants import constants
+from get_report_constants import Constants
 from graphics import save_Q, figure_reward, figure_state
 from graphics import figure_rh_par, figure_prod, figure_actions 
 from graphics import figure_inputs, compute_indexes, create_path
@@ -134,7 +134,7 @@ def main():
     else:
         PATH = create_path()
 
-    constants(PATH)
+    Constants(PATH)
 
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
@@ -154,21 +154,12 @@ def main():
     figure_inputs(df_inputs,PATH)
     
     t2 = time.time()
+    PATH1 = PATH[13:]
+    os.system('python3 benchmark.py ' + PATH1)
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/reports/Reporte.pdf')
-    PATH = PATH[13:]
-    os.system('python3 benchmark.py ' + PATH)
+        #send_correo(PATH + '/reports/Reporte.pdf')
     
-
-def main1():
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    PATH = 'results_ddpg/Redes_Sergio'
-    start = df_inputs['Date'].iloc[0]
-    final_indexes = compute_indexes(start,STEPS,env.frec)
-    figure_actions(A,final_indexes,action_dim,PATH)
-    figure_prod(S_prod,final_indexes,PATH)
-
 
 if __name__=='__main__':
     main()
