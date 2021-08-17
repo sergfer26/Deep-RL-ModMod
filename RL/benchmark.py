@@ -70,12 +70,7 @@ def get_score(month,agent,sim):
     for simulation in BIG_DATA:
         _, _, S_prod, A, _, _ = simulation
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-<<<<<<< HEAD
         dfa = pd.DataFrame(A, columns=['$U_{' + '{}'.format(i+1) + '}$' for i in ON_ACTIONS])
-=======
-        dfa = pd.DataFrame(A, columns=['u_' + str(i) for i in range(1,12)])
-        dfa = dfa.sample(frac=0.1, replace=True)
->>>>>>> 87c9753bf69e701d9fb4fb58c1afd3313ba184c2
         episode_reward = df_prod['$Cr_t$'].iloc[-1]
         mass_reward    = df_prod['$H$'].iloc[-1] 
         result['episode_rewards'].append(episode_reward)
@@ -194,14 +189,7 @@ def violin_reward_nets(names):
 if __name__ == '__main__':
     pass
     #expert_control()
-<<<<<<< HEAD
     season1_nn('')
     violin_reward('nn') ##puede ser nn ó expert
     violin_actions('nn')
     #violin_reward_nets([1,1000,2000,3000,4000])
-=======
-    season1_nn('_4000')
-    #violin_reward('expert') ##puede ser nn ó expert
-    #violin_actions()
-    #violin_reward_nets([0,1000])
->>>>>>> 87c9753bf69e701d9fb4fb58c1afd3313ba184c2
