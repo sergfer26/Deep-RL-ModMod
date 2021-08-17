@@ -69,6 +69,7 @@ def get_score(month,agent,sim):
         _, _, S_prod, A, _, _ = simulation
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
         dfa = pd.DataFrame(A, columns=['u_' + str(i) for i in range(1,12)])
+        dfa = dfa.sample(frac=0.1, replace=True)
         episode_reward = df_prod['$Cr_t$'].iloc[-1]
         mass_reward    = df_prod['$H$'].iloc[-1] 
         result['episode_rewards'].append(episode_reward)
@@ -99,7 +100,7 @@ def season2():
 
 def season1_nn(name = ''):
     agent.load(path + '/nets',name)
-    score = get_score(1,agent)
+    score = get_score(1,agent,sim)
     save_score(path,score,'nn' + name)
 
 def expert_control():
@@ -109,7 +110,7 @@ def expert_control():
     agent = agent_baseline()
     from simulation import sim
     score = get_score(1,agent,sim)
-    save_score(path,score,'expert')
+    save_score(path,score,'expert_1h')
 
 
 
@@ -180,7 +181,7 @@ def violin_reward_nets(names):
 if __name__ == '__main__':
     pass
     #expert_control()
-    #season1_nn('_1000')
-    violin_reward('expert') ##puede ser nn ó expert
+    season1_nn('_4000')
+    #violin_reward('expert') ##puede ser nn ó expert
     #violin_actions()
     #violin_reward_nets([0,1000])

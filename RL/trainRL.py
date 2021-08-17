@@ -108,6 +108,15 @@ def sim(agent, env, indice = 0):
     for step in range(STEPS):
         #pbar.update(step)
         action = agent.get_action(state)
+	#OJO!!!!!!!!!!!!!!
+        '''
+        action[1] = 0
+        action[2] = 0 
+        action[4] = 0 
+        action[5] = 0
+        action[6] = 0
+        action[10] = 0
+        '''   
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
