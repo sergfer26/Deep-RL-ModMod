@@ -4,7 +4,7 @@ import pathlib
 import pandas as pd
 from datetime import datetime, timezone
 from time import time
-from progressbar import*
+#from progressbar import*
 from trainRL import STEPS, action_dim
 from baseline_policy import agent_baseline
 from matplotlib import pyplot as plt
@@ -24,8 +24,8 @@ agent = agent_baseline()
 
 def sim(agent, env, indice = 0):
     dt = 60/minutos
-    pbar = ProgressBar(maxval=STEPS)
-    pbar.start()
+    #pbar = ProgressBar(maxval=STEPS)
+    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -35,7 +35,7 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        pbar.update(step)
+        #pbar.update(step)
         if step % dt == 0:
             indice1 = step/dt # una hora
         action = np.zeros(11) if step == 0 else agent.get_action(indice1, env)
@@ -49,7 +49,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    pbar.finish()
+    #pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 

@@ -90,11 +90,11 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 
 ###### Simulation ######
-from progressbar import*
+#from progressbar import*
 
 def sim(agent, env, indice = 0):
-    pbar = ProgressBar(maxval=STEPS)
-    pbar.start()
+    #pbar = ProgressBar(maxval=STEPS)
+    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -106,8 +106,17 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        pbar.update(step)
+        #pbar.update(step)
         action = agent.get_action(state)
+	#OJO!!!!!!!!!!!!!!
+        '''
+        action[1] = 0
+        action[2] = 0 
+        action[4] = 0 
+        action[5] = 0
+        action[6] = 0
+        action[10] = 0
+        '''   
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -118,7 +127,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    pbar.finish()
+    #pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
