@@ -2,43 +2,45 @@ import numpy as np
 import pandas as pd
 from climate_model.functions import q2
 from scipy.interpolate import interp1d
+from params_control import PARAMS_CONTROL
 from params import minutos
 
 
-data = pd.read_csv('Inputs_Bleiswijk.csv')
-KP4 = 3.672
-KI4 = 188.659
-KD4 = 0.00
+data      = pd.read_csv('Inputs_Bleiswijk.csv')
+KP4       = PARAMS_CONTROL['KP4']
+KI4       = PARAMS_CONTROL['KI4']
+KD4       = PARAMS_CONTROL['KD4']
 
-KP10 = 0.019
-KI10 = 6033.599
-KD10 = 65.103
+KP10      = PARAMS_CONTROL['KP10']
+KI10      = PARAMS_CONTROL['KI10']
+KD10      = PARAMS_CONTROL['KD10']
 
-KP8 = -4.414
-KI8 = 3043.253
-KD8 = 47.512
+KP8       = PARAMS_CONTROL['KP8']
+KI8       = PARAMS_CONTROL['KI8']
+KD8       = PARAMS_CONTROL['KD8']
 
-VENTSET1 = 25
-VENTSET2 = 25
+VENTSET1  = PARAMS_CONTROL['VENTSET1']
+VENTSET2  = PARAMS_CONTROL['VENTSET2']
 
-NIGHT_PAR = 5
-OTHER_PAR = 50
+NIGHT_PAR = PARAMS_CONTROL['NIGHT_PAR']
+OTHER_PAR = PARAMS_CONTROL['OTHER_PAR']
 
+PBAND1    = PARAMS_CONTROL['PBAND1']
+PBAND2    = PARAMS_CONTROL['PBAND2']
 
-PBAND1 = 4
-PBAND2 = 10 
-T_OUT1 = 5
-T_OUT2 = 18
+T_OUT1    = PARAMS_CONTROL['T_OUT1']
+T_OUT2    = PARAMS_CONTROL['T_OUT2']
 
-VPD_SET1 = 1
-VPD_SET2 = 1.2
+VPD_SET1  = PARAMS_CONTROL['VPD_SET1']
+VPD_SET2  = PARAMS_CONTROL['VPD_SET2']
 
-HEATSET1 = 16
-HEATSET2 = 20
+HEATSET1  = PARAMS_CONTROL['HEATSET1']
+HEATSET2  = PARAMS_CONTROL['HEATSET2']
 
-CO2SET1 = 400
-CO2SET2 = 900
-V = 6
+CO2SET1   = PARAMS_CONTROL['CO2SET1']
+CO2SET2   = PARAMS_CONTROL['CO2SET2']
+
+V         = PARAMS_CONTROL['V']
 
 
 def set_varset(par):
