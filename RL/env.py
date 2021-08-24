@@ -42,13 +42,14 @@ class GreenhouseEnv(gym.Env):
         self.indexes = Indexes(data_inputs[0:self.limit],SEASON) if SEASON != 'RANDOM' else None
         self.daily_C1  = list()
         self.daily_T2  = list()
+        self.daily_
         self.Qvar_dic = {key:list() for key in self.vars_cost}
         self.Qvar_dic['G'] = list()
         self._reset()
     
-    def remap(self,action):
+    def remap(self, action):
         new_action = np.zeros(DIM_ACTIONS)
-        for i,a in zip(ON_ACTIONS,action):
+        for i,a in zip(ON_ACTIONS, action):
             new_action[i] = a
         return new_action
 

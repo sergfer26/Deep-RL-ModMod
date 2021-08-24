@@ -15,7 +15,9 @@ KD8 = 47.512
 
 VENTSET1 = 25
 VENTSET2 = 25
-PAR_NIGHT = 5
+
+NIGHT_PAR = 5
+
 
 PBAND1 = 4
 PBAND2 = 10 
@@ -23,6 +25,18 @@ T_OUT1 = 5
 T_OUT2 = 18
 
 V = 6
+
+def set_point_t2(self, par):
+    if par[-1] < PAR_NIGHT:
+        self.heatset = 16
+    else:
+        self.heatset = 20
+            
+def set_point_co2(self,state):
+        if state[3] > 5:
+            self.co2 = 900
+        else:
+            self.co2 = 400
 
 
 def set_ventSet(par):
