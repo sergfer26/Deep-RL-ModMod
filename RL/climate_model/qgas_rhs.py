@@ -1,6 +1,6 @@
 from ModMod import StateRHS
 from sympy import symbols
-from .constants import CONSTANTS, INPUTS, STATE_VARS, CONTROLS, COSTS
+from .constants import CONSTANTS, INPUTS, STATE_VARS, CONTROLS, COSTS, FUNCTIONS
 from .functions import H_Boil_Pipe
 from .functions import h4, h6
 from .functions import a1
@@ -12,6 +12,8 @@ mt= symbols('mt')
 
 constant_names = ['beta3', 'lamb4', 'alpha6', 'alpha3', 'sigma', 'epsil2', 'epsil1', 
                             'gamma1', 'phi1', 'etagas', 'qgas']
+
+function_names = ['h6', 'r6', 'h4', 'a1', 'g1'] 
 
 
 
@@ -31,12 +33,13 @@ class Qgas_rhs(StateRHS):
         for name in constant_names:
             CONSTANTS[name].addvar_rhs(self)
 
+        for name in function_names:
+            FUNCTIONS[name].addvar_rhs(self)
+
     def RHS(self, Dt):
-        h_6 = h6(U4=self.V('U4'), lamb4=self.V('lamb4'), alpha6=self.V('alpha6')) #H blow air 
-        a_1 = a1(I1=self.V('I1'), beta3=self.V('beta3')) #auxiliar para g1
-        g_1 = g1(a1=a_1)                                   #auxiliar para r6
-        r_6 = r6(T1=self.V('T1'), I3=self.V('I3'), alpha3=self.V('alpha3'), epsil1=self.V('epsil1'), epsil2=self.V('epsil2'), lamb=self.V('sigma'), g1=g_1)
-        h_4 = h4(T2=self.V('T2'), I3=self.V('I3'),gamma1=self.V('gamma1'), phi1=self.V('phi1'))
+        h_6 = self.V('h6')
+        r_6 = self.V('r6')
+        h_4 = self.V('h4')
         H_boil_pipe = H_Boil_Pipe(r_6, h_4)
         return (self.V('qgas')/self.V('etagas'))*(H_boil_pipe + h_6)/(10**9)
 
