@@ -1,6 +1,6 @@
 from ModMod import StateRHS
 from sympy import symbols
-from .constants import CONSTANTS, INPUTS, STATE_VARS, CONTROLS
+from .constants import CONSTANTS, INPUTS, STATE_VARS, CONTROLS, FUNCTIONS
 from .functions import q1, q2, q3, q4, q5, q7, q8, q9, q10
 from .functions import r1, r2, r3, r4, r5, r6, r7 
 from .functions import kappa1
@@ -16,6 +16,7 @@ mt = symbols('mt')
 state_names = ['T1', 'V1', 'T2', 'C1']
 control_names = ['U1', 'U11']
 input_names = ['I1', 'I2', 'I3', 'I4', 'I14']
+function_names = ['a1', 'r6', 'p1', 'q1', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8', 'q9', 'q10', 'g1']
 constant_names = ['beta3', 'tau3', 'beta1', 'rho1', 'beta2', 'rho2', 'eta1', 'eta2', 'tau1', 
                     'tau2', 'rho3', 'alpha5', 'gamma', 'gamma3', 'delta1', 'delta2', 'delta3',
                     'gamma4', 'gamma5', 'delta4', 'delta5', 'delta6', 'delta7', 'eta4', 'alpha1',
@@ -40,6 +41,9 @@ class T1_rhs(StateRHS):
 
         for name in constant_names:
             CONSTANTS[name].addvar_rhs(self)
+        
+        for name in function_names:
+            FUNCTIONS[name].addvar_rhs(self)
 
     def RHS(self, Dt):
         """RHS( Dt, k) = \kappa_1^{-1} F_1( t+Dt, X+k) where X is the current value of
@@ -51,7 +55,9 @@ class T1_rhs(StateRHS):
         # Once defined h1 in your terminal run TranslateArgNames(h1)
         # and follow the instrucions
         #### Sub-functions ####
-        a_1 = a1(I1=self.V('I1'), beta3=self.V('beta3'))
+        a_1 = self.V('a1')
+        r_6 = self.V('r6')
+        p_1 = self.V('p1')
         b_1 = b1(U1=self.V('U1'), tau3=self.V('tau3'))
         r_4 = r4(I2=self.V('I2'), eta1=self.V('eta1'),
                  eta2=self.V('eta2'), tau1=self.V('tau1'))
@@ -59,29 +65,12 @@ class T1_rhs(StateRHS):
             'beta1'), rho1=self.V('rho1'), r4=r_4)
         r_3 = r3(I1=self.V('I1'), beta1=self.V('beta1'), beta2=self.V(
             'beta2'), rho1=self.V('rho1'), rho2=self.V('rho2'), r4=r_4)
-        g_1 = g1(a1=a_1)
         g_2 = g2(tau2=self.V('tau2'), b1=b_1)
-        q_2 = q2(T1=self.Vk('T1'))
-        q_7 = q7(I14=self.V('I14'), delta1=self.V(
-            'delta1'), gamma5=self.V('gamma5'))
-        q_8 = q8(delta4=self.V('delta4'), delta5=self.V('delta5'), q7=q_7)
-        q_9 = q9(delta6=self.V('delta6'), delta7=self.V('delta7'), q7=q_7)
-        q_4 = q4(C1=self.V('C1'), eta4=self.V('eta4'), q8=q_8)
-        q_5 = q5(V1=self.V('V1'), q2=q_2, q9=q_9)
-        q_10 = q10(I14=self.V('I14'), delta2=self.V(
-            'delta2'), delta3=self.V('delta3'))
-        q_3 = q3(I14=self.V('I14'), gamma4=self.V(
-            'gamma4'), q4=q_4, q5=q_5, q10=q_10)
-        q_1 = q1(I1=self.V('I1'), rho3=self.V('rho3'), alpha5=self.V('alpha5'), gamma=self.V(
-            'gamma'), gamma2=self.V('gamma2'), gamma3=self.V('gamma3'), q3=q_3)
-        p_1 = p1(V1=self.Vk('V1'), q1=q_1, q2=q_2)
         #### Principal functions ####
         kappa_1 = kappa1(I1=self.V('I1'), alpha1=self.V('alpha1'))
         r_1 = r1(r2=r_2, r3=r_3)
         r_5 = r5(I2=self.V('I2'), alpha2=self.V('alpha2'),
                  eta1=self.V('eta1'), eta3=self.V('eta3'))
-        r_6 = r6(T1=self.Vk('T1'), I3=self.V('I3'), alpha3=self.V('alpha3'), epsil1=self.V(
-            'epsil1'), epsil2=self.V('epsil2'), lamb=self.V('sigma'), g1=g_1)
         h_1 = h1(T1=self.Vk('T1'), T2=self.Vk('T2'),
                  I1=self.V('I1'), alpha4=self.V('alpha4'))
         l_1 = l1(gamma2=self.V('gamma2'), p1=p_1)
