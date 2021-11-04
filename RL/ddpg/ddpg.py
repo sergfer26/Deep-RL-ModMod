@@ -55,6 +55,8 @@ class DDPGagent:
         # Training
         self.memory = Memory(max_memory_size)        
         self.critic_criterion  = nn.MSELoss()
+        #self.actor_optimizer = optim.Adadelta(self.actor.parameters)
+        #self.critic_optimizer = optim.Adadelta(self.critic.parameters)
         self.actor_optimizer  = optim.Adam(self.actor.parameters(), lr=actor_learning_rate)
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=critic_learning_rate)
     
