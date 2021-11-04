@@ -13,7 +13,7 @@ import os
 # from typing_extensions import final
 from get_report import create_report
 from params import PARAMS_TRAIN
-from get_report_constants import constants
+from get_report_constants import Constants
 from graphics import save_Q, figure_reward, figure_state
 from graphics import figure_rh_par, figure_prod, figure_actions 
 from graphics import figure_inputs, compute_indexes, create_path
@@ -90,11 +90,11 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 
 ###### Simulation ######
-from progressbar import*
+#from progressbar import*
 
 def sim(agent, env, indice = 0):
-    pbar = ProgressBar(maxval=STEPS)
-    pbar.start()
+    #pbar = ProgressBar(maxval=STEPS)
+    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -106,8 +106,17 @@ def sim(agent, env, indice = 0):
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        pbar.update(step)
+        #pbar.update(step)
         action = agent.get_action(state)
+	#OJO!!!!!!!!!!!!!!
+        '''
+        action[1] = 0
+        action[2] = 0 
+        action[4] = 0 
+        action[5] = 0
+        action[6] = 0
+        action[10] = 0
+        '''   
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -118,7 +127,7 @@ def sim(agent, env, indice = 0):
         S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
         A[step, :] = action
         state = new_state
-    pbar.finish()
+    #pbar.finish()
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
@@ -134,7 +143,7 @@ def main():
     else:
         PATH = create_path()
 
-    constants(PATH)
+    Constants(PATH)
 
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
@@ -142,7 +151,6 @@ def main():
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
 
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
-    breakpoint()
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
 
@@ -155,21 +163,12 @@ def main():
     figure_inputs(df_inputs,PATH)
     
     t2 = time.time()
+    PATH1 = PATH[13:]
+    os.system('python3 benchmark.py ' + PATH1)
     if not(SHOW):
         create_report(PATH,t2-t1)
-        send_correo(PATH + '/reports/Reporte.pdf')
-    PATH = PATH[13:]
-    os.system('python3 benchmark.py ' + PATH)
+        #send_correo(PATH + '/reports/Reporte.pdf')
     
-
-def main1():
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = INDICE)
-    PATH = 'results_ddpg/Redes_Sergio'
-    start = df_inputs['Date'].iloc[0]
-    final_indexes = compute_indexes(start,STEPS,env.frec)
-    figure_actions(A,final_indexes,action_dim,PATH)
-    figure_prod(S_prod,final_indexes,PATH)
-
 
 if __name__=='__main__':
     main()

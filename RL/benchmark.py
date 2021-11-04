@@ -4,7 +4,7 @@ from trainRL import sim, noise
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from env import data_inputs, GreenhouseEnv 
+from env import data_inputs, GreenhouseEnv,ON_ACTIONS
 from ddpg.ddpg import DDPGagent 
 import glob 
 import pytz
@@ -22,8 +22,9 @@ import shutil
 import os
 import glob
 from params import PARAMS_ENV
+from baseline_policy import agent_baseline
 
-number_of_simulations = 100
+number_of_simulations = 1
 number_of_process     = 16
 path = 'results_ddpg/' + sys.argv[1]
 
@@ -51,9 +52,8 @@ agent_random = OtherAgent(env, 'random')
 agent_on = OtherAgent(env, 'on')
 
 
-def sim_(agent,env): return sim(agent, env)
 
-def get_score(month,agent):                             
+def get_score(month,agent,sim):                             
     p = multiprocessing.Pool(number_of_process) #Numero de procesadores
     indexes = Indexes(data_inputs[0:LIMIT],month)
     V = list()
@@ -61,19 +61,23 @@ def get_score(month,agent):
         env = GreenhouseEnv() #Se crea el ambiente 
         env.indexes = indexes # Se crean indices
         V.append([agent,env])
-    BIG_DATA = p.starmap(sim_, V)
+    BIG_DATA = p.starmap(sim, V)
     BIG_DATA = list(BIG_DATA)
     result = {'episode_rewards':list(),'mass':list()}
-    for i in range(1,12):result['u_'+str(i)] = list()
+    for i in ON_ACTIONS:
+        result['$U_{' + '{}'.format(i+1) + '}$' ] = list()
+    #for i in range(1,12):result['u_'+str(i)] = list()
     for simulation in BIG_DATA:
         _, _, S_prod, A, _, _ = simulation
         df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-        dfa = pd.DataFrame(A, columns=['u_' + str(i) for i in range(1,12)])
+        dfa = pd.DataFrame(A, columns=['$U_{' + '{}'.format(i+1) + '}$' for i in ON_ACTIONS])
         episode_reward = df_prod['$Cr_t$'].iloc[-1]
         mass_reward    = df_prod['$H$'].iloc[-1] 
         result['episode_rewards'].append(episode_reward)
         result['mass'].append(mass_reward)
-        for i in range(1,12): result['u_'+str(i)] += list(dfa['u_'+str(i)])
+        for i in ON_ACTIONS:
+            result['$U_{' + '{}'.format(i+1) + '}$' ] += list(dfa['$U_{' + '{}'.format(i+1) + '}$'])
+        #for i in range(1,12): result['u_'+str(i)] += list(dfa['u_'+str(i)])
     return result
 
 def save_score(PATH,result,name):
@@ -99,8 +103,19 @@ def season2():
 
 def season1_nn(name = ''):
     agent.load(path + '/nets',name)
-    score = get_score(1,agent)
+    score = get_score(1,agent,sim)
     save_score(path,score,'nn' + name)
+
+def expert_control():
+    '''
+    Solo deberia ejecutarse una vez
+    '''
+    agent = agent_baseline()
+    from simulation import sim
+    score = get_score(1,agent,sim)
+    save_score(path,score,'expert_1h')
+
+
 
 def set_axis_style(ax, labels):
     ax.get_xaxis().set_tick_params(direction='out')
@@ -110,26 +125,31 @@ def set_axis_style(ax, labels):
     ax.set_xlim(0.25, len(labels) + 0.75)
     ax.set_xlabel('')
 
-def violin_actions():
-    f = open(path + '/output/simulations_nn.json') 
+def violin_actions(name):
+    f = open(path + '/output/simulations_'+name+'.json') 
     data = json.load(f)
     new_data = list()
-    for i in range(1,12):
-        new_data.append(data['u_' + str(i)])
+    for i in ON_ACTIONS:
+        new_data.append(data['$U_{' + '{}'.format(i+1) + '}$'])
+        #new_data.append(data['u_' + str(i)])
     _, axis= plt.subplots(sharex=True, figsize=(10,5))
     axis.violinplot(new_data)
     axis.set_title('Controles')
-    labels = ['$u_{}$'.format(str(i+1)) for i in range(1,9)]
-    labels.append('$u_{10}$')
-    labels.append('$u_{11}$')
+    labels = list()
+    for i in ON_ACTIONS:
+        labels.append('$U_{' + '{}'.format(i+1) + '}$' )
     set_axis_style(axis, labels)
     plt.savefig(path + '/images/violin_actions.png')
     plt.close()
 
-def violin_reward():
-    f = open(path + '/output/simulations_nn.json') 
+def violin_reward(name):
+    f = open(path + '/output/simulations_'+name+'.json') 
     data = json.load(f)
     new_data = list()
+    new_data.append(data['episode_rewards'])
+
+    f = open('results_ddpg/expert_control/output/simulations_expert_1h.json','r') 
+    data = json.load(f)
     new_data.append(data['episode_rewards'])
     '''
     f = open('results_ddpg/tournament/Season1/simulations_on.json','r') 
@@ -143,9 +163,10 @@ def violin_reward():
     _, axis= plt.subplots(sharex=True, figsize=(10,5))
     axis.violinplot(new_data)
     axis.set_title('Rentabilidad $mxn/m^2$')
-    labels = ['nn']#['nn','on','random']
+    labels = [name]
+    labels += ['expert']
     set_axis_style(axis, labels)
-    plt.savefig(path + '/images/violin_rewards1.png')
+    plt.savefig(path + '/images/violin_rewards.png')
     plt.close()
 
 
@@ -157,17 +178,18 @@ def violin_reward_nets(names):
         f = open(path + '/output/simulations_nn_'+name+'.json') 
         data = json.load(f)
         new_data.append(data['episode_rewards'])    
-    axis.violinplot(new_data)
+    axis.violinplot(new_data, showmeans=True)
     axis.set_title('Rentabilidad $mxn/m^2$')
     labels = names
     set_axis_style(axis, labels)
-    #plt.savefig(path + '/images/violin_rewards1.png')
-    plt.show()
+    plt.savefig(path + '/images/violin_rewards_5000e.png')
+    #plt.show()
     plt.close()
 
 if __name__ == '__main__':
     pass
-    #season1_nn('_1000')
-    #violin_reward()
-    #violin_actions()
-    #violin_reward_nets([0,1000])
+    #expert_control()
+    season1_nn('')
+    violin_reward('nn') ##puede ser nn ó expert
+    violin_actions('nn')
+    #violin_reward_nets([1,1000,2000,3000,4000])
