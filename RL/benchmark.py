@@ -243,7 +243,7 @@ if __name__ == '__main__':
     pass
     #expert_control()
     season1_nn('')
-    #violin_reward('nn') ##puede ser nn ó expert
-    #violin_actions('nn')
+    violin_reward('nn') ##puede ser nn ó expert
+    violin_actions('nn')
     #violin_reward_nets([1,1000,2000,3000,4000])
     #ESPECIAL1()
