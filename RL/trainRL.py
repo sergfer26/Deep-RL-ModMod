@@ -93,6 +93,7 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 from progressbar import*
 
 def sim(agent, env, indice = 0):
+    #Es necesario para benchmark
     agent.actor.eval()
     agent.critic.eval()
     pbar = ProgressBar(maxval=STEPS)
