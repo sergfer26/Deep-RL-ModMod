@@ -95,6 +95,9 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 def sim(agent, env, indice = 0):
     #pbar = ProgressBar(maxval=STEPS)
     #pbar.start()
+    #Es necesario para benchmark
+    agent.actor.eval()
+    agent.critic.eval()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -135,14 +138,16 @@ def main():
         PATH = create_path()
 
     Constants(PATH)
-
+    agent.actor.eval()
+    agent.critic.eval() 
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
     
-    agent.actor.eval()
-    agent.critic.eval()
+    #agent.actor.eval()
+    #agent.critic.eval()
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
