@@ -48,9 +48,9 @@ class GreenhouseEnv(gym.Env):
         self.Qvar_dic['G'] = list()
         self._reset()
     
-    def remap(self,action):
+    def remap(self, action):
         new_action = np.zeros(DIM_ACTIONS)
-        for i,a in zip(ON_ACTIONS,action):
+        for i,a in zip(ON_ACTIONS, action):
             new_action[i] = a
         return new_action
 

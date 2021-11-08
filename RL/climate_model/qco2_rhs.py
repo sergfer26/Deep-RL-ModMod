@@ -1,7 +1,6 @@
 from ModMod import StateRHS
 from sympy import symbols
-from .constants import CONSTANTS, CONTROLS, COSTS
-from .functions import o2
+from .constants import CONSTANTS, CONTROLS, COSTS, FUNCTIONS
 
 
 mt = symbols('mt')
@@ -18,8 +17,9 @@ class Qco2_rhs(StateRHS):
         CONSTANTS['psi2'].addvar_rhs(self)
         CONSTANTS['alpha6'].addvar_rhs(self)
         CONSTANTS['q_co2_ext'].addvar_rhs(self)
+        FUNCTIONS['o2'].addvar_rhs(self)
     
     def RHS(self, Dt):
         '''Costo del CO_2'''
-        o_2 = o2(U10=self.V('U10'), psi2=self.V('psi2'), alpha6=self.V('alpha6')) #MC_ext_air
+        o_2 = self.V('o2')
         return (10**-6)*self.V('q_co2_ext')*o_2

@@ -162,7 +162,7 @@ def violin_reward(name):
     new_data.append(data['episode_rewards'])
     '''
     _, axis= plt.subplots(sharex=True, figsize=(10,5))
-    axis.violinplot(new_data)
+    axis.violinplot(new_data,showmeans=True)
     axis.set_title('Rentabilidad $mxn/m^2$')
     labels = [name]
     labels += ['expert']
@@ -187,6 +187,58 @@ def violin_reward_nets(names):
     #plt.show()
     plt.close()
 
+
+def ESPECIAL():
+    new_data = list()
+    f = open('results_ddpg/Redes_Sergio/output/simulations_nn_r_0.json','r') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+
+    f = open('results_ddpg/8_17_1848/output/simulations_nn_1h.json') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+
+    f = open('results_ddpg/8_17_1851/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+    
+    f = open('results_ddpg/8_17_1853/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+
+    f = open('results_ddpg/expert_control/output/simulations_expert_1h.json','r') 
+    data = json.load(f)
+    new_data.append(data['episode_rewards'])
+    
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data,showmeans=True)
+    axis.set_title('Rentabilidad $mxn/m^2$')
+    labels = ['64x64r','64x64x64','128x128','256x256','expert']
+    set_axis_style(axis, labels)
+    plt.show()
+    plt.close()
+
+
+def ESPECIAL1():
+    new_data = list()
+
+    f = open('results_ddpg/8_17_1848/output/simulations_nn.json') 
+    data = json.load(f)
+    new_data.append(data['mass'])
+
+    f = open('results_ddpg/expert_control/output/simulations_expert.json','r') 
+    data = json.load(f)
+    new_data.append(data['mass'])
+    
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data,showmeans=True)
+    #axis.set_title('Rentabilidad $mxn/m^2$')
+    axis.set_title('Masa $g$')
+    labels = ['64x64x64','expert']
+    set_axis_style(axis, labels)
+    plt.show()
+    plt.close()
+
 if __name__ == '__main__':
     pass
     #expert_control()
@@ -194,3 +246,4 @@ if __name__ == '__main__':
     #violin_reward('nn') ##puede ser nn ó expert
     #violin_actions('nn')
     #violin_reward_nets([1,1000,2000,3000,4000])
+    #ESPECIAL1()

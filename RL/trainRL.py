@@ -90,33 +90,24 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 
 ###### Simulation ######
-#from progressbar import*
+from progressbar import*
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
+    pbar = ProgressBar(maxval=STEPS)
+    pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
     #env.i = 75992 
-    #print('Se simula con indice = ', env.i)
+    print('Se simula con indice = ', env.i)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
     for step in range(STEPS):
-        #pbar.update(step)
-        action = agent.get_action(state)
-	#OJO!!!!!!!!!!!!!!
-        '''
-        action[1] = 0
-        action[2] = 0 
-        action[4] = 0 
-        action[5] = 0
-        action[6] = 0
-        action[10] = 0
-        '''   
+        pbar.update(step)
+        action = agent.get_action(state) 
         new_state, reward, done = env.step(action)
         episode_reward += reward
         C1, RH, T2, PAR, h, n = state
@@ -142,6 +133,7 @@ def main():
         agent.load(PATH + '/nets')
     else:
         PATH = create_path()
+        agent.load('results_ddpg/8_17_1848/nets')
 
     Constants(PATH)
 
@@ -149,7 +141,9 @@ def main():
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
-
+    
+    agent.actor.eval()
+    agent.critic.eval()
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
@@ -167,7 +161,8 @@ def main():
     os.system('python3 benchmark.py ' + PATH1)
     if not(SHOW):
         create_report(PATH,t2-t1)
-        #send_correo(PATH + '/reports/Reporte.pdf')
+        send_correo(PATH + '/reports/Reporte.pdf')
+        pass
     
 
 if __name__=='__main__':

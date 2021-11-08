@@ -15,9 +15,17 @@ KP10      = PARAMS_CONTROL['KP10']
 KI10      = PARAMS_CONTROL['KI10']
 KD10      = PARAMS_CONTROL['KD10']
 
+<<<<<<< HEAD
+VENTSET1 = 25
+VENTSET2 = 25
+
+NIGHT_PAR = 5
+
+=======
 KP8       = PARAMS_CONTROL['KP8']
 KI8       = PARAMS_CONTROL['KI8']
 KD8       = PARAMS_CONTROL['KD8']
+>>>>>>> 0c5a5e44171dab3b3a386a704ebb80618d79add3
 
 VENTSET1  = PARAMS_CONTROL['VENTSET1']
 VENTSET2  = PARAMS_CONTROL['VENTSET2']
@@ -25,8 +33,23 @@ VENTSET2  = PARAMS_CONTROL['VENTSET2']
 NIGHT_PAR = PARAMS_CONTROL['NIGHT_PAR']
 OTHER_PAR = PARAMS_CONTROL['OTHER_PAR']
 
+<<<<<<< HEAD
+def set_point_t2(self, par):
+    if par[-1] < PAR_NIGHT:
+        self.heatset = 16
+    else:
+        self.heatset = 20
+            
+def set_point_co2(self,state):
+        if state[3] > 5:
+            self.co2 = 900
+        else:
+            self.co2 = 400
+
+=======
 PBAND1    = PARAMS_CONTROL['PBAND1']
 PBAND2    = PARAMS_CONTROL['PBAND2']
+>>>>>>> 0c5a5e44171dab3b3a386a704ebb80618d79add3
 
 T_OUT1    = PARAMS_CONTROL['T_OUT1']
 T_OUT2    = PARAMS_CONTROL['T_OUT2']
