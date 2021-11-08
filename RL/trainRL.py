@@ -93,6 +93,8 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 from progressbar import*
 
 def sim(agent, env, indice = 0):
+    agent.actor.eval()
+    agent.critic.eval()
     pbar = ProgressBar(maxval=STEPS)
     pbar.start()
     state = env.reset() 
@@ -133,17 +135,18 @@ def main():
         agent.load(PATH + '/nets')
     else:
         PATH = create_path()
-        agent.load('results_ddpg/8_17_1848/nets')
 
     Constants(PATH)
-
+    agent.actor.eval()
+    agent.critic.eval() 
+    
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
     
-    agent.actor.eval()
-    agent.critic.eval()
+    #agent.actor.eval()
+    #agent.critic.eval()
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
