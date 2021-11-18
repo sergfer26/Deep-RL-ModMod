@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 from ModMod import Module, Director
 from .functions import * 
@@ -15,6 +16,7 @@ from .c1_rhs import C1_rhs
 C1, V1, T2, T1 = [struct.val for struct in STATE_VARS.values()]
 T_cal = CONSTANTS['T_cal'].val
 
+RANDOM = False
 
 class Module1(Module):
 
@@ -36,10 +38,16 @@ class Module1(Module):
         s2 = 0.1281  # Desviación estándar de V1
         s3 = 10  # Desviación estándar de C1
         # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
-        T1r = self.V('T1') + norm.rvs(scale=s1)
-        T2r = self.V('T2') + norm.rvs(scale=s1)
-        V1r = self.V('V1') + norm.rvs(scale=s2)
-        C1r = self.V('C1') + norm.rvs(scale=s3)
+        if RANDOM:
+            T1r = self.V('T1') + norm.rvs(scale=s1)
+            T2r = self.V('T2') + norm.rvs(scale=s1)
+            V1r = self.V('V1') + norm.rvs(scale=s2)
+            C1r = self.V('C1') + norm.rvs(scale=s3)
+        else:
+            T1r = self.V('T1') 
+            T2r = self.V('T2') 
+            V1r = self.V('V1') 
+            C1r = self.V('C1') 
         # Actualización de las variables
         self.V_Set('T1', T1r)
         self.V_Set('T2', T2r)
