@@ -12,7 +12,7 @@ import os
 # from torch.utils.tensorboard import SummaryWriter
 # from typing_extensions import final
 from get_report import create_report
-from params import PARAMS_TRAIN
+from params import PARAMS_TRAIN,all_params, save_params
 from get_report_constants import Constants
 from graphics import save_Q, figure_reward, figure_state
 from graphics import figure_rh_par, figure_prod, figure_actions 
@@ -24,6 +24,8 @@ EPISODES = PARAMS_TRAIN['EPISODES']
 STEPS = PARAMS_TRAIN['STEPS']
 BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
 SHOW = PARAMS_TRAIN['SHOW']
+SERVER = PARAMS_TRAIN['SERVER']
+if SERVER: SHOW = False #No puedes mostrar nada en el servidor
 INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
 SAVE_FREQ = PARAMS_TRAIN['SAVE_FREQ']
 
@@ -38,9 +40,8 @@ state_dim = env.observation_space.shape[0]
 #writer_penalty = SummaryWriter()
 
 
-if not SHOW:
-    from functools import partialmethod
-    tqdm.__init__ = partialmethod(tqdm.__init__, disable=False)
+from functools import partialmethod
+tqdm.__init__ = partialmethod(tqdm.__init__, disable=SERVER)
 
 
 def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
@@ -89,39 +90,36 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
     return rewards, avg_rewards, penalties, abs_rewards
 
 
-###### Simulation ######
-#from progressbar import*
+
 
 def sim(agent, env, indice = 0):
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
     #Es necesario para benchmark
     agent.actor.eval()
     agent.critic.eval()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
-    #env.i = 75992 
     print('Se simula con indice = ', env.i)
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
-    for step in range(STEPS):
-        #pbar.update(step)
-        action = agent.get_action(state) 
-        new_state, reward, done = env.step(action)
-        episode_reward += reward
-        C1, RH, T2, PAR, h, n = state
-        T1 = env.dirClimate.V('T1'); V1 = env.dirClimate.V('V1')
-        S_climate[step, :] = np.array([T1, T2, V1, C1]) 
-        H = env.dirGreenhouse.V('H'); NF= env.dirGreenhouse.V('NF')
-        S_data[step, :] = np.array([RH, PAR])
-        S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
-        A[step, :] = action
-        state = new_state
-    #pbar.finish()
+    with tqdm(total=STEPS, position=0) as pbar:
+        for step in range(STEPS):
+            action = agent.get_action(state) 
+            new_state, reward, done = env.step(action)
+            episode_reward += reward
+            C1, RH, T2, PAR, h, n = state
+            T1 = env.dirClimate.V('T1'); V1 = env.dirClimate.V('V1')
+            S_climate[step, :] = np.array([T1, T2, V1, C1]) 
+            H = env.dirGreenhouse.V('H'); NF= env.dirGreenhouse.V('NF')
+            S_data[step, :] = np.array([RH, PAR])
+            S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
+            A[step, :] = action
+            state = new_state
+            pbar.set_postfix(step='{}'.format(step))
+            pbar.update(1)
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
@@ -138,6 +136,7 @@ def main():
         PATH = create_path()
 
     Constants(PATH)
+    save_params(all_params,PATH+'/output')
     agent.actor.eval()
     agent.critic.eval() 
     
@@ -146,8 +145,6 @@ def main():
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
     
-    #agent.actor.eval()
-    #agent.critic.eval()
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
