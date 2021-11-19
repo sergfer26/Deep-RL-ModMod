@@ -4,25 +4,25 @@ import pathlib
 import pandas as pd
 from datetime import datetime, timezone
 from time import time
+from simulation_date import get_index
 #from progressbar import*
-from trainRL import STEPS, action_dim
+from trainRL import STEPS, action_dim, sim
 from baseline_policy import agent_baseline
 from matplotlib import pyplot as plt
-from env import STEP, TIME_MAX, GreenhouseEnv
-from params import minutos
+from env import STEP, TIME_MAX, GreenhouseEnv,data_inputs
+from params import minutos,PARAMS_TRAIN,PARAMS_SIM,save_params,all_params
+from graphics import date,compute_indexes,figure_actions,figure_inputs,figure_prod,figure_rh_par,figure_state
+from ddpg.ddpg import DDPGagent
 
-PATH = 'results_ddpg/BORRAME'#+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
-pathlib.Path(PATH).mkdir(parents=True, exist_ok=True)
-SHOW  = False
+SHOW = PARAMS_TRAIN['SHOW']
+PATH = 'Simulaciones/'+ date() 
+pathlib.Path(PATH+'/images').mkdir(parents=True, exist_ok=True)
 env = GreenhouseEnv()
-agent = agent_baseline()
+agent = DDPGagent(env)
+agent.load('results_ddpg/11_11_2245/nets')
 
 
-
-   
-
-
-def sim(agent, env, indice = 0):
+def sim_pid(agent, env, indice = 0):
     dt = 60/minutos
     #pbar = ProgressBar(maxval=STEPS)
     #pbar.start()
@@ -54,76 +54,22 @@ def sim(agent, env, indice = 0):
     return S_climate, S_data, S_prod, A, data_inputs,start
 
 def main():
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = 0)
-
-    df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
-
-    ax = df_climate.plot(subplots=True, layout=(2, 2), figsize=(10, 7),title = 'Variables de estado') 
-    ax[0,0].set_ylabel('$ ^{\circ} C$')
-    ax[0,1].set_ylabel('$ ^{\circ} C$')
-    ax[1,0].set_ylabel('Pa')
-    ax[1,1].set_ylabel('$mg * m^{-3}$')
-
-    plt.gcf().autofmt_xdate()
-
-    if SHOW:
-        plt.show()
-        plt.close()
-    else:
-        plt.savefig(PATH + '/sim_climate.png')
-        plt.close()
-
-
-    df_data = pd.DataFrame(S_data, columns=('RH','PAR'))
-    #df_data.index = final_indexes
-    ax = df_data.plot(subplots=True, layout=(1, 2), figsize=(10, 7),title = 'Promedios diarios') 
-    ax[0,0].set_ylabel('%')
-    ax[0,1].set_ylabel('$W*m^{2}$')
-    plt.gcf().autofmt_xdate()
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/sim_rh_par.png')
-        plt.close()
-
-    df_prod = pd.DataFrame(S_prod, columns=('$h$', '$nf$', '$H$', '$N$', '$r_t$', '$Cr_t$'))
-    #df_prod.index = final_indexes
-    title= 'Produccion y recompensas'
-    ax = df_prod.plot(subplots=True, layout=(3, 2), figsize=(10, 7), title=title) 
-    ax[0,0].set_ylabel('g')
-    ax[1,0].set_ylabel('g')
-    plt.gcf().autofmt_xdate()
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/sim_prod.png')
-        plt.close()
-
-    dfa = pd.DataFrame(A, columns=('$u_1$', '$u_2$', '$u_3$', '$u_4$', '$u_5$', '$u_6$', '$u_7$', '$u_8$', '$u_9$', r'$u_{10}$', r'$u_{11}$'))
-    title = 'Controles' # $U$
-    #dfa.index = final_indexes
-    ax = dfa.plot(subplots=True, layout=(int(np.ceil(action_dim / 2)), 2), figsize=(10, 7), title=title) 
-    for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
-    plt.gcf().autofmt_xdate()
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/sim_actions.png')
-        plt.close()
-
-    #df_inputs.index = final_indexes
-    ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
-    ax[0].set_ylabel('$W*m^{2}$')
-    ax[1].set_ylabel('C')
-    ax[2].set_ylabel('$Km*h^{-1}$')
-    ax[3].set_ylabel('$W*m^{2}$')
-    ax[4].set_ylabel('%')
-    plt.gcf().autofmt_xdate()
-    if SHOW:
-        plt.show()
-    else:
-        plt.savefig(PATH + '/sim_climate_inputs.png')
-        plt.close()
-
+    y = PARAMS_SIM['anio']
+    m = PARAMS_SIM['mes']
+    d = PARAMS_SIM['dia']
+    h = PARAMS_SIM['hora']
+    print('Buscando indice')
+    save_params(all_params,PATH)
+    date = datetime(y,m,d,h)
+    ind = get_index(data_inputs,date)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = ind)
+    start = df_inputs['Date'].iloc[0]
+    final_indexes = compute_indexes(start,STEPS,env.frec)
+    figure_state(S_climate,final_indexes,PATH)
+    figure_rh_par(S_data,final_indexes,PATH)
+    figure_prod(S_prod,final_indexes,PATH)
+    figure_actions(A,final_indexes,PATH)
+    figure_inputs(df_inputs,PATH)
+    
 if __name__ == '__main__':
     main()
