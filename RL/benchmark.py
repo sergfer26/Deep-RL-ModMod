@@ -25,7 +25,7 @@ from params import PARAMS_ENV
 from baseline_policy import agent_baseline
 
 number_of_simulations = 100
-number_of_process     = 10
+number_of_process     = 8
 path = 'results_ddpg/' + sys.argv[1]
 
 SEASON  =  PARAMS_ENV['SEASON']
@@ -104,7 +104,7 @@ def season2():
 
 def season1_nn(name = ''):
     agent.load(path + '/nets',name)
-    score = get_score(1,agent,sim)
+    score = get_score(1,agent,sim) #El 1 significa temporada 1 s
     save_score(path,score,'nn' + name)
 
 def expert_control():
