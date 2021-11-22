@@ -3,7 +3,7 @@ import numpy as np
 from ModMod import Module, Director
 from .functions import * 
 from scipy.stats import norm
-from .constants import STATE_VARS, CONSTANTS
+from .constants import STATE_VARS, CONSTANTS, OTHER_CONSTANTS
 from .qh2o_rhs import Qh2o_rhs
 from .qco2_rhs import Qco2_rhs 
 from .qgas_rhs import Qgas_rhs
@@ -16,7 +16,7 @@ from .c1_rhs import C1_rhs
 C1, V1, T2, T1 = [struct.val for struct in STATE_VARS.values()]
 T_cal = CONSTANTS['T_cal'].val
 
-RANDOM = False
+RANDOM = OTHER_CONSTANTS['model_noise'].val
 
 class Module1(Module):
 
