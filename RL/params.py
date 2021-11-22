@@ -1,4 +1,5 @@
 import json
+from climate_model.constants import OTHER_CONSTANTS
 minutos = 60
 PARAMS_ENV = {'STEP': minutos/(24*60), \
               'TIME_MAX': 1, #Dias simulados\ 
@@ -45,6 +46,7 @@ all_params = {
             'PARAMS_ENV': PARAMS_ENV, \
             'PARAMS_TRAIN':PARAMS_TRAIN,\
             'PARAMS_SIM':PARAMS_SIM, \
+            'MODEL_NOISE':OTHER_CONSTANTS['model_noise'].val,\
             'CONTROLS': CONTROLS}
             
 def save_params(dicc,path):
