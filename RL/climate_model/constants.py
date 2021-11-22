@@ -10,7 +10,7 @@ ok = 'OK'
 # from .constants import ALPHA, BETA, GAMMA, DELTA, EPSIL, ETA, LAMB, RHO, TAU, NU, PHI, PSI, OMEGA
 #theta = np.array([3000, 20, 7.2*(10**4)]) # psi2 = 7.2*(10**4)
 nrec = 1
-
+MODEL_NOISE = False
 
 ################## Constants ##################
 OTHER_CONSTANTS = {     
@@ -26,7 +26,8 @@ OTHER_CONSTANTS = {
     'sigma':     Struct(typ='Cnts', varid='sigma', prn=r'$\sigma$',
                     desc="Stefan-Boltzmann constant", units=W * m**-2 * K**-4, val=5.670e-8, ok=ok), # Constante de Stefan-Boltzmann (W m−2)
     'etadrain':  Struct(typ='Cnts', varid='etadrain', prn=r'$\eta_{drain}$',
-                    desc="Missing", units=1, val=30, ok='falta descripción y unidades')
+                    desc="Missing", units=1, val=30, ok='falta descripción y unidades'),
+    'model_noise': Struct(val = MODEL_NOISE,ok = 'Controla si se agrega o no aleatoriedad al modelo')
 }
 
 
