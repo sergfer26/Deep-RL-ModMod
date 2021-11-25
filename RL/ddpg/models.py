@@ -13,7 +13,7 @@ class Critic(nn.Module):
             self.hidden.append(nn.Linear(h_sizes[k], h_sizes[k+1]))
         
         # Aplicaremos batch norm en la salida de la primera capa
-        #self.bn = nn.BatchNorm1d(num_features=h_sizes[1]) 
+        self.bn = nn.BatchNorm1d(num_features=h_sizes[1]) 
         self.out = nn.Linear(h_sizes[-1], 1)
 
     def forward(self, state, action):
@@ -21,8 +21,13 @@ class Critic(nn.Module):
         Params state and actions are torch tensors
         """
         x = torch.cat([state, action], 1)
-        for layer in enumerate(self.hidden):
-            x = F.relu(layer(x))
+        for i, layer in enumerate(self.hidden):
+            if i == 0:
+                x = self.bn(layer(x))
+            else: 
+                x = layer(x)
+            x = F.relu(x)
+
         x = self.out(x)
         return x
 
@@ -35,7 +40,7 @@ class Actor(nn.Module):
             self.hidden.append(nn.Linear(h_sizes[k], h_sizes[k+1]))
 
         # Aplicaremos batch norm en la salida de la primera capa
-        #self.bn = nn.BatchNorm1d(num_features=h_sizes[1]) 
+        self.bn = nn.BatchNorm1d(num_features=h_sizes[1]) 
         self.out = nn.Linear(h_sizes[-1], output_size)
         
     def forward(self, state):
@@ -45,8 +50,12 @@ class Actor(nn.Module):
 
         x = state
         # import pdb; pdb.set_trace()
-        for layer in enumerate(self.hidden):
-            x = F.relu(layer(x))
+        for i, layer in enumerate(self.hidden):
+            if i == 0:
+                x = self.bn(layer(x))
+            else: 
+                x = layer(x)
+            x = F.relu(x)
 
         x = torch.sigmoid(self.out(x))
         return x

@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, timezone
 from time import time
 from simulation_date import get_index
-#from progressbar import*
+from tqdm import tqdm
 from trainRL import STEPS, action_dim, sim
 from baseline_policy import agent_baseline
 from matplotlib import pyplot as plt
@@ -18,14 +18,16 @@ SHOW = PARAMS_TRAIN['SHOW']
 PATH = 'Simulaciones/'+ date() 
 pathlib.Path(PATH+'/images').mkdir(parents=True, exist_ok=True)
 env = GreenhouseEnv()
+
+#agent = agent_baseline()
+
+####NN control 
 agent = DDPGagent(env)
-agent.load('results_ddpg/11_11_2245/nets')
+agent.load('results_ddpg/8_17_1848/nets','_1000')
 
 
 def sim_pid(agent, env, indice = 0):
     dt = 60/minutos
-    #pbar = ProgressBar(maxval=STEPS)
-    #pbar.start()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -34,22 +36,24 @@ def sim_pid(agent, env, indice = 0):
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
     A = np.zeros((STEPS, action_dim))
     episode_reward = 0.0
-    for step in range(STEPS):
-        #pbar.update(step)
-        if step % dt == 0:
-            indice1 = step/dt # una hora
-        action = np.zeros(11) if step == 0 else agent.get_action(indice1, env)
-        new_state, reward, done = env.step(action)
-        episode_reward += reward
-        C1, RH, T2, PAR, h, n = state
-        T1 = env.dirClimate.V('T1'); V1 = env.dirClimate.V('V1')
-        S_climate[step, :] = np.array([T1, T2, V1, C1]) 
-        H = env.dirGreenhouse.V('H'); NF= env.dirGreenhouse.V('NF')
-        S_data[step, :] = np.array([RH, PAR])
-        S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
-        A[step, :] = action
-        state = new_state
-    #pbar.finish()
+    with tqdm(total=STEPS, position=0) as pbar:
+        for step in range(STEPS):
+            #pbar.update(step)
+            if step % dt == 0:
+                indice1 = step/dt # una hora
+            action = np.zeros(11) if step == 0 else agent.get_action(indice1, env)
+            new_state, reward, done = env.step(action)
+            episode_reward += reward
+            C1, RH, T2, PAR, h, n = state
+            T1 = env.dirClimate.V('T1'); V1 = env.dirClimate.V('V1')
+            S_climate[step, :] = np.array([T1, T2, V1, C1]) 
+            H = env.dirGreenhouse.V('H'); NF= env.dirGreenhouse.V('NF')
+            S_data[step, :] = np.array([RH, PAR])
+            S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
+            pbar.set_postfix(step='{}'.format(step))
+            pbar.update(1)
+            A[step, :] = action
+            state = new_state
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
 
@@ -61,7 +65,8 @@ def main():
     print('Buscando indice')
     save_params(all_params,PATH)
     date = datetime(y,m,d,h)
-    ind = get_index(data_inputs,date)
+    #ind = get_index(data_inputs,date)
+    ind = 12311
     S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = ind)
     start = df_inputs['Date'].iloc[0]
     final_indexes = compute_indexes(start,STEPS,env.frec)
@@ -70,6 +75,7 @@ def main():
     figure_prod(S_prod,final_indexes,PATH)
     figure_actions(A,final_indexes,PATH)
     figure_inputs(df_inputs,PATH)
+    print('Guardado en ',PATH)
     
 if __name__ == '__main__':
     main()
