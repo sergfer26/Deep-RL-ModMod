@@ -175,6 +175,7 @@ class agent_baseline():
         U[7] = control_u8(VPD, vpd_set)
         U[8] = control_u9(T_out[-1], vent_set, pband)
         U[9] = control_u10(C1_list, co2_set)     #Ultimos 5 min        U10
+        
         return U
 
     def get_straight_line(self, key, k):
