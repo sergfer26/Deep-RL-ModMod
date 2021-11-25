@@ -94,8 +94,8 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 def sim(agent, env, indice = 0):
     #Es necesario para benchmark
-    agent.actor.eval()
-    agent.critic.eval()
+    #agent.actor.eval()
+    #agent.critic.eval()
     state = env.reset() 
     start = env.i if indice == 0 else indice # primer indice de los datos
     env.i = start 
@@ -118,7 +118,7 @@ def sim(agent, env, indice = 0):
             S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
             A[step, :] = action
             state = new_state
-            pbar.set_postfix(step='{}'.format(step))
+            pbar.set_postfix(step='{}'.format(step),h = '{}'.format(h))
             pbar.update(1)
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
@@ -137,8 +137,8 @@ def main():
 
     Constants(PATH)
     save_params(all_params,PATH+'/output')
-    agent.actor.eval()
-    agent.critic.eval() 
+    #agent.actor.eval()
+    #agent.critic.eval() 
     
     rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
 
