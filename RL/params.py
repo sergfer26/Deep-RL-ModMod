@@ -1,10 +1,11 @@
 import json
 from climate_model.constants import OTHER_CONSTANTS
-minutos = 60
+minutos = 5
 PARAMS_ENV = {'STEP': minutos/(24*60), \
-              'TIME_MAX': 1, #Dias simulados\ 
+              'TIME_MAX': 90, #Dias simulados\ 
               'FRECUENCY': 60, 
-              'SEASON':1}
+              'SEASON':2, \
+              'MINUTOS':minutos}
 
 #Para entrenamiento SEASON puede ser 1,2 o 'RANDOM'
 #Para benchmark y tournament es recomendable que sea 'RANDOM', pero no absolutamente necesario.
@@ -26,12 +27,12 @@ PARAMS_SIM = {'anio':2017,\
             }
             
 CONTROLS = {'u_1': 1, 
-            'u_2': 0, 
+            'u_2': 1, 
             'u_3': 0, 
             'u_4': 0,   
             'u_5': 0, 
             'u_6': 0, 
-            'u_7': 0, 
+            'u_7': 1, 
             'u_8': 1,  
             'u_9': 1, 
             'u_10': 1,
