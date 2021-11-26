@@ -240,7 +240,6 @@ def ESPECIAL1():
     plt.close()
 
 if __name__ == '__main__':
-    pass
     #expert_control()
     season1_nn('')
     violin_reward('nn') ##puede ser nn ó expert
