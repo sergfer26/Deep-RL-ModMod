@@ -15,7 +15,7 @@ PARAMS_TRAIN = {'EPISODES': 1000, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
                 'BATCH_SIZE': 128, \
                 'SHOW': False, \
-                'SERVER':True, \
+                'SERVER':False, \
                 'INDICE': 0, # Cuando es distinto de 0, fija un indice para simular
                 'SAVE_FREQ': 1000
                 } 
@@ -28,10 +28,10 @@ PARAMS_SIM = {'anio':2017,\
             
 CONTROLS = {'u_1': 1, 
             'u_2': 1, 
-            'u_3': 0, 
-            'u_4': 0,   
-            'u_5': 0, 
-            'u_6': 0, 
+            'u_3': 1, 
+            'u_4': 1,   
+            'u_5': 1, #No hace nada por los parametros
+            'u_6': 1, 
             'u_7': 1, 
             'u_8': 1,  
             'u_9': 1, 
