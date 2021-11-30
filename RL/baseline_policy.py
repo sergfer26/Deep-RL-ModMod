@@ -31,17 +31,6 @@ VENTSET2  = PARAMS_CONTROL['VENTSET2']
 NIGHT_PAR = PARAMS_CONTROL['NIGHT_PAR']
 OTHER_PAR = PARAMS_CONTROL['OTHER_PAR']
 
-def set_point_t2(self, par):
-    if par[-1] < PAR_NIGHT:
-        self.heatset = 16
-    else:
-        self.heatset = 20
-            
-def set_point_co2(self,state):
-        if state[3] > 5:
-            self.co2 = 900
-        else:
-            self.co2 = 400
 
 PBAND1    = PARAMS_CONTROL['PBAND1']
 PBAND2    = PARAMS_CONTROL['PBAND2']
@@ -153,9 +142,10 @@ def control_u8(vpd, vpd_set):
 
 
 class agent_baseline():
-    def __init__(self):
+    def __init__(self,agent = None):
         self.i       = 0
-        self.reset()
+        self.reset() 
+        self.agent = agent 
 
     def get_action(self, i, env):
         par   = self.get_straight_line('I2',i)
@@ -166,16 +156,19 @@ class agent_baseline():
         T2_list = np.array([float(y) for y in env.daily_T2[-5:]])
         C1_list = np.array([float(y) for y in env.daily_C1[-5:]])
         V1_list = np.array([float(y) for y in env.daily_V1[-5:]])
-        pband = set_pband(T_out[-1], Vel[-1])
 
-        vpd_set, vent_set, heat_set, co2_set = set_varset(par[-1])
-        VPD = np.array(list(map(lambda t1,v1:q2(t1) - v1, T1_list, V1_list)))
-        U[0] = control_u1(par[-1], T_out[-1]) #U1
-        U[3] = control_u4(T2_list, heat_set) #Ultimos 5 min        U4
-        U[7] = control_u8(VPD, vpd_set)
-        U[8] = control_u9(T_out[-1], vent_set, pband)
-        U[9] = control_u10(C1_list, co2_set)     #Ultimos 5 min        U10
-        
+        if self.agent != None:
+            pband = set_pband(T_out[-1], Vel[-1])
+            vpd_set, vent_set, heat_set, co2_set = set_varset(par[-1])
+            VPD = np.array(list(map(lambda t1,v1:q2(t1) - v1, T1_list, V1_list)))
+            U[0] = control_u1(par[-1], T_out[-1])         # U1(pantalla termica) 
+            U[3] = control_u4(T2_list, heat_set)          # U4(Calentador de Aire) Ultimos 5 min PID
+            U[7] = control_u8(VPD, vpd_set)               # U8(Respiraderos del techo) 
+            U[8] = control_u9(T_out[-1], vent_set, pband) # U9(Sistema de Niebla) PID
+            U[9] = control_u10(C1_list, co2_set)          # U10(Fuente de CO2)  Ultimos 5 min PID
+        else:
+            pass
+            ### Aqui van las acciones(set_points) que vienen de la red 
         return U
 
     def get_straight_line(self, key, k):
