@@ -19,11 +19,11 @@ PATH = 'Simulaciones/'+ date()
 pathlib.Path(PATH+'/images').mkdir(parents=True, exist_ok=True)
 env = GreenhouseEnv()
 
-#agent = agent_baseline()
+agent = agent_baseline()
 
-####NN control 
-agent = DDPGagent(env)
-agent.load('results_ddpg/8_17_1848/nets','_1000')
+#NN control 
+#agent = DDPGagent(env)
+#agent.load('results_ddpg/8_17_1848/nets','_1000')
 
 
 def sim_pid(agent, env, indice = 0):
@@ -67,7 +67,7 @@ def main():
     date = datetime(y,m,d,h)
     #ind = get_index(data_inputs,date)
     ind = 12311
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = ind)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim_pid(agent, env, indice = ind)
     start = df_inputs['Date'].iloc[0]
     final_indexes = compute_indexes(start,STEPS,env.frec)
     figure_state(S_climate,final_indexes,PATH)
