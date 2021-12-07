@@ -6,7 +6,7 @@ from time import time
 from gym import spaces
 import matplotlib.pyplot as plt
 from climate_model.model import Climate_model
-from solver_prod import GreenHouse
+from solver_prod import I_2, GreenHouse
 from get_indexes import Indexes
 from params import PARAMS_ENV,CONTROLS
 
@@ -96,6 +96,7 @@ class GreenhouseEnv(gym.Env):
 
     def step(self, action):
         action = self.remap(action)
+        #breakpoint()
         if np.isnan(list(self.state.values())).any():
             breakpoint()
         self.dirClimate.update_controls(action)
@@ -109,7 +110,22 @@ class GreenhouseEnv(gym.Env):
             T2.append(self.dirClimate.OutVar('T2')) 
             T1.append(self.dirClimate.OutVar('T1')) 
             V1.append(self.dirClimate.OutVar('V1'))
+        if self.frec*(self.i + 1)% 60 == 0:
+            ##Paso una hora 
+            I2  = data_inputs.I2[self.i_hour]
+            I5  = data_inputs.I5[self.i_hour]
+            I8  = data_inputs.I8[self.i_hour]
+            I14 = data_inputs.I14[self.i_hour]
+            RH  = data_inputs.RH[self.i_hour]
 
+            self.dirClimate.Vars['I2'].val  = I2    #Radiacion Global
+            self.dirClimate.Vars['I5'].val  = I5    #Temperatura externa
+            self.dirClimate.Vars['I8'].val  = I8    #Velocidad del Viento
+            self.dirClimate.Vars['I14'].val = I14  #Radiacion Global
+            #self.dirClimate.Vars['RH'].val  = RH    #Radiacion global por encima del dosel
+            self.i_hour += 1 
+            self.i_hour = self.i_hour%self.limit
+            pass
         reward = self.reward_cost(self.vars_cost) #Aqui tambien se actualizan las listas de costos
         self.Qvar_dic['G'].append(0)
         self.reset_cost(self.vars_cost)
@@ -144,6 +160,7 @@ class GreenhouseEnv(gym.Env):
     
     def _reset(self):
         self.i = self.set_index()
+        self.i_hour = self.i
         self.dirClimate.reset()
         self.dirGreenhouse.reset()
         T = self.dirClimate.V('T2')
@@ -208,4 +225,3 @@ class GreenhouseEnv(gym.Env):
 if __name__ == '__main__':
     env = GreenhouseEnv()
     env.n_random_actions(240) #30 díasas
-
