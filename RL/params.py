@@ -27,16 +27,16 @@ PARAMS_SIM = {'anio':2017,\
             }
             
 CONTROLS = {'u_1': 1, 
-            'u_2': 0, 
-            'u_3': 0, 
+            'u_2': 1, 
+            'u_3': 1, 
             'u_4': 1,   
-            'u_5': 0, #No hace nada por los parametros
-            'u_6': 0, 
-            'u_7': 0, 
+            'u_5': 1, #No hace nada por los parametros
+            'u_6': 1, 
+            'u_7': 1, 
             'u_8': 1,  
             'u_9': 1, 
             'u_10': 1,
-            'u_11': 0, 
+            'u_11': 1, 
             }
 f = open ('ddpg/parametros.json', "r")
 parametros_ddpg = json.loads(f.read())
