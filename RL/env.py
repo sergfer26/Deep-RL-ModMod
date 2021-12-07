@@ -125,7 +125,7 @@ class GreenhouseEnv(gym.Env):
             #self.dirClimate.Vars['RH'].val  = RH    #Radiacion global por encima del dosel
             self.i_hour += 1 
             self.i_hour = self.i_hour%self.limit
-            pass
+            
         reward = self.reward_cost(self.vars_cost) #Aqui tambien se actualizan las listas de costos
         self.Qvar_dic['G'].append(0)
         self.reset_cost(self.vars_cost)
