@@ -157,7 +157,7 @@ class agent_baseline():
         C1_list = np.array([float(y) for y in env.daily_C1[-5:]])
         V1_list = np.array([float(y) for y in env.daily_V1[-5:]])
 
-        if self.agent != None:
+        if self.agent == None:
             pband = set_pband(T_out[-1], Vel[-1])
             vpd_set, vent_set, heat_set, co2_set = set_varset(par[-1])
             VPD = np.array(list(map(lambda t1,v1:q2(t1) - v1, T1_list, V1_list)))
