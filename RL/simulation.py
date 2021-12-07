@@ -22,11 +22,11 @@ pathlib.Path(PATH+'/reports').mkdir(parents=True, exist_ok=True)
 pathlib.Path(PATH+'/data').mkdir(parents=True, exist_ok=True)
 env = GreenhouseEnv()
 
-#agent = agent_baseline()
+agent = agent_baseline()
 
 #NN control 
-agent = DDPGagent(env)
-agent.load('results_ddpg/8_17_1848/nets','_1000')
+#agent = DDPGagent(env)
+#agent.load('results_ddpg/8_17_1848/nets','_1000')
 
 
 def sim_pid(agent, env, indice = 0):
@@ -72,7 +72,7 @@ def main():
     date = datetime(y,m,d,h)
     #ind = get_index(data_inputs,date)
     ind = 12311
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice = ind)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim_pid(agent, env, indice = ind)
     start = df_inputs['Date'].iloc[0]
     final_indexes = compute_indexes(start,STEPS,env.frec)
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
