@@ -5,7 +5,7 @@ from .functions import f1, f2, f3, f4, f5, f6, f7
 from .functions import o1, o2, o3, o4, o5, o6 
 from .functions import h6, n1, n2, n3
 from .functions import kappa4
-
+from .functions import Amg
 
 # Symbolic use of base phisical units
 mt = symbols('mt')
@@ -75,5 +75,6 @@ class C1_rhs(StateRHS):
                  I13=self.V('I13'), psi3=self.V('psi3'))
         o_5 = o5(C1=self.Vk('C1'), I10=self.V(
             'I10'), f2=f_2, f3=f_3, f4=f_4)
-        o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') )
+        #o_6 = o6( C1=self.Vk('C1'), omega3=self.V('omega3') ) #Esta funcion tiene problemas
+        o_6 = Amg(C=self.Vk('C1'),PAR = self.V('I2'))
         return (kappa_4**-1)*(o_1 + o_2 + o_3 - o_4 - o_5  - o_6)
