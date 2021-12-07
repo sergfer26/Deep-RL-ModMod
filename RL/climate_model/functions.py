@@ -33,6 +33,50 @@ def o5(C1, I10, f2, f3, f4):
 def o6 (C1, omega3):
     return omega3*C1
 
+def A(C,I, alpha_R=0.0625, beta_R=-4, alpha_f=0.0622,beta_a=30):
+    '''
+    Units 
+    [ A ] = mu_mol m**-2 s**-1
+    [ I ] = mu_mol m**-2 s**-1
+    [ C ] = mu_bar = ppm
+
+    Values:
+    alpha_R =  (20+5)/400 = 0.0625 (Fig 7 (b) ajuste lineal)
+    beta_R = -4 mu_mol m**-2 s**-1 (Fig 1) 
+    alpha_f = 0.0622 (Fig 8)
+    beta_a = 30 mu_mol m**-2 s**-1 (Fig 7 (a) and (b) )
+
+    Source: Yin, X. & Struik, P.C.,  C3 and C4 photosynthesis 
+    models: An overview from the perspective of crop modelling, 
+    Wageningen Journal of Life Sciences, 2009/12/01, 
+    https://doi.org/10.1016/j.njas.2009.07.001 
+
+    '''
+    return min([alpha_R*C+beta_R,alpha_f*I,beta_a])
+
+def Amg(C,PAR,I_1=2,phi_2=4):
+    '''
+    Recieve (C, PAR) return Assimiltaes in mg m**-2 s**-1)
+     Transformation:
+    [ A in mgCO2/(m**2 s) ] = 0.044[ A in mu_mol m**-2 s**-1 ] 
+    factor_conversion = 0.044
+    PAR: 1 mu_mol/m**-2 s**-1 = 0.217 W/m^2
+
+    1 ppm CO2 =  0.553 mg/m^3
+
+
+    In terms of greenhouse  
+    m^2 -> 1ppm CO2 = (0.553 mg/m^3)x(greenhouse height )
+     
+    I_1 Leaf Area Index
+    phi_2 = altura del invernadero
+    '''
+
+    Cppm = C/(0.553*phi_2)
+    I = PAR/0.217
+    factor_conversion = 0.044
+    return I_1*factor_conversion*A(Cppm,I)
+
 
 def kappa3(T2, psi1, phi2, omega2):
     return (psi1*phi2) / (omega2*(T2+273.15))
@@ -96,10 +140,12 @@ def q1(I1, rho3, alpha5, gamma, gamma2, gamma3, q3):
 def q2(T1):
     try:
         if (T1 > 0):
-            return 0.61121*exp((18.678 - (T1/234.5)) * (T1/(257.14+T1)))
+            return 611.21*exp((18.678 - (T1/234.5)) * (T1/(257.14+T1)))
         else:
-            return 0.61115*exp((23.036 - (T1/333.7)) * (T1/(279.82+T1)))
+            return 611.15*exp((23.036 - (T1/333.7)) * (T1/(279.82+T1)))
     except:
+        print('Que paso?')
+        breakpoint()
         return 14
 
 
@@ -231,9 +277,9 @@ def n3(U5, nu2, eta11):
 
 def q6(I6):
     if (I6 > 0):
-        return 0.61121*exp((18.678 - (I6/234.5)) * (I6/(257.14+I6)))
+        return 611.21*exp((18.678 - (I6/234.5)) * (I6/(257.14+I6)))
     else:
-        return 0.61115*exp((23.036 - (I6/333.7)) * (I6/(279.82+I6)))
+        return 611.15*exp((23.036 - (I6/333.7)) * (I6/(279.82+I6)))
 
 
 def r9(I2, alpha8, alpha9, eta2, eta3):
