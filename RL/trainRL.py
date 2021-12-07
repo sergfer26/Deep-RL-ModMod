@@ -118,7 +118,7 @@ def sim(agent, env, indice = 0):
             S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
             A[step, :] = action
             state = new_state
-            pbar.set_postfix(step='{}'.format(step),h = '{}'.format(h))
+            pbar.set_postfix(step='{}'.format(step),V1 = '{}'.format(V1))
             pbar.update(1)
     data_inputs = env.return_inputs_climate(start)
     return S_climate, S_data, S_prod, A, data_inputs,start
