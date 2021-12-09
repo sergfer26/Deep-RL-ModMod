@@ -83,7 +83,7 @@ def integral(X):
     
 def control(error, kp, ki, kd, I, d):
     PID = pid(error, kp, ki, kd, I, d)
-    return 0.001 * max(min(PID, 100), 0)
+    return 0.01 * max(min(PID, 100), 0)
 
 
 def control_u1(par, T_out):
@@ -115,6 +115,7 @@ def control_u10(x, set_):
         control_u10.old_error = error
     d = error - control_u10.old_error
     control_u10.old_error = error
+    #breakpoint()
     return control(error, KP10, KI10, KD10, I, d)
 
 
@@ -162,10 +163,14 @@ class agent_baseline():
             vpd_set, vent_set, heat_set, co2_set = set_varset(par[-1])
             VPD = np.array(list(map(lambda t1,v1:q2(t1) - v1, T1_list, V1_list)))
             U[0] = control_u1(par[-1], T_out[-1])         # U1(pantalla termica) 
-            U[3] = control_u4(T2_list, heat_set)          # U4(Calentador de Aire) Ultimos 5 min PID
             U[7] = control_u8(VPD, vpd_set)               # U8(Respiraderos del techo) 
             U[8] = control_u9(T_out[-1], vent_set, pband) # U9(Sistema de Niebla) PID
+            U[10] = control_u4(T2_list, heat_set)          # U11(Calentador de Aire) Ultimos 5 min PID
+            #Hace falta parar el CO2 mg*m^3 a ppm 
+            
+            C1_list = np.array([(24.45* x)/44.01 for x in list(C1_list)])
             U[9] = control_u10(C1_list, co2_set)          # U10(Fuente de CO2)  Ultimos 5 min PID
+            U[9] = 0
         else:
             pass
             ### Aqui van las acciones(set_points) que vienen de la red 
