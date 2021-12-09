@@ -275,18 +275,13 @@ INPUTS ={
     'I7' : Struct(typ='Cnts', varid='I7', prn=r'$I_7$',
                     desc="Soil temperature", units=C, val=18, ok = 'Valor de España'),  
     'I8' : Struct(typ='State', varid='I8', prn=r'$I_8$',
-                    desc="Outdoor wind speed", units=m * s**-1, val=3.2, ok = 'Sin comentario'),     
-    'I9' : Struct(),
+                    desc="Outdoor wind speed", units=m * s**-1, val=3.2, ok = 'Sin comentario'),         
+    'I9' : Struct(typ='State', varid='I9', prn=r'$\I_{9}$',
+                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario'),
     'I10' : Struct(typ='Cnts', varid='I10', prn=r'$I_{10}$',
-                    desc="Outdoor CO2 concentration", units=mg * m**-3, val = 668,ok = '668 mg/m**3 (370 ppm);'),    
+                    desc="Outdoor CO2 concentration", units=mg * m**-3, val = 668,ok = '668 mg/m**3 (370 ppm);'),
     'I11' : Struct(typ='Cnts', varid='I11', prn=r'$I_{11}$',
-                    desc="Inhibition of the rate of photosynthesis by saturation of the leaves with carbohydrates", units=1, val=0, ok = 'Falta valor y unidades'),     
-    'I12' : Struct(typ='Cnts', varid='I12', prn=r'$I_{12}$',
-                    desc="Crude canopy photosynthesis rate", units=1, val=0,ok = 'Falta valor y unidades'),     
-    'I13' : Struct(typ='Cnts', varid='I13', prn=r'$I_{13}$',
-                    desc="Photorespiration during photosynthesis", units=1, val=0,ok = 'Falta valor y unidades'),      # FALTA VALOE Photorespiration during photosynthesis
-    'I14' : Struct(typ='State', varid='I14', prn=r'$\I_{14}$',
-                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario')
+                    desc= "external air vapor pressure ", units= Pa, val = 668,ok = 'Hay que calcularla,valor inicial incorrecto'),
 }
 
 
