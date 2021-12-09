@@ -2,6 +2,5 @@ Prueba*
 RL/__pycache__/
 ddpg/__pycache__/
 RL/results_ddpg/
-RL/Inputs_Bleiswijk.csv
 RL/Agent*
 RL/params_correo.py
