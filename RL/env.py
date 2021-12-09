@@ -20,7 +20,7 @@ HIGH_ACTION    = np.ones(DIM_ACTIONS_ON)
 STEP           = PARAMS_ENV['STEP']  # día / # de pasos por día
 TIME_MAX       = PARAMS_ENV['TIME_MAX'] # días  
 data_inputs    = pd.read_csv('Inputs_Bleiswijk.csv')
-INPUT_NAMES    = list(data_inputs.columns)[0:-2]
+INPUT_NAMES    = ['I2', 'I5', 'I8', 'I9']
 SAMPLES        = len(data_inputs) 
 FRECUENCY      = PARAMS_ENV['FRECUENCY'] # Frecuencia de medición de inputs del modelo del clima (minutos)
 SEASON         = PARAMS_ENV['SEASON'] # Puede ser 'RANDOM'
@@ -115,13 +115,15 @@ class GreenhouseEnv(gym.Env):
             I2  = data_inputs.I2[self.i_hour]
             I5  = data_inputs.I5[self.i_hour]
             I8  = data_inputs.I8[self.i_hour]
-            I14 = data_inputs.I14[self.i_hour]
-            RH  = data_inputs.RH[self.i_hour]
+            I9 = data_inputs.I9[self.i_hour]
+            I11  = data_inputs.I11[self.i_hour]
 
             self.dirClimate.Vars['I2'].val  = I2    #Radiacion Global
             self.dirClimate.Vars['I5'].val  = I5    #Temperatura externa
             self.dirClimate.Vars['I8'].val  = I8    #Velocidad del Viento
-            self.dirClimate.Vars['I14'].val = I14  #Radiacion Global
+            self.dirClimate.Vars['I9'].val = I9  #Radiacion Global
+            self.dirClimate.Vars['I11'].val = I11
+
             #self.dirClimate.Vars['RH'].val  = RH    #Radiacion global por encima del dosel
             self.i_hour += 1 
             self.i_hour = self.i_hour%self.limit
