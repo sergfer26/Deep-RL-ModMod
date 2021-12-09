@@ -1,19 +1,20 @@
 from ModMod import StateRHS
 from sympy import symbols
-from .constants import CONSTANTS, INPUTS, STATE_VARS, CONTROLS, FUNCTIONS
+from .constants import CONSTANTS, INPUTS, STATE_VARS, CONTROLS, FUNCTIONS,V1_CONTROLS
 from .functions import q1, q2, q3, q4, q5, q6, q7, q8, q9, q10
 from .functions import f1, f2, f3, f4, f5, f6, f7
 from .functions import p1, p2, p3, p4, p5, p6, p7
 from .functions import n1, n2, n3
 from .functions import h3, h6
 from .functions import kappa3
+import numpy as np
 
 
 mt = symbols('mt') 
 
 state_names = ['T1', 'V1', 'T2', 'C1']
 control_names = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7', 'U8', 'U9']
-input_names = ['I8', 'I5', 'I6', 'I1', 'I14']
+input_names = ['I8', 'I5', 'I6', 'I1', 'I11']
 function_names = ['h6', 'f1', 'p1', 'p2', 'p3', 'q1', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8', 'q9', 'q10']
 constant_names = ['lamb4', 'alpha6', 'phi7', 'eta6', 'eta7', 'eta8', 'phi8', 'nu4', 'nu5',
                             'omega1', 'nu6', 'lamb1', 'lamb3', 'gamma2', 'nu1', 'eta10', 'nu3', 
@@ -83,9 +84,12 @@ class V1_rhs(StateRHS):
         kappa_3 = kappa3(T2=self.Vk('T2'), psi1=self.V(
             'psi1'), phi2=self.V('phi2'), omega2=self.V('omega2'))
         p_4 = p4(eta12=self.V('eta12'), h6=h_6)
-        p_5 = p5(T2=self.Vk('T2'), V1=self.Vk('V1'), I5=self.V('I5'), psi1=self.V(
+        p_5 = p5(T2=self.Vk('T2'), V1=self.Vk('V1'), I5=self.V('I5'),I11=self.V('I11'),psi1=self.V(
             'psi1'), omega2=self.V('omega2'), f2=f_2, f3=f_3, f4=f_4)
         p_6 = p6(T2=self.Vk('T2'), V1=self.Vk('V1'), psi1=self.V(
             'psi1'), omega2=self.V('omega2'), f1=f_1)
         p_7 = p7(V1=self.Vk('V1'), h3=h_3, q6=q_6)
+        P = [p_1,p_2,p_3,p_4,p_5,p_6,p_7]
+        P = P * np.array([V1_CONTROLS[name_].val for name_ in list(V1_CONTROLS)])
+        p_1,p_2,p_3,p_4,p_5,p_6,p_7 = P
         return (kappa_3**-1)*(p_1 + p_2 + p_3 + p_4 - p_5 - p_6 - p_7)

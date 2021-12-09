@@ -107,7 +107,7 @@ def figure_actions(A,final_indexes,PATH):
     title = 'Controles' # $U$
     dfa.index = final_indexes
     ax = dfa.plot(subplots=True, layout=(int(np.ceil(len(ON_ACTIONS) / 2)), 2), figsize=(10, 7), title=title) 
-    for a in ax.tolist():a[0].set_ylim(0,1);a[1].set_ylim(0,1)
+    for a in ax.tolist():a[0].set_ylim(-0.1,1.1);a[1].set_ylim(-0.1,1.1)
     plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
@@ -118,6 +118,7 @@ def figure_actions(A,final_indexes,PATH):
 
 def figure_inputs(df_inputs,PATH):
     df_inputs.index = df_inputs['Date']
+    df_inputs.drop('Date', inplace=True, axis=1)
     ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
     ax[0].set_ylabel('$W*m^{2}$')
     ax[1].set_ylabel('C')

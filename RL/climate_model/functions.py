@@ -33,6 +33,50 @@ def o5(C1, I10, f2, f3, f4):
 def o6 (C1, omega3):
     return omega3*C1
 
+def A(C,I, alpha_R=0.0625, beta_R=-4, alpha_f=0.0622,beta_a=30):
+    '''
+    Units 
+    [ A ] = mu_mol m**-2 s**-1
+    [ I ] = mu_mol m**-2 s**-1
+    [ C ] = mu_bar = ppm
+
+    Values:
+    alpha_R =  (20+5)/400 = 0.0625 (Fig 7 (b) ajuste lineal)
+    beta_R = -4 mu_mol m**-2 s**-1 (Fig 1) 
+    alpha_f = 0.0622 (Fig 8)
+    beta_a = 30 mu_mol m**-2 s**-1 (Fig 7 (a) and (b) )
+
+    Source: Yin, X. & Struik, P.C.,  C3 and C4 photosynthesis 
+    models: An overview from the perspective of crop modelling, 
+    Wageningen Journal of Life Sciences, 2009/12/01, 
+    https://doi.org/10.1016/j.njas.2009.07.001 
+
+    '''
+    return min([alpha_R*C+beta_R,alpha_f*I,beta_a])
+
+def Amg(C,PAR,I_1=2,phi_2=4):
+    '''
+    Recieve (C, PAR) return Assimiltaes in mg m**-2 s**-1)
+     Transformation:
+    [ A in mgCO2/(m**2 s) ] = 0.044[ A in mu_mol m**-2 s**-1 ] 
+    factor_conversion = 0.044
+    PAR: 1 mu_mol/m**-2 s**-1 = 0.217 W/m^2
+
+    1 ppm CO2 =  0.553 mg/m^3
+
+
+    In terms of greenhouse  
+    m^2 -> 1ppm CO2 = (0.553 mg/m^3)x(greenhouse height )
+     
+    I_1 Leaf Area Index
+    phi_2 = altura del invernadero
+    '''
+
+    Cppm = C/(0.553*phi_2)
+    I = PAR/0.217
+    factor_conversion = 0.044
+    return I_1*factor_conversion*A(Cppm,I)
+
 
 def kappa3(T2, psi1, phi2, omega2):
     return (psi1*phi2) / (omega2*(T2+273.15))
@@ -50,8 +94,8 @@ def p4(eta12, h6):
     return eta12*h6
 
 
-def p5(T2, V1, I5, psi1, omega2, f2, f3, f4):
-    return (psi1/omega2)*((V1/(T2+273.15)) - (I5/(I5+273.15)))*(f2 + f3 + f4)
+def p5(T2, V1, I5,I11, psi1, omega2, f2, f3, f4):
+    return (psi1/omega2)*((V1/(T2+273.15)) - (I11/(I5+273.15)))*(f2 + f3 + f4)
 
 
 def p6(T2, V1, psi1, omega2, f1):
@@ -94,16 +138,14 @@ def q1(I1, rho3, alpha5, gamma, gamma2, gamma3, q3):
 
 
 def q2(T1):
-    try:
-        if (T1 > 0):
-            return 0.61121*exp((18.678 - (T1/234.5)) * (T1/(257.14+T1)))
-        else:
-            return 0.61115*exp((23.036 - (T1/333.7)) * (T1/(279.82+T1)))
-    except:
-        return 14
+    if (T1 > 0):
+        return 611.21*exp((18.678 - (T1/234.5)) * (T1/(257.14+T1)))
+    else:
+        return 611.15*exp((23.036 - (T1/333.7)) * (T1/(279.82+T1)))
 
 
-def q3(I14, gamma4, q4, q5, q10):
+
+def q3(I9, gamma4, q4, q5, q10):
     return gamma4*q10*q4*q5
 
 
@@ -115,8 +157,8 @@ def q5(V1, q2, q9):
     return 1 + q9*((q2 - V1)**2)
 
 
-def q7(I14, delta1, gamma5):
-    return (1 + exp(gamma5*(I14 - delta1)))**-1
+def q7(I9, delta1, gamma5):
+    return (1 + exp(gamma5*(I9 - delta1)))**-1
 
 
 def q8(delta4, delta5, q7):
@@ -127,8 +169,8 @@ def q9(delta6, delta7, q7):
     return delta6*(1 - q7) + delta7*q7
 
 
-def q10(I14, delta2, delta3):
-    return (I14 + delta2)/(I14 + delta3)
+def q10(I9, delta2, delta3):
+    return (I9 + delta2)/(I9 + delta3)
 
 
 ### functions of this RHS ###
@@ -231,9 +273,9 @@ def n3(U5, nu2, eta11):
 
 def q6(I6):
     if (I6 > 0):
-        return 0.61121*exp((18.678 - (I6/234.5)) * (I6/(257.14+I6)))
+        return 611.21*exp((18.678 - (I6/234.5)) * (I6/(257.14+I6)))
     else:
-        return 0.61115*exp((23.036 - (I6/333.7)) * (I6/(279.82+I6)))
+        return 611.15*exp((23.036 - (I6/333.7)) * (I6/(279.82+I6)))
 
 
 def r9(I2, alpha8, alpha9, eta2, eta3):
@@ -308,3 +350,7 @@ def h11(T2, I7, nu7, nu8, phi2):
 
 def H_Boil_Pipe(r6,h4):
     return max(r6 + h4,0)
+
+
+def presion_de_vapor_exterior(I5,RH):
+    return [q2(i5)*(rh/100.0) for i5,rh in zip(I5,RH)]

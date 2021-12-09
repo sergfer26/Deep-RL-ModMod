@@ -25,6 +25,7 @@ import copy
 from numpy import exp, floor, clip, arange, append
 from sympy import symbols
 from ModMod import Module, StateRHS, Director, ReadModule
+from sympy.utilities.iterables import bracelets
 
 ###########################
 ####### Símbolos  #########
@@ -143,7 +144,12 @@ def V_sa (T):
     basandose en la ecuación de Arden Buck. T es la temperatura del aire en °C.
     Ver: https://en.wikipedia.org/wiki/Arden_Buck_equation
     """
-    return 0.61121 * exp( ( 18.678 - (T/234.5) ) * ( T /(257.14 + T) ) )
+    #breakpoint()
+    if (T > 0):
+        return 611.21*exp((18.678 - T/234.5) * (T/(257.14+T)))
+    else:
+        return 611.15*exp((23.036 - (T/333.7) * (T/(279.82+T))))
+    #return 0.61121 * exp( ( 18.678 - (T/234.5) ) * ( T /(257.14 + T) ) )
 
 
 #### Cálculo del CO2 intracelular ####
@@ -488,6 +494,7 @@ class Ci_rhs(StateRHS):
         C_ev41 = C_ev4( C_ev4n=self.V('C_ev4n'), C_ev4d=self.V('C_ev4d'), Sr=Sr1 )
         V_sa1 = V_sa( T =self.V('T') ) # V1 -> nos interesa
         VPD1 = VPD( V_sa=V_sa1, RH=self.V('RH') )
+        #breakpoint()
         f_V1 = f_V( C_ev4=C_ev41, VPD = VPD1)
         R_s1 = r_s( r_m=self.V('r_m'), f_R=f_R1, f_C=f_C1, f_V=f_V1, k_d=self.V('k_d') ) 
         ## Cálculos absorción de CO2

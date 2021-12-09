@@ -1,8 +1,9 @@
+from typing import Tuple
 import numpy as np
 from ModMod import Module, Director
 from .functions import * 
 from scipy.stats import norm
-from .constants import STATE_VARS, CONSTANTS
+from .constants import STATE_VARS, CONSTANTS, OTHER_CONSTANTS
 from .qh2o_rhs import Qh2o_rhs
 from .qco2_rhs import Qco2_rhs 
 from .qgas_rhs import Qgas_rhs
@@ -15,6 +16,7 @@ from .c1_rhs import C1_rhs
 C1, V1, T2, T1 = [struct.val for struct in STATE_VARS.values()]
 T_cal = CONSTANTS['T_cal'].val
 
+RANDOM = OTHER_CONSTANTS['model_noise'].val
 
 class Module1(Module):
 
@@ -36,10 +38,16 @@ class Module1(Module):
         s2 = 0.1281  # Desviación estándar de V1
         s3 = 10  # Desviación estándar de C1
         # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
-        T1r = self.V('T1') + norm.rvs(scale=s1)
-        T2r = self.V('T2') + norm.rvs(scale=s1)
-        V1r = self.V('V1') + norm.rvs(scale=s2)
-        C1r = self.V('C1') + norm.rvs(scale=s3)
+        if RANDOM:
+            T1r = self.V('T1') + norm.rvs(scale=s1)
+            T2r = self.V('T2') + norm.rvs(scale=s1)
+            V1r = self.V('V1') + norm.rvs(scale=s2)
+            C1r = self.V('C1') + norm.rvs(scale=s3)
+        else:
+            T1r = self.V('T1') 
+            T2r = self.V('T2') 
+            V1r = self.V('V1') 
+            C1r = self.V('C1') 
         # Actualización de las variables
         self.V_Set('T1', T1r)
         self.V_Set('T2', T2r)
@@ -93,15 +101,15 @@ class Climate_model(Director):
         f_1 = f1(U2=self.V('U2'), phi7=self.V(
             'phi7'), alpha6=self.V('alpha6'))
         q_2 = q2(T1=self.V('T1')) #### Previously T1 = self.Vk('T1')
-        q_7 = q7(I14=self.V('I14'), delta1=self.V(
+        q_7 = q7(I9=self.V('I9'), delta1=self.V(
             'delta1'), gamma5=self.V('gamma5'))
         q_8 = q8(delta4=self.V('delta4'), delta5=self.V('delta5'), q7=q_7)
         q_9 = q9(delta6=self.V('delta6'), delta7=self.V('delta7'), q7=q_7)
         q_4 = q4(C1=self.V('C1'), eta4=self.V('eta4'), q8=q_8)
         q_5 = q5(V1=self.V('V1'), q2=q_2, q9=q_9)
-        q_10 = q10(I14=self.V('I14'), delta2=self.V(
+        q_10 = q10(I9=self.V('I9'), delta2=self.V(
             'delta2'), delta3=self.V('delta3'))
-        q_3 = q3(I14=self.V('I14'), gamma4=self.V(
+        q_3 = q3(I9=self.V('I9'), gamma4=self.V(
             'gamma4'), q4=q_4, q5=q_5, q10=q_10)
         q_1 = q1(I1=self.V('I1'), rho3=self.V('rho3'), alpha5=self.V('alpha5'), gamma=self.V(
             'gamma'), gamma2=self.V('gamma2'), gamma3=self.V('gamma3'), q3=q_3)

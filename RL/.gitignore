@@ -1,4 +1,4 @@
-*.csv
+Inputs_Bleiswijk_ant.csv
 *.xls
 runs/
 results_ddpg/
@@ -17,3 +17,6 @@ Solver.py
 params_correo.py
 another_graphics.py
 model*
+Simulaciones/
+BORRAR_CONSTANTES
+../.DS_Store

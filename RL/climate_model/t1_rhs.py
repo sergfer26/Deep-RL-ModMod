@@ -15,7 +15,7 @@ mt = symbols('mt')
 
 state_names = ['T1', 'V1', 'T2', 'C1']
 control_names = ['U1', 'U11']
-input_names = ['I1', 'I2', 'I3', 'I4', 'I14']
+input_names = ['I1', 'I2', 'I3', 'I4','I9']
 function_names = ['a1', 'r6', 'p1', 'q1', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8', 'q9', 'q10', 'g1']
 constant_names = ['beta3', 'tau3', 'beta1', 'rho1', 'beta2', 'rho2', 'eta1', 'eta2', 'tau1', 
                     'tau2', 'rho3', 'alpha5', 'gamma', 'gamma3', 'delta1', 'delta2', 'delta3',
