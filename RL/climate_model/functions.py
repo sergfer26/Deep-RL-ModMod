@@ -94,8 +94,8 @@ def p4(eta12, h6):
     return eta12*h6
 
 
-def p5(T2, V1, I5, psi1, omega2, f2, f3, f4):
-    return (psi1/omega2)*((V1/(T2+273.15)) - (I5/(I5+273.15)))*(f2 + f3 + f4)
+def p5(T2, V1, I5,I11, psi1, omega2, f2, f3, f4):
+    return (psi1/omega2)*((V1/(T2+273.15)) - (I11/(I5+273.15)))*(f2 + f3 + f4)
 
 
 def p6(T2, V1, psi1, omega2, f1):
@@ -138,18 +138,14 @@ def q1(I1, rho3, alpha5, gamma, gamma2, gamma3, q3):
 
 
 def q2(T1):
-    try:
-        if (T1 > 0):
-            return 611.21*exp((18.678 - (T1/234.5)) * (T1/(257.14+T1)))
-        else:
-            return 611.15*exp((23.036 - (T1/333.7)) * (T1/(279.82+T1)))
-    except:
-        print('Que paso?')
-        breakpoint()
-        return 14
+    if (T1 > 0):
+        return 611.21*exp((18.678 - (T1/234.5)) * (T1/(257.14+T1)))
+    else:
+        return 611.15*exp((23.036 - (T1/333.7)) * (T1/(279.82+T1)))
 
 
-def q3(I14, gamma4, q4, q5, q10):
+
+def q3(I9, gamma4, q4, q5, q10):
     return gamma4*q10*q4*q5
 
 
@@ -161,8 +157,8 @@ def q5(V1, q2, q9):
     return 1 + q9*((q2 - V1)**2)
 
 
-def q7(I14, delta1, gamma5):
-    return (1 + exp(gamma5*(I14 - delta1)))**-1
+def q7(I9, delta1, gamma5):
+    return (1 + exp(gamma5*(I9 - delta1)))**-1
 
 
 def q8(delta4, delta5, q7):
@@ -173,8 +169,8 @@ def q9(delta6, delta7, q7):
     return delta6*(1 - q7) + delta7*q7
 
 
-def q10(I14, delta2, delta3):
-    return (I14 + delta2)/(I14 + delta3)
+def q10(I9, delta2, delta3):
+    return (I9 + delta2)/(I9 + delta3)
 
 
 ### functions of this RHS ###
@@ -354,3 +350,7 @@ def h11(T2, I7, nu7, nu8, phi2):
 
 def H_Boil_Pipe(r6,h4):
     return max(r6 + h4,0)
+
+
+def presion_de_vapor_exterior(I5,RH):
+    return [q2(i5)*(rh/100.0) for i5,rh in zip(I5,RH)]
