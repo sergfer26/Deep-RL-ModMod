@@ -46,6 +46,7 @@ def sim_pid(agent, env, indice = 0):
             if step % dt == 0:
                 indice1 = step/dt # una hora
             action = np.zeros(11) if step == 0 else agent.get_action(indice1, env)
+            action = np.zeros(11)
             new_state, reward, done = env.step(action)
             episode_reward += reward
             C1, RH, T2, PAR, h, n = state

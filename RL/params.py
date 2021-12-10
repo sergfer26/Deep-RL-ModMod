@@ -2,7 +2,7 @@ import json
 from climate_model.constants import OTHER_CONSTANTS
 minutos = 60
 PARAMS_ENV = {'STEP': minutos/(24*60), \
-              'TIME_MAX': 90, #Dias simulados\ 
+              'TIME_MAX': 5, #Dias simulados\ 
               'FRECUENCY': 60, 
               'SEASON':1, \
               'MINUTOS':minutos}
@@ -21,8 +21,8 @@ PARAMS_TRAIN = {'EPISODES': 1000, \
                 } 
 
 PARAMS_SIM = {'anio':2017,\
-            'mes':1,\
-            'dia': 1,\
+            'mes':8,\
+            'dia': 15,\
             'hora': 1
             }
             
