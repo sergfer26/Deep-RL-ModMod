@@ -1,3 +1,4 @@
+Inputs_Bleiswijk_ant.csv
 *.xls
 runs/
 results_ddpg/
@@ -16,5 +17,7 @@ Solver.py
 params_correo.py
 another_graphics.py
 model*
-ddpg/parametros.json
 Simulaciones/
+BORRAR_CONSTANTES
+../.DS_Store
+multi_sim.py

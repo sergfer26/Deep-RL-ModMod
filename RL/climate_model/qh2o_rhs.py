@@ -9,7 +9,7 @@ from .functions import f1
 mt = symbols('mt')
 state_names = ['T1', 'V1', 'T2', 'C1']
 control_names = ['U2', 'U3', 'U9']
-input_names = ['I1', 'I6', 'I14']
+input_names = ['I1', 'I6']
 function_names = ['p1', 'p2', 'p3', 'q1', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8', 'q9', 'q10', 'f1']
 constant_names = ['alpha6', 'phi7', 'lamb1', 'lamb2', 'gamma2', 'rho3', 'alpha5', 
                             'gamma', 'gamma3', 'delta1', 'delta2', 'delta3', 'gamma4', 

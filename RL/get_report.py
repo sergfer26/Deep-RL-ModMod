@@ -19,7 +19,7 @@ def create_report(PATH, time = 0):
     pdf.setFont("Courier-Bold", 26)
     pdf.drawCentredString(290,720, subTitle)
 
-    add_text(pdf,['Parámetros del Entrenamiento'],100, 750)
+    add_text(pdf,['Parámetros del Entrenamiento'],100, 780)
     add_table(pdf,PARAMS_TRAIN,100,610)
     
 
@@ -39,8 +39,8 @@ def create_report(PATH, time = 0):
     add_image(PATH,pdf,'/images/sim_climate_inputs.png',30,10)
     pdf.showPage()
     #Siguiente pagina
-    add_image(PATH,pdf,'/images/sim_rh_par.png',30, 350,550,550)
-    add_image(PATH,pdf,'/images/sim_climate.png',30,0,550,550)
+    add_image(PATH,pdf,'/images/sim_rh_par.png',30,0,550,550)
+    add_image(PATH,pdf,'/images/sim_climate.png',30,350,550,550)
 
     pdf.showPage()
     add_image(PATH,pdf,'/images/sim_prod.png',30, 350,550,550)

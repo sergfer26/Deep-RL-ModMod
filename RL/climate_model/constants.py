@@ -34,7 +34,7 @@ OTHER_CONSTANTS = {
 ALPHA ={
     ################## alpha ##################
     'alpha1': Struct(typ='Cnts', varid='alpha1', prn=r'$\alpha_1$',
-                    desc="Heat capacity of one square meter of the canopy", units=J * K**-1 * m**-2, val=3000, ok='el valor original 1.2e3'), # Capacidad calórifica de un m^2 de dosel (theta[0])
+                    desc="Heat capacity of one square meter of the canopy", units=J * K**-1 * m**-2, val=1.2e3, ok='Se regreso al valor original'), # Capacidad calórifica de un m^2 de dosel (theta[0])
     'alpha2': Struct(typ='Cnts', varid='alpha2', prn=r'$\alpha_2$',
                     desc="Global NIR absorption coefficient of the canopy", units=1, val=0.35, ok=ok), # Coeficiente global de absorción NIR del dosel
     'alpha3': Struct(typ='Cnts', varid='alpha3', prn=r'$\alpha_3$',
@@ -197,7 +197,7 @@ NU ={
     'nu2': Struct(typ='Cnts', varid='nu2', prn=r'$\nu_2$',
                     desc="Global wind pressure coefficient without shadow", units=1, val=0.1,ok=ok),
     'nu3': Struct(typ='Cnts', varid='nu3', prn=r'$\nu_3$',
-                    desc="Side surface of the greenhouse", units=m**2, val=0,ok  = 'En ejemplos del artículo usan valor cero'), 
+                    desc="Side surface of the greenhouse", units=m**2, val=900,ok  = 'En ejemplos del artículo usan valor cero'), 
     'nu4': Struct(typ='Cnts', varid='nu4', prn=r'$\nu_4$',
                     desc="Leakage coefficien", units=1, val=1e-4,ok=ok), 
     'nu5': Struct(typ='Cnts', varid='nu5', prn=r'$\nu_5$',
@@ -216,7 +216,7 @@ PHI = {
     'phi1': Struct(typ='Cnts', varid='phi1', prn=r'$\phi_1$',
                     desc="External diameter of the heating pipe", units=m, val=51e-3,ok = ok),
     'phi2': Struct(typ='Cnts', varid='phi2', prn=r'$\phi_2$',
-                    desc="Average height of greenhouse air", units=m, val=20, ok = 'Valor original 4'), 
+                    desc="Average height of greenhouse air", units=m, val=4, ok = 'Se regreso a valor original'), 
     'phi3': Struct(desc='Masa molar del aire'), 
     'phi4': Struct('Altitud del invernadero'),
     'phi5': Struct(typ='Cnts', varid='phi5', prn=r'$\phi_5$',
@@ -226,9 +226,9 @@ PHI = {
     'phi7': Struct(typ='Cnts', varid='phi7', prn=r'$\phi_7$',
                     desc="Capacity of air flow through the pad", units=m**3 * s**-1, val=16.7,ok = ok), 
     'phi8': Struct(typ='Cnts', varid='phi8', prn=r'$\phi_8$',
-                    desc="Air flow capacity of forced ventilation system", units=m**3 * s**-1, val=0, ok = 'Falta valor, aunque en los ejemplos del artículo no se considera'),
+                    desc="Air flow capacity of forced ventilation system", units=m**3 * s**-1, val=666.6, ok = 'https://farm-energy.extension.org/greenhouse-ventilation/'),
     'phi9': Struct(typ='Cnts', varid='phi9', prn=r'$\phi_9$',
-                    desc="Fog system capacity", units=kg_water * s**-1, val=1.83, ok=ok)
+                    desc="Fog system capacity", units=kg * s**-1, val=0.916, ok='Como en Holanda')
 }
 
 
@@ -250,7 +250,7 @@ OMEGA = {
     'omega2': Struct(typ='Cnts', varid='omega2', prn=r'$\omega_2$',
                     desc="Molar gas constant", units=J * kmol**-1 * K**-1, val= 8.314e3, ok = ok), 
     'omega3': Struct(typ='Cnts', varid='omega3', prn=r'$\omega_3$',\
-                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03,ok = 'Sin comentario')
+                        desc="Percentage of CO2 absorbed by the canopy", units= 1 , val=0.03/4.0,ok = 'Deberia depender del modelo de la planta')
 }
 
 
@@ -261,32 +261,27 @@ CONSTANTS = {**OTHER_CONSTANTS, **ALPHA, **BETA, ** GAMMA, **DELTA, **EPSIL, **E
 ################## Inputs ##################
 INPUTS ={
     'I1' : Struct(typ='Cnts', varid='I1', prn=r'$I_1$',
-                    desc="Leaf area index", units=m**2 * m**-2, val=3, ok = 'Valor tomado de internet'),
+                    desc="Leaf area index", units=m**2 * m**-2, val=2, ok = 'Valor tesis Vanthoor'),
     'I2' : Struct(typ='State', varid='I2', prn=r'$I_2$',
                     desc="External global radiation", units=W * m**-2, val=100.0, ok = 'Sin comentario'), 
     'I3' : Struct(typ='State', varid='I3', prn=r'$I_3$',
                     desc="Heating pipe temperature", units=C, val=20, ok = 'Sin comentario'),      
     'I4' : Struct(typ='State', varid='I4', prn=r'$I_4$',
-                    desc="Sky temperature", units=C, val=0,ok = 'Sin comentario'),      
+                    desc="Sky temperature", units=C, val=-0.4,ok = 'Valor de España, pendiente'),      
     'I5' : Struct(typ='State', varid='I5', prn=r'$I_5$',
                     desc="Outdoor temperature", units=C, val=18, ok = 'Sin comentario'),  
     'I6' : Struct(typ='State', varid='I6', prn=r'$I_6$',
                     desc="Mechanical cooling system temperature", units=C, val = 20, ok = 'Sin comentario'),      # Mechanical cooling system temperature 
     'I7' : Struct(typ='Cnts', varid='I7', prn=r'$I_7$',
-                    desc="Soil temperature", units=C, val=5, ok = 'Valor tomado de internet'),  
+                    desc="Soil temperature", units=C, val=18, ok = 'Valor de España'),  
     'I8' : Struct(typ='State', varid='I8', prn=r'$I_8$',
-                    desc="Outdoor wind speed", units=m * s**-1, val=3.2, ok = 'Sin comentario'),     
-    'I9' : Struct(),
+                    desc="Outdoor wind speed", units=m * s**-1, val=3.2, ok = 'Sin comentario'),         
+    'I9' : Struct(typ='State', varid='I9', prn=r'$\I_{9}$',
+                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario'),
     'I10' : Struct(typ='Cnts', varid='I10', prn=r'$I_{10}$',
-                    desc="Outdoor CO2 concentration", units=mg * m**-3, val = 700,ok = 'Sin comentario'),    
+                    desc="Outdoor CO2 concentration", units=mg * m**-3, val = 668,ok = '668 mg/m**3 (370 ppm);'),
     'I11' : Struct(typ='Cnts', varid='I11', prn=r'$I_{11}$',
-                    desc="Inhibition of the rate of photosynthesis by saturation of the leaves with carbohydrates", units=1, val=0, ok = 'Falta valor y unidades'),     
-    'I12' : Struct(typ='Cnts', varid='I12', prn=r'$I_{12}$',
-                    desc="Crude canopy photosynthesis rate", units=1, val=0,ok = 'Falta valor y unidades'),     
-    'I13' : Struct(typ='Cnts', varid='I13', prn=r'$I_{13}$',
-                    desc="Photorespiration during photosynthesis", units=1, val=0,ok = 'Falta valor y unidades'),      # FALTA VALOE Photorespiration during photosynthesis
-    'I14' : Struct(typ='State', varid='I14', prn=r'$\I_{14}$',
-                    desc="Global radiation above the canopy", units=W * m**-2, val=100, ok = ' Sin comentario')
+                    desc= "external air vapor pressure ", units= Pa, val = 668,ok = 'Hay que calcularla,valor inicial incorrecto'),
 }
 
 
@@ -295,7 +290,7 @@ STATE_VARS = {
     'C1' : Struct(typ='State', varid='C1', prn=r'$C_1$',
                     desc="CO2 concentrartion in the greenhouse air", units=mg * m**-3, val=432, rec=nrec,ok='falta valor inicial'),
     'V1' : Struct(typ='State', varid='V1', prn=r'$V_1$',
-                    desc="Greenhouse air vapor pressure", units=Pa, val=14, rec=nrec, ok='falta valor inicial'), 
+                    desc="Greenhouse air vapor pressure", units=Pa, val=1200, rec=nrec, ok='https://www.dimluxlighting.com/knowledge/blog/vapor-pressure-deficit-the-ultimate-guide-to-vpd/'), 
     'T1' : Struct(typ='State', varid='T1', prn=r'$T_1$',
                     desc="Canopy temperature", units=C, val=20, rec=nrec, ok='falta valor inicial'),
     'T2' : Struct(typ='State', varid='T2', prn=r'$T_2$',
@@ -351,3 +346,13 @@ FUNCTIONS = {
     'q10':Struct(typ='State', varid='q10', prn=r'$q_{10}$', desc="Auxiliar function for qH2o", units=1, val=0, ok=ok),
     'r6': Struct(typ='State', varid='r6', prn=r'$r_6$', desc="Auxiliar function for qGas", units=1, val=0, ok=ok)
 }
+
+V1_CONTROLS = {
+    'c_p1': Struct(typ='Cnts', varid='c_p1', prn=r'$c_p1$', desc = "Controla si el termino p1 del RHS de V1 contribuye", units=1, val=1, ok='p1 de V1'),
+    'c_p2': Struct(typ='Cnts', varid='c_p2', prn=r'$c_p2$', desc = "Controla si el termino p2 del RHS de V1 contribuye", units=1, val=1, ok='p2 de V1'),
+    'c_p3': Struct(typ='Cnts', varid='c_p3', prn=r'$c_p3$', desc = "Controla si el termino p3 del RHS de V1 contribuye", units=1, val=1, ok='p3 de V1'),
+    'c_p4': Struct(typ='Cnts', varid='c_p4', prn=r'$c_p4$', desc = "Controla si el termino p4 del RHS de V1 contribuye", units=1, val=1, ok='p4 de V1'),
+    'c_p5': Struct(typ='Cnts', varid='c_p5', prn=r'$c_p5$', desc = "Controla si el termino p5 del RHS de V1 contribuye", units=1, val=1, ok='p5 de V1'),
+    'c_p6': Struct(typ='Cnts', varid='c_p6', prn=r'$c_p6$', desc = "Controla si el termino p6 del RHS de V1 contribuye", units=1, val=1, ok='p6 de V1'),
+    'c_p7': Struct(typ='Cnts', varid='c_p7', prn=r'$c_p7$', desc = "Controla si el termino p7 del RHS de V1 contribuye", units=1, val=1, ok='p7 de V1')
+    }

@@ -1,7 +1,7 @@
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 from base import add_table, add_text,style,ts
-from climate_model.constants import CONSTANTS,INPUTS,CONTROLS,OTHER_CONSTANTS
+from climate_model.constants import CONSTANTS,INPUTS,CONTROLS,OTHER_CONSTANTS,STATE_VARS,V1_CONTROLS
 
 from graphics import date
 
@@ -74,4 +74,10 @@ def Constants(PATH=''):
     add_table(pdf,CONTROLS,None,x,215)
     add_text(pdf,['Otras'],x, 180)
     add_table(pdf,OTHER_CONSTANTS,None,x,40)
+    pdf.showPage()
+    add_text(pdf,['Estados'],x, 780)
+    add_table(pdf,STATE_VARS,None,x,660)
+    add_text(pdf,['Controles sobre V1'],x,450)
+    add_table(pdf,V1_CONTROLS,None,x,215)
+
     pdf.save() 
