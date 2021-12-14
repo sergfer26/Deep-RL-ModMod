@@ -19,13 +19,16 @@ def create_report(PATH, time = 0):
     pdf.setFont("Courier-Bold", 26)
     pdf.drawCentredString(290,720, subTitle)
 
-    add_text(pdf,['Parámetros del Entrenamiento'],100, 750)
+    add_text(pdf,['Parámetros del Entrenamiento'],100, 780)
     add_table(pdf,PARAMS_TRAIN,100,610)
     
 
     add_text(pdf,['Parámetros del Ambiente'],100, 560)
     add_table(pdf,PARAMS_ENV,100,410)
     
+    add_text(pdf,['Controles'],100, 780)
+    add_table(pdf,PARAMS_TRAIN,100,610)
+    pdf.showPage()
     
     add_text(pdf,['Parámetros de DDPG'],100, 360)
     add_table(pdf,PARAMS_DDPG,100,210)
