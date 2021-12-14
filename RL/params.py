@@ -2,7 +2,7 @@ import json
 from climate_model.constants import OTHER_CONSTANTS
 minutos = 60
 PARAMS_ENV = {'STEP': minutos/(24*60), \
-              'TIME_MAX': 5, #Dias simulados\ 
+              'TIME_MAX': 1, #Dias simulados\ 
               'FRECUENCY': 60, 
               'SEASON':1, \
               'MINUTOS':minutos}
@@ -11,12 +11,12 @@ PARAMS_ENV = {'STEP': minutos/(24*60), \
 #Para benchmark y tournament es recomendable que sea 'RANDOM', pero no absolutamente necesario.
 
 #El min de STEP  no es 1/24, pero el min de FRECUENCY SÍ es 60
-PARAMS_TRAIN = {'EPISODES': 1000, \
+PARAMS_TRAIN = {'EPISODES': 2, \
                 'STEPS': int(PARAMS_ENV['TIME_MAX']/PARAMS_ENV['STEP']), \
                 'BATCH_SIZE': 128, \
                 'SHOW': False, \
-                'SERVER':False, \
-                'INDICE': 0, # Cuando es distinto de 0, fija un indice para simular
+                'SERVER':True, \
+                'INDICE': 0, # Se usa en la simulacion al terminar el entrenamiento
                 'SAVE_FREQ': 1000
                 } 
 
