@@ -24,8 +24,8 @@ import glob
 from params import PARAMS_ENV
 from baseline_policy import agent_baseline
 
-number_of_simulations = 2
-number_of_process     = 2
+number_of_simulations = 100
+number_of_process     = 8
 
 
 SEASON  =  PARAMS_ENV['SEASON']
