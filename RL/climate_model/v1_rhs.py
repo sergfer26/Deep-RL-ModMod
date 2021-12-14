@@ -89,7 +89,4 @@ class V1_rhs(StateRHS):
         p_6 = p6(T2=self.Vk('T2'), V1=self.Vk('V1'), psi1=self.V(
             'psi1'), omega2=self.V('omega2'), f1=f_1)
         p_7 = p7(V1=self.Vk('V1'), h3=h_3, q6=q_6)
-        P = [p_1,p_2,p_3,p_4,p_5,p_6,p_7]
-        P = P * np.array([V1_CONTROLS[name_].val for name_ in list(V1_CONTROLS)])
-        p_1,p_2,p_3,p_4,p_5,p_6,p_7 = P
         return (kappa_3**-1)*(p_1 + p_2 + p_3 + p_4 - p_5 - p_6 - p_7)
