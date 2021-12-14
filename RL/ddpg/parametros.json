@@ -1,1 +1,1 @@
-{"PARAMS_DDPG": {"hidden_sizes": [64, 64, 64], "actor_learning_rate": 0.0001, "critic_learning_rate": 0.001, "gamma": 0.98, "tau": 0.125, "max_memory_size": 100000}, "PARAMS_UTILS": {"mu": 0.0, "theta": 0.0, "max_sigma": 0.01, "min_sigma": 0.0, "decay_period": 24}}
+{"PARAMS_DDPG": {"hidden_sizes": [64, 64, 64], "actor_learning_rate": 0.0001, "critic_learning_rate": 0.001, "gamma": 0.98, "tau": 0.125, "max_memory_size": 100000}, "PARAMS_UTILS": {"mu": 0.0, "theta": 0.0, "max_sigma": 0.01, "min_sigma": 0.0, "decay_period": 2160}}
