@@ -17,7 +17,7 @@ import multiprocessing
 from functools import partial
 import sys
 import os
-from time import time
+from time import time,sleep
 import shutil
 import os
 import glob
@@ -58,7 +58,9 @@ def get_score(month,agent,sim):
     V = list()
     for _ in range(number_of_simulations): 
         env.indexes = indexes # Se crean indices
-        V.append([agent])
+        new_index = np.random.choice(indexes)
+        sleep(0.2)
+        V.append([agent,new_index])
     BIG_DATA = p.starmap(sim, V)
     BIG_DATA = list(BIG_DATA)
     result = {'episode_rewards':list(),'mass':list()}
