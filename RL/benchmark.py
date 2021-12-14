@@ -1,6 +1,6 @@
 from numpy.lib.histograms import histogram
 from sympy.utilities.iterables import bracelets
-from trainRL import sim, noise
+from sim import sim
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -24,9 +24,9 @@ import glob
 from params import PARAMS_ENV
 from baseline_policy import agent_baseline
 
-number_of_simulations = 100
-number_of_process     = 8
-path = 'results_ddpg/' + sys.argv[1]
+number_of_simulations = 2
+number_of_process     = 2
+
 
 SEASON  =  PARAMS_ENV['SEASON']
 
@@ -43,7 +43,6 @@ class OtherAgent(object):
         elif self.type == 'off':
             return np.zeros(self.num_actions)
 
-
 env = GreenhouseEnv()
 LIMIT = env.limit
 agent = DDPGagent(env)
@@ -57,10 +56,9 @@ def get_score(month,agent,sim):
     p = multiprocessing.Pool(number_of_process) #Numero de procesadores
     indexes = Indexes(data_inputs[0:LIMIT],month)
     V = list()
-    for _ in range(number_of_simulations):
-        env = GreenhouseEnv() #Se crea el ambiente 
+    for _ in range(number_of_simulations): 
         env.indexes = indexes # Se crean indices
-        V.append([agent,env])
+        V.append([agent])
     BIG_DATA = p.starmap(sim, V)
     BIG_DATA = list(BIG_DATA)
     result = {'episode_rewards':list(),'mass':list()}
@@ -83,8 +81,7 @@ def get_score(month,agent,sim):
 
 def save_score(PATH,result,name):
     name = PATH + '/output/simulations_' + name + '.json'
-    with open(name, 'w') as fp:
-        json.dump(result, fp,  indent=4)
+    with open(name, 'w') as fp: json.dump(result, fp,  indent=4)
 
 def season1():
     '''Solo debe ejecutar una vez'''
@@ -102,8 +99,7 @@ def season2():
     score = get_score(2,agent_random)
     save_score('results_ddpg/tournament/Season2',score,'random')
 
-def season1_nn(name = ''):
-    agent.load(path + '/nets',name)
+def season1_nn(agent,path, name = ''):
     score = get_score(1,agent,sim) #El 1 significa temporada 1 s
     save_score(path,score,'nn' + name)
 
@@ -126,7 +122,7 @@ def set_axis_style(ax, labels):
     ax.set_xlim(0.25, len(labels) + 0.75)
     ax.set_xlabel('')
 
-def violin_actions(name):
+def violin_actions(path,name):
     f = open(path + '/output/simulations_'+name+'.json') 
     data = json.load(f)
     new_data = list()
@@ -143,16 +139,16 @@ def violin_actions(name):
     plt.savefig(path + '/images/violin_actions.png')
     plt.close()
 
-def violin_reward(name):
+def violin_reward(path,name):
     f = open(path + '/output/simulations_'+name+'.json') 
     data = json.load(f)
     new_data = list()
     new_data.append(data['episode_rewards'])
-
+    '''
     f = open('results_ddpg/expert_control/output/simulations_expert_1h.json','r') 
     data = json.load(f)
     new_data.append(data['episode_rewards'])
-    '''
+    
     f = open('results_ddpg/tournament/Season1/simulations_on.json','r') 
     data = json.load(f)
     new_data.append(data['episode_rewards'])
@@ -165,7 +161,6 @@ def violin_reward(name):
     axis.violinplot(new_data,showmeans=True)
     axis.set_title('Rentabilidad $mxn/m^2$')
     labels = [name]
-    labels += ['expert']
     set_axis_style(axis, labels)
     plt.savefig(path + '/images/violin_rewards.png')
     plt.close()
@@ -241,8 +236,9 @@ def ESPECIAL1():
 
 if __name__ == '__main__':
     #expert_control()
-    season1_nn('')
-    violin_reward('nn') ##puede ser nn ó expert
-    violin_actions('nn')
+    #season1_nn('')
+    #violin_reward('nn') ##puede ser nn ó expert
+    #violin_actions('nn')
     #violin_reward_nets([1,1000,2000,3000,4000])
     #ESPECIAL1()
+    pass
