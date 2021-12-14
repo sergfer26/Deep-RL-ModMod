@@ -18,6 +18,8 @@ from graphics import save_Q, figure_reward, figure_state
 from graphics import figure_rh_par, figure_prod, figure_actions 
 from graphics import figure_inputs, compute_indexes, create_path
 from graphics import save_rewards,figure_cost_gain
+from benchmark import season1_nn,violin_reward,violin_actions
+from sim import sim
 
 
 EPISODES = PARAMS_TRAIN['EPISODES']
@@ -26,25 +28,15 @@ BATCH_SIZE = PARAMS_TRAIN['BATCH_SIZE']
 SHOW = PARAMS_TRAIN['SHOW']
 SERVER = PARAMS_TRAIN['SERVER']
 if SERVER: SHOW = False #No puedes mostrar nada en el servidor
-INDICE = PARAMS_TRAIN['INDICE'] #Cero para entrenar y 8770 para probar
+INDICE = PARAMS_TRAIN['INDICE'] #Indice con el que se va a simular
 SAVE_FREQ = PARAMS_TRAIN['SAVE_FREQ']
-
-
-env = GreenhouseEnv()
-agent = DDPGagent(env)
-noise = OUNoise(env.action_space)
-action_dim =  env.action_space.shape[0]
-state_dim = env.observation_space.shape[0]
-#writer_reward = SummaryWriter()
-#writer_abs = SummaryWriter()
-#writer_penalty = SummaryWriter()
 
 
 from functools import partialmethod
 tqdm.__init__ = partialmethod(tqdm.__init__, disable=SERVER)
 
 
-def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
+def train_agent(agent, noise, path, episodes=EPISODES, save_freq=EPISODES):
     rewards = []
     avg_rewards = []
     penalties = []
@@ -52,7 +44,8 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
     for episode in range(1, episodes + 1):
         with tqdm(total=STEPS, position=0) as pbar:
             pbar.set_description(f'Ep {episode + 1}/'+str(EPISODES))
-            state = env.reset()
+            env = GreenhouseEnv()
+            state = np.array(list(env.state.values()))
             noise.reset()
             episode_reward = 0
             abs_reward = 0
@@ -92,39 +85,18 @@ def train_agent(agent, env, noise, path, episodes=EPISODES, save_freq=EPISODES):
 
 
 
-def sim(agent, env, indice = 0):
-    #Es necesario para benchmark
-    #agent.actor.eval()
-    #agent.critic.eval()
-    state = env.reset() 
-    start = env.i if indice == 0 else indice # primer indice de los datos
-    env.i = start 
-    print('Se simula con indice = ', env.i)
-    S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
-    S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
-    S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
-    A = np.zeros((STEPS, action_dim))
-    episode_reward = 0.0
-    with tqdm(total=STEPS, position=0) as pbar:
-        for step in range(STEPS):
-            action = agent.get_action(state) 
-            new_state, reward, done = env.step(action)
-            episode_reward += reward
-            C1, RH, T2, PAR, h, n = state
-            T1 = env.dirClimate.V('T1'); V1 = env.dirClimate.V('V1')
-            S_climate[step, :] = np.array([T1, T2, V1, C1]) 
-            H = env.dirGreenhouse.V('H'); NF= env.dirGreenhouse.V('NF')
-            S_data[step, :] = np.array([RH, PAR])
-            S_prod[step, :] = np.array([h, n, H, NF, reward, episode_reward])
-            A[step, :] = action
-            state = new_state
-            pbar.set_postfix(step='{}'.format(step),V1 = '{}'.format(V1))
-            pbar.update(1)
-    data_inputs = env.return_inputs_climate(start)
-    return S_climate, S_data, S_prod, A, data_inputs,start
+
 
 
 def main():
+    env = GreenhouseEnv()
+    agent = DDPGagent(env)
+    noise = OUNoise(env.action_space)
+    action_dim =  env.action_space.shape[0]
+    state_dim = env.observation_space.shape[0]
+    #writer_reward = SummaryWriter()
+    #writer_abs = SummaryWriter()
+    #writer_penalty = SummaryWriter()
     t1 = time.time()
     mpl.style.use('seaborn')
     if len(sys.argv) != 1:
@@ -140,12 +112,11 @@ def main():
     #agent.actor.eval()
     #agent.critic.eval() 
     
-    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, env, noise, PATH, save_freq=SAVE_FREQ)
+    rewards, avg_rewards, penalties, abs_rewards = train_agent(agent, noise, PATH, save_freq=SAVE_FREQ)
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
-    
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, env, indice=INDICE)
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, ind=INDICE)
     save_Q(env,PATH)
     figure_cost_gain(env,PATH)
 
@@ -158,8 +129,10 @@ def main():
     figure_inputs(df_inputs,PATH)
     
     t2 = time.time()
-    PATH1 = PATH[13:]
-    os.system('python3 benchmark.py ' + PATH1)
+    season1_nn(agent,PATH,'')
+    violin_reward(PATH,'nn') ##puede ser nn ó expert
+    violin_actions(PATH,'nn')
+    
     if not(SHOW):
         create_report(PATH,t2-t1)
         send_correo(PATH + '/reports/Reporte.pdf')
