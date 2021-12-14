@@ -13,11 +13,12 @@ SHOW = PARAMS_TRAIN['SHOW']
 def date():
     tz = pytz.timezone('America/Mexico_City')
     mexico_now = datetime.now(tz)
+    year = mexico_now.year
     month = mexico_now.month
     day = mexico_now.day
     hour = mexico_now.hour
     minute = mexico_now.minute
-    return str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
+    return str(year) +'_'+ str(month) + '_'+ str(day) +'_'+ str(hour) + str(minute)
 
 def create_path():
     PATH = 'results_ddpg/'+ date()
@@ -119,12 +120,14 @@ def figure_actions(A,final_indexes,PATH):
 def figure_inputs(df_inputs,PATH):
     df_inputs.index = df_inputs['Date']
     df_inputs.drop('Date', inplace=True, axis=1)
-    ax = df_inputs.plot(subplots=True, figsize=(10, 7),title = 'Datos climaticos')
-    ax[0].set_ylabel('$W*m^{2}$')
-    ax[1].set_ylabel('C')
-    ax[2].set_ylabel('$Km*h^{-1}$')
-    ax[3].set_ylabel('$W*m^{2}$')
-    ax[4].set_ylabel('%')
+    ax = df_inputs.plot(subplots=True,layout=(3, 2), figsize=(10, 7),title = 'Datos climaticos')
+
+    ax[0,0].set_ylabel('$W*m^{2}$')
+    ax[0,1].set_ylabel('C')
+    ax[1,0].set_ylabel('$Km*h^{-1}$')
+    ax[1,1].set_ylabel('$W*m^{2}$')
+    ax[2,0].set_ylabel('%')
+    ax[2,1].set_ylabel('Pa')
     plt.gcf().autofmt_xdate()
     if SHOW:
         plt.show()
