@@ -29,9 +29,9 @@ PARAMS_SIM = {'anio':2017,\
 CONTROLS = {'u_1': 1, 
             'u_2': 1, 
             'u_3': 1, 
-            'u_4': 1,   
-            'u_5': 1, #No hace nada por los parametros
-            'u_6': 1, 
+            'u_4': 0,   
+            'u_5': 0, #No hace nada por los parametros
+            'u_6': 0, 
             'u_7': 1, 
             'u_8': 1,  
             'u_9': 1, 
