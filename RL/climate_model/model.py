@@ -38,11 +38,13 @@ class Module1(Module):
         s2 = 0.1281  # Desviación estándar de V1
         s3 = 10  # Desviación estándar de C1
         # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
+        #breakpoint()
         if RANDOM:
             T1r = self.V('T1') + norm.rvs(scale=s1)
             T2r = self.V('T2') + norm.rvs(scale=s1)
             V1r = self.V('V1') + norm.rvs(scale=s2)
             C1r = self.V('C1') + norm.rvs(scale=s3)
+            
         else:
             T1r = self.V('T1') 
             T2r = self.V('T2') 
@@ -79,13 +81,14 @@ class Climate_model(Director):
         self.sch = ['Module1']
 
     def reset(self):
-        self.Vars['T1'].val   = T1 # np.random.RandomState().normal(21, 2)
-        self.Vars['T2'].val   = T2 # np.random.RandomState().normal(21, 2)
-        self.Vars['V1'].val   = V1
-        self.Vars['C1'].val   = C1 # np.random.RandomState().normal(500, 1)
-        self.Vars['Qgas'].val = 0
-        self.Vars['Qco2'].val = 0
-        self.Vars['Qh2o'].val = 0
+        self.V_Set('T1', T1) #Vars['T1'].val   = T1 # np.random.RandomState().normal(21, 2)
+        self.V_Set('T2', T2) #Vars['T2'].val   = T2 # np.random.RandomState().normal(21, 2)
+        self.V_Set('V1', V1) #Vars['V1'].val   = V1
+        self.V_Set('C1', C1) #Vars['C1'].val   = C1 # np.random.RandomState().normal(500, 1)
+        self.V_Set('Qgas', 0) #Vars['Qgas'].val = 0
+        self.V_Set('Qco2', 0) #Vars['Qco2'].val = 0
+        self.V_Set('Qh2o', 0) #Vars['Qh2o'].val = 0
+        #breakpoint()
 
     def update_controls(self, U=np.ones(11)):
         for i in range(len(U[0:10])):
