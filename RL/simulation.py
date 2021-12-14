@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from time import time
 from simulation_date import get_index
 from tqdm import tqdm
-from trainRL import STEPS, action_dim, sim
+from trainRL import STEPS, sim
 from get_report_constants import Constants
 from baseline_policy import agent_baseline
 from matplotlib import pyplot as plt
@@ -20,24 +20,24 @@ PATH = 'Simulaciones/'+ date()
 pathlib.Path(PATH+'/images').mkdir(parents=True, exist_ok=True)
 pathlib.Path(PATH+'/reports').mkdir(parents=True, exist_ok=True)
 pathlib.Path(PATH+'/data').mkdir(parents=True, exist_ok=True)
-env = GreenhouseEnv()
 
-agent = agent_baseline()
+#agent = agent_baseline()
 
 #NN control 
-#agent = DDPGagent(env)
+agent = DDPGagent(GreenhouseEnv())
 #agent.load('results_ddpg/8_17_1848/nets','_1000')
 
 
-def sim_pid(agent, env, indice = 0):
+def sim_pid(agent, ind=None):
+    env = GreenhouseEnv()
+    state = np.array(list(env.state.values()))
+    env.set_index(ind) #inplace of env.i = ind
     dt = 60/minutos
-    state = env.reset() 
-    start = env.i if indice == 0 else indice # primer indice de los datos
-    env.i = start 
+    start = env.i
     S_climate = np.zeros((STEPS, 4)) # vars del modelo climatico T1, T2, V1, C1
     S_data = np.zeros((STEPS, 2)) # datos recopilados RH PAR
     S_prod = np.zeros((STEPS, 6)) # datos de produccion h, nf, H, N, r_t, Cr_t
-    A = np.zeros((STEPS, action_dim))
+    A = np.zeros((STEPS, env.action_space.shape[0]))
     episode_reward = 0.0
     with tqdm(total=STEPS, position=0) as pbar:
         for step in range(STEPS):
@@ -72,10 +72,11 @@ def main():
     Constants(PATH)
     date = datetime(y,m,d,h)
     #ind = get_index(data_inputs,date)
-    ind = 12311
-    S_climate, S_data, S_prod, A, df_inputs,start = sim_pid(agent, env, indice = ind)
+    ind = 0
+    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent,ind)
     start = df_inputs['Date'].iloc[0]
-    final_indexes = compute_indexes(start,STEPS,env.frec)
+    frec_ = int(STEP*24*60) 
+    final_indexes = compute_indexes(start,STEPS,frec_)
     df_climate = pd.DataFrame(S_climate, columns=('$T_1$', '$T_2$', '$V_1$', '$C_1$'))
     df_climate.index = final_indexes
     df_climate.to_csv(PATH+'/data/' + 'climate_model.csv')
