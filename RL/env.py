@@ -39,13 +39,14 @@ class GreenhouseEnv(gym.Env):
         self.dirClimate = Climate_model()
         self.dirGreenhouse = GreenHouse()
         self.i = 0
-        self.indexes = Indexes(data_inputs[0:self.limit],SEASON) if SEASON != 'RANDOM' else None
+        self.indexes = Indexes(data_inputs[0:self.limit],SEASON)
         self.daily_C1  = list()
         self.daily_T1  = list()
         self.daily_T2  = list()
         self.daily_V1 = list()
         self.Qvar_dic = {key:list() for key in self.vars_cost}
         self.Qvar_dic['G'] = list()
+        #self.state = self.update_state()
         self._reset()
     
     def remap(self, action):
@@ -103,7 +104,8 @@ class GreenhouseEnv(gym.Env):
         C1 = list(); T2 = list(); T1 = list(); V1 = list()
         for minute in range(1, self.frec + 1):
             if minute % FRECUENCY == 0: # Los datos son de cada FRECUENCY minutos
-                k = minute // FRECUENCY - 1
+                k = minute // FRECUENCY -1 #Habia un -1!!!!!
+                #breakpoint()
                 self.update_vars_climate(k + self.i*self.frec//FRECUENCY) # 
             self.dirClimate.Run(Dt=1, n=1, sch=self.dirClimate.sch)
             C1.append(self.dirClimate.OutVar('C1'))
@@ -127,6 +129,7 @@ class GreenhouseEnv(gym.Env):
             #self.dirClimate.Vars['RH'].val  = RH    #Radiacion global por encima del dosel
             self.i_hour += 1 
             self.i_hour = self.i_hour%self.limit
+            
             
         reward = self.reward_cost(self.vars_cost) #Aqui tambien se actualizan las listas de costos
         self.Qvar_dic['G'].append(0)
@@ -161,12 +164,19 @@ class GreenhouseEnv(gym.Env):
         return state
     
     def _reset(self):
-        self.i = self.set_index()
-        self.i_hour = self.i
+        #breakpoint()
+        self.set_index() #Inplace of self.i 
+        for inputs in INPUT_NAMES:
+            if inputs == 'RH':
+                pass
+            else:
+                #breakpoint()
+                self.dirClimate.Vars[inputs].val = data_inputs[inputs].iloc[self.i]
         self.dirClimate.reset()
         self.dirGreenhouse.reset()
         T = self.dirClimate.V('T2')
         C1 = self.dirClimate.V('C1')
+        #breakpoint()
         PAR = float(data_inputs['I2'].iloc[self.i * (self.frec//FRECUENCY)])
         RH = float(data_inputs['RH'].iloc[self.i * (self.frec//FRECUENCY)])
         self.dirGreenhouse.update_state(C1, T, PAR, RH)
@@ -175,11 +185,15 @@ class GreenhouseEnv(gym.Env):
         self.Qvar_dic['G'] = list()
         
     
-    def set_index(self):
-        if SEASON == 'RANDOM':
-            return np.random.RandomState().randint(0,self.limit)
+    def set_index(self,accord = None):
+        if accord is None: #Significa que no necesitas dar un indice
+            indice = np.random.choice(self.indexes)
         else:
-            return np.random.RandomState().choice(self.indexes)
+            indice = accord
+        self.i = indice
+        self.i_hour = indice
+        return indice
+        
 
     def reset(self):
         self._reset()
@@ -215,11 +229,13 @@ class GreenhouseEnv(gym.Env):
         plt.show()
 
     def update_vars_climate(self, index):
+        #print(data_inputs['Date'][index])
         for name in INPUT_NAMES:
             self.dirClimate.Vars[name].val = data_inputs[name][index]
 
     def return_inputs_climate(self, start):
         end = start + self.time_max * 24 * (60//FRECUENCY)
+        #breakpoint()
         return data_inputs.iloc[start: end]
 
 
