@@ -108,6 +108,8 @@ def main():
         PATH = create_path()
 
     Constants(PATH)
+    all_params['PARAMS_DDPG']['hidden_sizes'] = agent.hidden_sizes
+
     save_params(all_params,PATH+'/output')
     #agent.actor.eval()
     #agent.critic.eval() 
