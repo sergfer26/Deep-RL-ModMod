@@ -237,6 +237,13 @@ def ESPECIAL1():
     plt.close()
 
 if __name__ == '__main__':
+    env = GreenhouseEnv()
+    agent = DDPGagent(env)
+    PATH = 'results_ddpg/2021_12_13_2310'
+    agent.load(PATH + '/nets')
+    season1_nn(agent,PATH,'')
+    violin_reward(PATH,'nn') ##puede ser nn ó expert
+    violin_actions(PATH,'nn')
     #expert_control()
     #season1_nn('')
     #violin_reward('nn') ##puede ser nn ó expert
