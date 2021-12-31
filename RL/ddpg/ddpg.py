@@ -30,6 +30,7 @@ class DDPGagent:
         self.gamma = gamma
         self.tau = tau
 
+        self.hidden_sizes = hidden_sizes
         sizes_actor = hidden_sizes.copy()
         sizes_actor.insert(0, self.num_states)
         sizes_critic = hidden_sizes.copy()
