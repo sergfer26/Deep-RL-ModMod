@@ -77,10 +77,8 @@ def pid(error, kp, ki, kd, I, d):
 
 
 def integral(X):
-    a = X[0]
-    b = X[-1]
-    return np.mean(X)*(b-a)
-    
+    return np.mean(X)
+
 def control(error, kp, ki, kd, I, d):
     PID = pid(error, kp, ki, kd, I, d)
     return 0.01 * max(min(PID, 100), 0)
@@ -115,7 +113,7 @@ def control_u10(x, set_):
         control_u10.old_error = error
     d = error - control_u10.old_error
     control_u10.old_error = error
-    #breakpoint()
+    breakpoint()
     return control(error, KP10, KI10, KD10, I, d)
 
 
@@ -148,19 +146,25 @@ class agent_baseline():
         self.reset() 
         self.agent = agent 
 
-    def get_action(self, i, env):
+    def get_action(self, i, env, update):
+        '''
+        i sirve para saber con que puntos crear una inteprolacion lineal
+        update es una bandera que avisa que hay que actualizar los setpoints
+        '''
         par   = self.get_straight_line('I2',i)
         T_out = self.get_straight_line('I5',i)
         Vel   = self.get_straight_line('I8',i)
-        U    = np.zeros(11)
+        U     = np.zeros(11)
         T1_list = np.array([float(y) for y in env.daily_T1[-5:]])
         T2_list = np.array([float(y) for y in env.daily_T2[-5:]])
         C1_list = np.array([float(y) for y in env.daily_C1[-5:]])
         V1_list = np.array([float(y) for y in env.daily_V1[-5:]])
 
         if self.agent == None:
-            pband = set_pband(T_out[-1], Vel[-1])
-            vpd_set, vent_set, heat_set, co2_set = set_varset(par[-1])
+            if update:
+                pband = set_pband(T_out[-1], Vel[-1])
+                vpd_set, vent_set, heat_set, co2_set = set_varset(par[-1])
+            breakpoint()
             VPD = np.array(list(map(lambda t1,v1:q2(t1) - v1, T1_list, V1_list)))
             U[0] = control_u1(par[-1], T_out[-1])         # U1(pantalla termica) 
             U[7] = control_u8(VPD, vpd_set)               # U8(Respiraderos del techo) 
