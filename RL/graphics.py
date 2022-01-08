@@ -136,10 +136,10 @@ def figure_inputs(df_inputs,PATH):
         plt.savefig(PATH + '/images/sim_climate_inputs.png')
         plt.close()
     
-def save_Q(env,PATH):
+def save_Q(dic,PATH):
     name = PATH + '/output/costos.json'
     with open(name, 'w') as fp:
-        json.dump(env.Qvar_dic, fp,  indent=4)
+        json.dump(dic, fp,  indent=4)
 
 def save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH):
     dic_rewards = {'rewards':rewards, 'avg_rewards': avg_rewards,'penalties': penalties,'abs_reward':abs_rewards}
@@ -152,13 +152,14 @@ def compute_indexes(inicio,periods,frec):
     indexes = pd.date_range(inicio, periods=periods, freq=freq)
     return indexes
 
-def figure_cost_gain(env,PATH):
-    columns = env.vars_cost
-    columns.append('G')
-    data = [env.Qvar_dic[name] for name  in env.vars_cost]
+def figure_cost_gain(dic,final_indexes,PATH):
+    columns = list(dic.keys())
+    data = list()
+    for name in columns:data.append(dic[name])
     data = np.array(data)
     data = data.T
     data_cost = pd.DataFrame(data,columns = columns)
+    data_cost.index = final_indexes
     ax = data_cost.plot(subplots=True, layout=(2, 2), figsize=(10, 7), title='Ganancia y costos en $(mxn)m^{-2}min^{-1}$') 
     plt.gcf().autofmt_xdate()
     if SHOW:
@@ -167,3 +168,87 @@ def figure_cost_gain(env,PATH):
     else:
         plt.savefig(PATH + '/images/sim_cost.png')
         plt.close()
+
+def set_axis_style(ax, labels):
+    ax.get_xaxis().set_tick_params(direction='out')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.set_xticks(np.arange(1, len(labels) + 1))
+    ax.set_xticklabels(labels)
+    ax.set_xlim(0.25, len(labels) + 0.75)
+    ax.set_xlabel('')
+
+def aux_llave(path,llave):
+    f = open(path + '/output/simulations_nn.json','r') 
+    data = json.load(f)
+    x1 = data[llave]
+    f = open(path + '/output/parametros.json','r')
+    data = json.load(f)
+    x2 = str(data['PARAMS_DDPG']['hidden_sizes'])
+    return x1,x2
+
+def aux_llave2(path,llave):
+    f = open(path + '/output/rewards.json','r') 
+    data = json.load(f)
+    x1 = data[llave]
+    f = open(path + '/output/parametros.json','r')
+    data = json.load(f)
+    x2 = str(data['PARAMS_DDPG']['hidden_sizes'])
+    return x1,x2
+def graficas_rendimiento():
+    new_data = list()
+    labels  = list()
+    paths = ['2021_12_30_200','2021_12_30_205','2021_12_30_209','2021_12_30_2011',]
+    path = 'results_ddpg/'
+    for fecha in paths:
+        x1, x2 = aux_llave(path + fecha,'episode_rewards')
+        new_data.append(x1)
+        labels.append(x2)
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data,showmeans=True)
+    axis.set_title('Rentabilidad $mxn/m^2$')
+    set_axis_style(axis, labels)
+    #plt.show()
+    plt.savefig('ImagesTesis/comparacion_entre_topologias')
+    plt.close()
+
+
+def graficas_rendimiento2():
+    import matplotlib
+    matplotlib.rcParams['text.usetex'] = True
+    new_data = list()
+    labels  = list()
+    paths = ['2021_12_30_200','2021_12_30_205','2021_12_30_209','2021_12_30_2011',]
+    path = 'results_ddpg/'
+    pts = 50
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    for fecha in paths:
+        x1, x2 = aux_llave2(path + fecha,'rewards')
+        axis.plot(smooth(x1,pts), alpha=0.7,label = x2)
+    axis.plot(np.zeros_like(x1),color = 'k',linestyle='--')
+    axis.set_xlabel('episodios')
+    axis.set_ylabel(r'\textit{reward}')
+    plt.legend()
+    #plt.show()
+    plt.savefig('ImagesTesis/rewards')
+    plt.close()
+
+def graficas_mass():
+    new_data = list()
+    labels  = list()
+    paths = ['2021_12_30_200','2021_12_30_205','2021_12_30_209','2021_12_30_2011',]
+    path = 'results_ddpg/'
+    for fecha in paths:
+        x1, x2 = aux_llave(path + fecha,'mass')
+        new_data.append(x1)
+        labels.append(x2)
+    _, axis= plt.subplots(sharex=True, figsize=(10,5))
+    axis.violinplot(new_data,showmeans=True)
+    axis.set_title('Masa $g$')
+    set_axis_style(axis, labels)
+    #plt.show()
+    plt.savefig('ImagesTesis/comparacion_entre_topologias_mass')
+    plt.close()
+if __name__ == '__main__':
+    graficas_rendimiento()
+    graficas_rendimiento2()
+    graficas_mass()
