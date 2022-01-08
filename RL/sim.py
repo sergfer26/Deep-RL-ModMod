@@ -34,4 +34,4 @@ def sim(agent,ind = None):
             pbar.set_postfix(step='{}'.format(step),V1 = '{}'.format(V1))
             pbar.update(1)
     data_inputs = env.return_inputs_climate(start)
-    return S_climate, S_data, S_prod, A, data_inputs,start
+    return S_climate, S_data, S_prod, A, data_inputs,start,env.Qvar_dic

@@ -118,12 +118,11 @@ def main():
 
     figure_reward(rewards, avg_rewards, penalties, abs_rewards,PATH)
     save_rewards(rewards, avg_rewards, penalties, abs_rewards,PATH)
-    S_climate, S_data, S_prod, A, df_inputs,start = sim(agent, ind=INDICE)
-    save_Q(env,PATH)
-    figure_cost_gain(env,PATH)
-
+    S_climate, S_data, S_prod, A, df_inputs,start,Qdic = sim(agent, ind=INDICE)
+    save_Q(Qdic,PATH)
     start = df_inputs['Date'].iloc[0]
     final_indexes = compute_indexes(start,STEPS,env.frec) #Es necesario crear nuevos indices para las graficas, depende de STEP
+    figure_cost_gain(Qdic,final_indexes,PATH)
     figure_state(S_climate,final_indexes,PATH)
     figure_rh_par(S_data,final_indexes,PATH)
     figure_prod(S_prod,final_indexes,PATH)
