@@ -1,9 +1,9 @@
 from typing import Tuple
 import numpy as np
-from ModMod import Module, Director
+from ModMod import Director
 from .functions import * 
 from scipy.stats import norm
-from .constants import STATE_VARS, CONSTANTS, OTHER_CONSTANTS
+from .constants import STATE_VARS, CONSTANTS
 from .qh2o_rhs import Qh2o_rhs
 from .qco2_rhs import Qco2_rhs 
 from .qgas_rhs import Qgas_rhs
@@ -11,54 +11,13 @@ from .t1_rhs import T1_rhs
 from .t2_rhs import T2_rhs
 from .v1_rhs import V1_rhs
 from .c1_rhs import C1_rhs
+from .climate_module import Module1
 ### Notice 95 T1
 
 C1, V1, T2, T1 = [struct.val for struct in STATE_VARS.values()]
 T_cal = CONSTANTS['T_cal'].val
 
-RANDOM = OTHER_CONSTANTS['model_noise'].val
 
-class Module1(Module):
-
-    def __init__(self, Dt=1, **kwargs):
-        """Models one part of the process, uses the shared variables
-           from Director.
-           Dt=0.1, default Time steping of module
-        """
-        super().__init__(Dt)  # Time steping of module
-        # Always, use the super class __init__, theare are several otjer initializations
-        # Module specific constructors, add RHS's
-        for key, value in kwargs.items():
-            self.AddStateRHS(key, value)
-        # print("State Variables for this module:", self.S_RHS_ids)
-
-    def Advance(self, t1):
-        # Se agrega ruido a los resultados del modelo
-        s1 = 0.1131  # Desviación estándar de T1 y T2
-        s2 = 0.1281  # Desviación estándar de V1
-        s3 = 10  # Desviación estándar de C1
-        # seed( int( self.t() ) ) # La semilla de los aleatorios depende del tiempo del director
-        #breakpoint()
-        if RANDOM:
-            T1r = self.V('T1') + norm.rvs(scale=s1)
-            T2r = self.V('T2') + norm.rvs(scale=s1)
-            V1r = self.V('V1') + norm.rvs(scale=s2)
-            C1r = self.V('C1') + norm.rvs(scale=s3)
-            
-        else:
-            T1r = self.V('T1') 
-            T2r = self.V('T2') 
-            V1r = self.V('V1') 
-            C1r = self.V('C1') 
-        # Actualización de las variables
-        self.V_Set('T1', T1r)
-        self.V_Set('T2', T2r)
-        self.V_Set('V1', V1r)
-        self.V_Set('C1', C1r)
-        # Avance del RHS
-        self.AdvanceRungeKutta(t1)
-        return 1
-        
 
 class Climate_model(Director):
     def __init__(self):
