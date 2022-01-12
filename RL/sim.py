@@ -21,6 +21,7 @@ def sim(agent,ind = None):
     with tqdm(total=STEPS, position=0) as pbar:
         for step in range(STEPS):
             action = agent.get_action(state) 
+            action = np.zeros_like(action)
             new_state, reward, done = env.step(action)
             episode_reward += reward
             C1, RH, T2, PAR, h, n = state
